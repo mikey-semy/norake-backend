@@ -25,7 +25,7 @@
             "env": {
                 "PLANE_API_KEY": "YOUR_PLANE_API_KEY",
                 "PLANE_API_HOST_URL": "https://plane.equiply.ru/",
-                "PLANE_WORKSPACE_SLUG": "profitool-store"
+                "PLANE_WORKSPACE_SLUG": "norake"
             }
         },
         "tavily": {
@@ -61,26 +61,6 @@
                 "-y",
                 "@modelcontextprotocol/server-puppeteer"
             ]
-        },
-        "tavily": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "tavily-mcp"
-            ],
-            "env": {
-                "TAVILY_API_KEY": "YOUR_TAVILY_API_KEY"
-            }
-        },
-        "firecrawl": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "firecrawl-mcp"
-            ],
-            "env": {
-                "FIRECRAWL_API_KEY": "YOUR_FIRECRAWL_API_KEY"
-            }
         },
         "gistpad": {
             "command": "npx",
