@@ -45,6 +45,11 @@ cp .env.example .env.dev
 - `POSTGRES_PORT` - порт PostgreSQL (по умолчанию 5432)
 - `POSTGRES_DB` - имя базы данных
 
+### Настройки Redis
+- `REDIS_HOST` - хост Redis (обычно localhost для разработки)
+- `REDIS_PORT` - порт Redis (по умолчанию 6379)
+- `REDIS_PASSWORD` - пароль для Redis (обычно default для разработки)
+
 ### Настройки CORS
 - `ALLOW_ORIGINS` - список разрешенных источников (для разработки обычно ["http://localhost:3000","http://localhost:5173"])
 
@@ -56,6 +61,10 @@ POSTGRES_PASSWORD=your_password
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 POSTGRES_DB=norake_db
+
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=your_redis_password
 
 ALLOW_ORIGINS=["http://localhost:3000","http://localhost:5173"]
 ```
