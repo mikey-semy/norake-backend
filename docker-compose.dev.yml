@@ -15,9 +15,25 @@ services:
     networks:
       - dev-network
 
+  redis:
+    image: redis:latest
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD:-default}
+    volumes:
+      - redis-data:/data
+    networks:
+      - dev-network
+
 networks:
   dev-network:
     driver: bridge
 
 volumes:
   postgres-data:
+  redis-data:
