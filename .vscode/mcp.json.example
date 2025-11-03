@@ -1,0 +1,93 @@
+{
+    "servers": {
+        "context7": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@upstash/context7-mcp",
+                "--api-key",
+                "YOUR_CONTEXT7_API_KEY"
+            ]
+        },
+        "sequential-thinking": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-sequential-thinking"
+            ]
+        },
+        "plane": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@makeplane/plane-mcp-server"
+            ],
+            "env": {
+                "PLANE_API_KEY": "YOUR_PLANE_API_KEY",
+                "PLANE_API_HOST_URL": "https://plane.equiply.ru/",
+                "PLANE_WORKSPACE_SLUG": "profitool-store"
+            }
+        },
+        "tavily": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-tavily"
+            ],
+            "env": {
+                "TAVILY_API_KEY": "YOUR_TAVILY_API_KEY"
+            }
+        },
+        "firecrawl": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-firecrawl"
+            ],
+            "env": {
+                "FIRECRAWL_API_KEY": "YOUR_FIRECRAWL_API_KEY"
+            }
+        },
+        "desktop-commander": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@executeautomation/desktop-commander-mcp"
+            ]
+        },
+        "browser-tools": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-puppeteer"
+            ]
+        },
+        "tavily": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "tavily-mcp"
+            ],
+            "env": {
+                "TAVILY_API_KEY": "YOUR_TAVILY_API_KEY"
+            }
+        },
+        "firecrawl": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "firecrawl-mcp"
+            ],
+            "env": {
+                "FIRECRAWL_API_KEY": "YOUR_FIRECRAWL_API_KEY"
+            }
+        },
+        "gistpad": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "gistpad-mcp"
+            ]
+        }
+    }
+}
