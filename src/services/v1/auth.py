@@ -397,7 +397,8 @@ class AuthService(BaseService):
             )
             raise TokenInvalidError()
 
-        user_model = await self.repository.get_item_by_id(user_id)
+        # Используем метод с eager loading для user_roles
+        user_model = await self.repository.get_user_with_roles_by_id(user_id)
         if not user_model:
             self.logger.warning(
                 "Пользователь не найден при обновлении токена",
