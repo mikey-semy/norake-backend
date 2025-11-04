@@ -6,6 +6,66 @@ NoRake Backend is a FastAPI-based collective memory system for tracking and reso
 
 **Current Status**: Core authentication system implemented, ready for feature expansion
 
+## Project Management with Plane
+
+**CRITICAL**: All development tasks are managed in Plane (MCP integration available).
+
+### Before Starting Work
+
+1. **Check Plane for current tasks**: Use MCP Plane tools to list project issues
+2. **Pick next task**: Start with the lowest unassigned NORAK-* number
+3. **Update task status**: Mark issue as "in progress" before coding
+4. **Read task description**: All requirements are in the issue description
+
+### During Development
+
+1. **Follow task requirements**: Implementation details are in Plane issue descriptions
+2. **Check acceptance criteria**: Each task has specific success criteria
+3. **Reference related tasks**: Issues reference each other (e.g., "depends on NORAK-1")
+4. **Add comments**: Use Plane comments to document blockers or decisions
+
+### After Completing Work
+
+1. **Update issue status**: Mark as "completed" when all acceptance criteria met
+2. **Add completion comment**: Brief summary of what was implemented
+3. **Link related commits**: Reference NORAK-* in commit messages
+4. **Move to next task**: Check Plane for dependent or next priority task
+
+### Plane MCP Commands (Available)
+
+```python
+# List all project issues
+mcp_plane_list_project_issues(project_id="c4ea1c3f-97d2-4f56-8aaa-5cce4b185f58")
+
+# Get specific issue details
+mcp_plane_get_issue_using_readable_identifier(
+    project_identifier="NORAK",
+    issue_identifier="1"  # For NORAK-1
+)
+
+# Update issue status (mark as completed)
+mcp_plane_update_issue(
+    project_id="c4ea1c3f-97d2-4f56-8aaa-5cce4b185f58",
+    issue_id="<uuid>",
+    issue_data={"state": "<completed_state_id>"}
+)
+
+# Add comment to issue
+mcp_plane_add_issue_comment(
+    project_id="c4ea1c3f-97d2-4f56-8aaa-5cce4b185f58",
+    issue_id="<uuid>",
+    comment_html="<p>Task completed. Implemented XYZ.</p>"
+)
+```
+
+### Development Documentation
+
+All planning and architecture docs are in `docs/`:
+- **`docs/DEVELOPMENT_PLAN.md`**: MVP roadmap with all phases and tasks
+- **`docs/MVP_EXTENDED_PLAN.md`**: Detailed technical specs (models, API endpoints, JSONB structures)
+
+Refer to these documents when implementing features to ensure alignment with overall architecture.
+
 ## Architecture: Strict Layer Separation
 
 **CRITICAL**: Always follow `Router → Service → Repository → Model` flow. Never bypass layers.
@@ -183,10 +243,30 @@ Follow this structure in `schemas/v1/`, `routers/v1/`, `services/v1/`, `reposito
 
 ## When Adding New Features
 
-1. **Define domain model** in `models/v1/`
-2. **Create schemas** (base/requests/responses) in `schemas/v1/`
-3. **Build repository** extending `BaseRepository[Model]`
-4. **Implement service** with business logic, returning domain objects
-5. **Create dependency provider** in `core/dependencies/`
-6. **Build router** with schema conversion and typed dependencies
-7. **Add custom exceptions** for the domain in `core/exceptions/`
+**ALWAYS START WITH PLANE**: Check current task in Plane before implementing anything.
+
+1. **Get task from Plane** using `mcp_plane_get_issue_using_readable_identifier`
+2. **Read full requirements**: Issue description contains all implementation details
+3. **Define domain model** in `models/v1/` (if required by task)
+4. **Create schemas** (base/requests/responses) in `schemas/v1/`
+5. **Build repository** extending `BaseRepository[Model]`
+6. **Implement service** with business logic, returning domain objects
+7. **Create dependency provider** in `core/dependencies/`
+8. **Build router** with schema conversion and typed dependencies
+9. **Add custom exceptions** for the domain in `core/exceptions/`
+10. **Run tests** to verify acceptance criteria
+11. **Update Plane task status** to "completed" with summary comment
+
+### Task Implementation Checklist
+
+Before marking task as complete in Plane:
+- ✅ All acceptance criteria from issue description met
+- ✅ Code follows 4-layer architecture (Router → Service → Repository → Model)
+- ✅ Russian docstrings and comments added
+- ✅ Type hints on all public methods
+- ✅ Domain exceptions created and used
+- ✅ Dependency injection configured
+- ✅ No try-catch in routers (use global handler)
+- ✅ Services return domain objects, not schemas
+- ✅ Code formatted (black, isort)
+- ✅ Tests written (if task requires)
