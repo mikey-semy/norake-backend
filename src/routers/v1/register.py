@@ -58,8 +58,8 @@ class RegisterRouter(BaseRouter):
             """
             Регистрация нового пользователя.
 
-            Создает нового пользователя в системе с placeholder компанией
-            и ролью user. Возвращает JWT токены (в теле или cookies).
+            Создает нового пользователя в системе с ролью user.
+            Возвращает JWT токены (в теле или cookies).
 
             Args:
                 response: HTTP response объект для установки cookies
@@ -72,7 +72,6 @@ class RegisterRouter(BaseRouter):
 
             Raises:
                 UserAlreadyExistsError: Пользователь с таким email/username уже существует
-                CompanyCreationError: Ошибка при создании placeholder компании
                 UserCreationError: Ошибка при создании пользователя
                 RoleAssignmentError: Ошибка при присвоении роли user
             """

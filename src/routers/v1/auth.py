@@ -307,9 +307,8 @@ class AuthRouter(BaseRouter):
             ### Returns:
             * **id**: UUID пользователя
             * **email**: Email адрес
-            * **full_name**: ФИО пользователя
+            * **username**: Имя пользователя
             * **role**: Роль пользователя (admin/user)
-            * **company**: Данные компании (для user)
             * **is_active**: Статус активности аккаунта
 
             ### Использование:

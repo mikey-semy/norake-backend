@@ -56,7 +56,7 @@ class RegistrationRequestSchema(CommonBaseSchema):
     )
     email: EmailStr = Field(
         description="Email адрес пользователя",
-        examples=["user@example.com", "john.doe@company.org"],
+        examples=["user@example.com", "john.doe@example.org"],
     )
 
     password: str = Field(

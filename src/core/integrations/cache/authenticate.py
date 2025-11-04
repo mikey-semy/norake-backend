@@ -131,10 +131,10 @@ class AuthRedisManager(BaseRedisManager):
 
         return UserCredentialsSchema(
             id=uuid.uuid4(),
+            username=email.split("@")[0],  # Генерируем username из email
             email=email,
             password_hash="",
             is_active=True,
-            full_name="",
             role="user"
         )
 

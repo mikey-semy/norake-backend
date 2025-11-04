@@ -52,7 +52,7 @@ class RegistrationDataSchema(CommonBaseSchema):
 
     Note:
         При регистрации username генерируется автоматически из email.
-        Поля phone, full_name, company данные заполняются позже в профиле.
+        Поле phone заполняется позже в профиле.
     """
 
     id: UUID = Field(
@@ -71,19 +71,13 @@ class RegistrationDataSchema(CommonBaseSchema):
 
     email: EmailStr = Field(
         description="Email адрес пользователя",
-        examples=["user@example.com", "john.doe@company.org"],
+        examples=["user@example.com", "john.doe@example.org"],
     )
 
     phone: Optional[str] = Field(
         None,
         description="Контактный телефон (заполняется в профиле)",
         examples=["+79991234567", "+7 999 123-45-67"],
-    )
-
-    full_name: Optional[str] = Field(
-        None,
-        description="ФИО пользователя (заполняется в профиле)",
-        examples=["Иванов Иван Иванович", "Петров П.П."],
     )
 
     role: str = Field(
