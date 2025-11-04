@@ -8,6 +8,8 @@ from src.routers.base import BaseRouter
 from .health import HealthRouter
 from .auth import AuthRouter
 from .register import RegisterRouter
+from .protected import ProtectedRouter as ProtectedDemoRouter
+from .users import UsersRouter
 
 
 class APIv1(BaseRouter):
@@ -22,3 +24,5 @@ class APIv1(BaseRouter):
         self.router.include_router(HealthRouter().get_router())
         self.router.include_router(AuthRouter().get_router())
         self.router.include_router(RegisterRouter().get_router())
+        self.router.include_router(ProtectedDemoRouter().get_router())
+        self.router.include_router(UsersRouter().get_router())
