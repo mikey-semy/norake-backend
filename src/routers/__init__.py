@@ -8,9 +8,5 @@ def setup_routers(app: FastAPI):
     """
     Настраивает все роутеры для приложения FastAPI.
     """
-
     app.include_router(MainRouter().get_router())
-
-    v1_router = APIv1()
-    v1_router.configure_routes()
-    app.include_router(v1_router.get_router(), prefix="/api/v1")
+    app.include_router(APIv1().get_router(), prefix="/api/v1")
