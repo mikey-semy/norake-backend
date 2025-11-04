@@ -135,7 +135,7 @@ class AuthRedisManager(BaseRedisManager):
             password_hash="",
             is_active=True,
             full_name="",
-            role="buyer"
+            role="user"
         )
 
     async def verify_and_get_user(self, token: str) -> UserCredentialsSchema:

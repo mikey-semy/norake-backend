@@ -18,11 +18,6 @@ class UserRepository(BaseRepository[UserModel]):
 
     Предоставляет методы для получения пользователей по различным
     идентификаторам (email, phone, username) в зависимости от настроек.
-
-    Example:
-        >>> repository = UserRepository(session=session, model=UserModel)
-        >>> user = await repository.get_user_by_identifier("buyer@company.com")
-        >>> print(user.full_name)
     """
 
     async def get_user_by_identifier(self, identifier: str) -> Optional[UserModel]:

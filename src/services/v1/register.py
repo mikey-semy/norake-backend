@@ -49,7 +49,7 @@ class RegisterService(BaseService):
         >>> service = RegisterService(session=session)
         >>> user, tokens = await service.register_user({
         ...     "username": "user123",
-        ...     "email": "user@company.com",
+        ...     "email": "user@email.com",
         ...     "password": "SecurePass123!"
         ... })
         >>> print(user.username)  # "user123"
@@ -100,9 +100,13 @@ class RegisterService(BaseService):
             ... })
             >>> print(tokens["access_token"])
         """
-        username = user_data["username"]
         email = user_data["email"]
         password = user_data["password"]
+
+        # Генерация username из email если не предоставлен
+        username = user_data.get("username")
+        if not username:
+            username = email.split("@")[0]
 
         self.logger.info(
             "Начало регистрации пользователя: %s (%s)", username, email
@@ -196,15 +200,14 @@ class RegisterService(BaseService):
             user_data = {
                 "username": username,
                 "email": email,
-                "hashed_password": hashed_password,
+                "password_hash": hashed_password,
                 "is_active": True,
-                "is_verified": True,  # MVP: сразу активен, email verification потом
             }
 
             user = await self.user_repository.create_item(user_data)
 
             # 2. Присваиваем роль user
-            from src.models.v1.users import UserRoleModel
+            from src.models.v1.roles import UserRoleModel
 
             role_data = {
                 "user_id": user.id,

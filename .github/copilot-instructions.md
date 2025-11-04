@@ -201,7 +201,7 @@ async def get_user(user_id: UUID, service: UserServiceDep = None):
 
 - **JWT tokens** with automatic refresh token rotation
 - **Redis blacklist** for logout/token invalidation
-- **Role-based access**: `admin` (full access), `buyer` (customer role)
+- **Role-based access**: `admin` (full access), `user` (customer role)
 - **Argon2 password hashing** via passlib
 - **Optional cookie storage** for tokens (supports both headers + cookies)
 

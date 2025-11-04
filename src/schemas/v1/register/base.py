@@ -82,7 +82,7 @@ class RegistrationDataSchema(CommonBaseSchema):
 
     full_name: Optional[str] = Field(
         None,
-        description="ФИО представителя компании (заполняется в профиле)",
+        description="ФИО пользователя (заполняется в профиле)",
         examples=["Иванов Иван Иванович", "Петров П.П."],
     )
 
@@ -120,4 +120,3 @@ class RegistrationDataSchema(CommonBaseSchema):
         default="Bearer",
         description="Тип токена для использования в заголовке Authorization"
     )
-

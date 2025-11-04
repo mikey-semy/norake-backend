@@ -106,6 +106,7 @@ class RegisterRouter(BaseRouter):
             # Конвертируем UserModel → RegistrationDataSchema
             user_data = RegistrationDataSchema(
                 id=user.id,
+                username=user.username,
                 email=user.email,
                 phone=user.phone,
                 role="user",  # Всегда user при регистрации

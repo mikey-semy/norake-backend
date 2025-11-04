@@ -105,7 +105,7 @@ class RoleAssignmentError(BaseAPIException):
         """
         Args:
             user_id: ID пользователя.
-            role_code: Код роли (buyer, admin).
+            role_code: Код роли (user, admin).
             detail: Описание ошибки.
             extra: Дополнительные данные.
         """
