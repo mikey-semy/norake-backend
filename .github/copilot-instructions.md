@@ -13,7 +13,7 @@ NoRake Backend is a FastAPI-based collective memory system for tracking and reso
 ### Before Starting Work
 
 1. **Check Plane for current tasks**: Use MCP Plane tools to list project issues
-2. **Pick next task**: Start with the lowest unassigned NORAK-* number
+2. **Pick next task**: Start with the lowest unassigned NORAK-\* number
 3. **Update task status**: Mark issue as "in progress" before coding
 4. **Read task description**: All requirements are in the issue description
 
@@ -28,7 +28,7 @@ NoRake Backend is a FastAPI-based collective memory system for tracking and reso
 
 1. **Update issue status**: Mark as "completed" when all acceptance criteria met
 2. **Add completion comment**: Brief summary of what was implemented
-3. **Link related commits**: Reference NORAK-* in commit messages
+3. **Link related commits**: Reference NORAK-\* in commit messages
 4. **Move to next task**: Check Plane for dependent or next priority task
 
 ### Plane MCP Commands (Available)
@@ -61,6 +61,7 @@ mcp_plane_add_issue_comment(
 ### Development Documentation
 
 All planning and architecture docs are in `docs/`:
+
 - **`docs/DEVELOPMENT_PLAN.md`**: MVP roadmap with all phases and tasks
 - **`docs/MVP_EXTENDED_PLAN.md`**: Detailed technical specs (models, API endpoints, JSONB structures)
 
@@ -73,7 +74,7 @@ Refer to these documents when implementing features to ensure alignment with ove
 ```
 src/
 ├── routers/     # HTTP layer - routing, auth checks, schema conversion
-├── services/    # Business logic - validation, orchestration, domain operations  
+├── services/    # Business logic - validation, orchestration, domain operations
 ├── repository/  # Data access - queries, CRUD, database operations
 ├── models/      # SQLAlchemy ORM models with Russian docstrings
 ├── schemas/     # Pydantic validation/serialization (request/response)
@@ -111,7 +112,7 @@ async def login(
 async def get_user(self, user_id: UUID) -> UserModel:
     return await self.repository.get_item_by_id(user_id)
 
-# ✅ CORRECT - Router converts to schema  
+# ✅ CORRECT - Router converts to schema
 user = await service.get_user(user_id)
 schema = UserDetailSchema.model_validate(user)
 return UserResponseSchema(success=True, data=schema)
@@ -132,7 +133,7 @@ uv run bootstrap        # Initialize environment + dependencies
 
 # Daily development
 uv run dev             # Start development server with hot reload
-uv run migrate         # Run Alembic migrations  
+uv run migrate         # Run Alembic migrations
 uv run format          # Format code (black, isort)
 uv run lint            # Lint code (flake8, mypy)
 uv run check           # Check dependencies and configuration
@@ -207,6 +208,7 @@ async def get_user(user_id: UUID, service: UserServiceDep = None):
 ## Current Implementation Status
 
 **✅ Implemented:**
+
 - Base architecture (Router/Service/Repository/Model layers)
 - Authentication system (login, refresh, logout, current user)
 - User management with roles
@@ -215,6 +217,7 @@ async def get_user(user_id: UUID, service: UserServiceDep = None):
 - Development tooling (UV commands, Docker, formatting)
 
 **⏳ Ready for Implementation:**
+
 - Additional business domain models
 - CRUD operations for new entities
 - Business logic services
@@ -260,6 +263,7 @@ Follow this structure in `schemas/v1/`, `routers/v1/`, `services/v1/`, `reposito
 ### Task Implementation Checklist
 
 Before marking task as complete in Plane:
+
 - ✅ All acceptance criteria from issue description met
 - ✅ Code follows 4-layer architecture (Router → Service → Repository → Model)
 - ✅ Russian docstrings and comments added
