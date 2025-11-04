@@ -4,8 +4,10 @@ authors = [
 ]
 dependencies = [
   "alembic>=1.12.1", # Миграции для SQLAlchemy
+  "aio-pika>=9.5.7", # Асинхронный клиент RabbitMQ
   "asyncpg>=0.30.0", # Асинхронный драйвер PostgreSQL
   "fastapi>=0.116.1", # Фреймворк для API
+  "faststream[rabbit]>=0.4.6", # RabbitMQ интеграция
   "greenlet>=3.1.1", # Зависимость для SQLAlchemy
   "itsdangerous>=2.1.0", # Cryptographically signed session cookies
   "passlib[argon2]>=1.7.4", # Хеширование паролей через Argon2

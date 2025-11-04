@@ -18,7 +18,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, ClassVar, Optional
 
-from pydantic import PostgresDsn, RedisDsn, SecretStr, field_validator
+from pydantic import PostgresDsn, RedisDsn, AmqpDsn, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -455,6 +455,46 @@ class Settings(BaseSettings):
             dict: Параметры подключения к Redis.
         """
         return {"url": self.redis_url, "max_connections": self.REDIS_POOL_SIZE}
+
+    # Настройки RabbitMQ
+    RABBITMQ_CONNECTION_TIMEOUT: int = 30
+    RABBITMQ_EXCHANGE: str = "profitool_exchange"
+    RABBITMQ_USER: str
+    RABBITMQ_PASS: SecretStr
+    RABBITMQ_HOST: str = "localhost"
+    RABBITMQ_PORT: int = 5673
+
+    @property
+    def rabbitmq_dsn(self) -> AmqpDsn:
+        return AmqpDsn.build(
+            scheme="amqp",
+            username=self.RABBITMQ_USER,
+            password=self.RABBITMQ_PASS.get_secret_value(),
+            host=self.RABBITMQ_HOST,
+            port=self.RABBITMQ_PORT,
+        )
+
+    @property
+    def rabbitmq_url(self) -> str:
+        """
+        Для pika нужно строку с подключением к RabbitMQ
+        """
+        return str(self.rabbitmq_dsn)
+
+    @property
+    def rabbitmq_params(self) -> Dict[str, Any]:
+        """
+        Формирует параметры подключения к RabbitMQ.
+
+        Returns:
+            Dict с параметрами подключения к RabbitMQ
+        """
+        return {
+            "url": self.rabbitmq_url,
+            "connection_timeout": self.RABBITMQ_CONNECTION_TIMEOUT,
+            "exchange": self.RABBITMQ_EXCHANGE,
+        }
+
 
     # Настройки аутентификации
 

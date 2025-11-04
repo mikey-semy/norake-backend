@@ -1,4 +1,5 @@
 services:
+
   backend:
     build:
       context: .
@@ -31,7 +32,42 @@ services:
           memory: 128M
     networks:
       - dokploy-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  rabbitmq:
+    image: rabbitmq:3-alpine  # Без management UI для экономии памяти
+    ports:
+      - "5673:5672"
+      # Management UI отключен - если нужен, используйте rabbitmq:3-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-admin}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS:-admin}
+      # Остальные настройки производительности в rabbitmq.conf
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    # Ограничения ресурсов
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'      # Максимум 1 ядро
+          memory: 512M     # Максимум 512MB RAM
+        reservations:
+          cpus: '0.25'     # Минимум 25% одного ядра
+          memory: 256M     # Минимум 256MB RAM
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dokploy-network
 
 networks:
   dokploy-network:
     external: true
+
+volumes:
+  rabbitmq-data:

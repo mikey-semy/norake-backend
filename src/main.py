@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 import src.core.lifespan.database
 import src.core.lifespan.cache
+# import src.core.lifespan.messaging
 from src.core.exceptions import register_exception_handlers
 from src.core.logging import setup_logging
 from src.core.middlewares import setup_middlewares
