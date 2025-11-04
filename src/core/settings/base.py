@@ -6,7 +6,6 @@
 - Пути и окружение (paths)
 - Настройки баз данных (database)
 - Кэш (cache)
-- RabbitMQ/messaging (messaging)
 - Параметры FastAPI и Uvicorn
 - CORS
 
@@ -318,9 +317,6 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
 
-    # Режим разработки (используется для mock RabbitMQ при недоступности)
-    DEBUG: bool = False
-
     @property
     def app_params(self) -> dict:
         """
@@ -576,7 +572,7 @@ class Settings(BaseSettings):
         if isinstance(v, str):
             return [t.strip() for t in v.split(",")]
         return v
-    
+
     # Настройки доступа в docs/redoc
     DOCS_ACCESS: bool = True
     DOCS_USERNAME: str = "admin"

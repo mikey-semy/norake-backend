@@ -31,9 +31,6 @@ services:
           memory: 128M
     networks:
       - dokploy-network
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
 
 networks:
   dokploy-network:
