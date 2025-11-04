@@ -5,9 +5,9 @@
 и управления пользователями. Следует архитектуре BaseRepository.
 """
 
-from typing import Optional
+from typing import Optional, Dict
 
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.orm import selectinload
 
 from src.repository.base import BaseRepository
@@ -101,3 +101,80 @@ class UserRepository(BaseRepository[UserModel]):
 
         result = await self.session.execute(statement)
         return result.scalar_one_or_none()
+
+    async def find_by_email_or_username(
+        self, email: str, username: str
+    ) -> Optional[UserModel]:
+        """
+        Поиск пользователя по email ИЛИ username.
+
+        Используется для валидации уникальности при регистрации.
+        Выполняет один SQL запрос с OR-условием для оптимизации.
+
+        Args:
+            email: Email для проверки.
+            username: Username для проверки.
+
+        Returns:
+            UserModel если найден пользователь с таким email или username,
+            None если оба поля свободны.
+
+        Example:
+            >>> existing = await repo.find_by_email_or_username(
+            ...     "test@example.com", "testuser"
+            ... )
+            >>> if existing:
+            ...     print(f"Занято поле: {existing.email or existing.username}")
+        """
+        statement = select(UserModel).where(
+            or_(
+                UserModel.email == email,
+                UserModel.username == username,
+            )
+        )
+
+        result = await self.session.execute(statement)
+        return result.scalar_one_or_none()
+
+    async def create_user_with_role(
+        self, user_data: Dict, role_code: str
+    ) -> UserModel:
+        """
+        Создать пользователя и присвоить ему роль в одной транзакции.
+
+        Атомарная операция создания пользователя и назначения роли.
+        Используется при регистрации для гарантии целостности данных.
+
+        Args:
+            user_data: Данные пользователя для создания
+                (username, email, password_hash, is_active).
+            role_code: Код роли для присвоения (из RoleCode enum).
+
+        Returns:
+            Созданный UserModel с присвоенной ролью.
+
+        Raises:
+            SQLAlchemyError: При ошибках работы с БД.
+
+        Example:
+            >>> user = await repo.create_user_with_role(
+            ...     {"username": "john", "email": "j@ex.com",
+            ...      "password_hash": "hash", "is_active": True},
+            ...     "user"
+            ... )
+        """
+        from src.models.v1.roles import UserRoleModel
+
+        # 1. Создаём пользователя
+        user = await self.create_item(user_data)
+
+        # 2. Создаём связь пользователь-роль
+        role = UserRoleModel(
+            user_id=user.id,
+            role_code=role_code,
+        )
+
+        self.session.add(role)
+        await self.session.flush()
+
+        return user

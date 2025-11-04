@@ -29,6 +29,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from src.core.dependencies.database import AsyncSessionDep
+from src.core.dependencies.token import TokenServiceDep
 from src.services import RegisterService
 
 logger = logging.getLogger(__name__)
@@ -36,15 +37,18 @@ logger = logging.getLogger(__name__)
 
 async def get_register_service(
     session: AsyncSessionDep,
+    token_service: TokenServiceDep,
 ) -> RegisterService:
     """
     Провайдер для RegisterService.
 
     Создает экземпляр RegisterService с внедренными зависимостями:
     - Сессия базы данных (для работы с UserModel)
+    - TokenService (для генерации JWT токенов)
 
     Args:
         session: Асинхронная сессия базы данных.
+        token_service: Сервис для работы с токенами.
 
     Returns:
         RegisterService: Настроенный экземпляр сервиса регистрации.
@@ -65,7 +69,7 @@ async def get_register_service(
     """
     try:
         logger.debug("Создание экземпляра RegisterService")
-        return RegisterService(session=session)
+        return RegisterService(session=session, token_service=token_service)
     except Exception as e:
         logger.error(
             "Ошибка при создании RegisterService: %s", str(e), exc_info=True

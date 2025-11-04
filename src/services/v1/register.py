@@ -16,6 +16,7 @@ from typing import Dict, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.services.base import BaseService
+from src.services.v1.token import TokenService
 from src.repository.v1.users import UserRepository
 from src.models.v1.users import UserModel
 
@@ -26,6 +27,7 @@ from src.core.exceptions import (
     RoleAssignmentError,
 )
 from src.core.security import PasswordManager
+from src.schemas.v1.auth import UserCredentialsSchema
 
 
 logger = logging.getLogger(__name__)
@@ -36,15 +38,16 @@ class RegisterService(BaseService):
     Сервис для регистрации новых пользователей.
 
     Создаёт нового пользователя с ролью user
-    и генерирует JWT токены. Возвращает SQLAlchemy модели + токены,
-    НЕ Pydantic схемы.
+    и генерирует JWT токены через TokenService.
+    Возвращает SQLAlchemy модели + токены, НЕ Pydantic схемы.
 
     Dependencies:
         - UserRepository: операции с пользователями
         - PasswordManager: хэширование паролей
+        - TokenService: генерация и управление токенами
 
     Example:
-        >>> service = RegisterService(session=session)
+        >>> service = RegisterService(session=session, token_service=token_service)
         >>> user, tokens = await service.register_user({
         ...     "username": "user123",
         ...     "email": "user@email.com",
@@ -54,14 +57,16 @@ class RegisterService(BaseService):
         >>> print(tokens["access_token"])  # "eyJ0eXAi..."
     """
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession, token_service: TokenService):
         """
         Инициализация RegisterService.
 
         Args:
             session: Асинхронная сессия базы данных.
+            token_service: Сервис для работы с токенами.
         """
         super().__init__(session)
+        self.token_service = token_service
         self.user_repository = UserRepository(session, UserModel)
         self.password_manager = PasswordManager()
 
@@ -137,7 +142,7 @@ class RegisterService(BaseService):
         Проверить уникальность username и email одним запросом.
 
         Оптимизация: объединяет две проверки в один SQL запрос.
-        Использует OR-условие для email и username.
+        Использует OR-условие для email и username через репозиторий.
 
         Args:
             username: Username для проверки.
@@ -146,15 +151,10 @@ class RegisterService(BaseService):
         Raises:
             UserAlreadyExistsError: Поле уже занято (указывается какое именно).
         """
-        from sqlalchemy import select, or_
-
-        # Ищем пользователя с таким email ИЛИ username
-        stmt = select(UserModel).where(
-            or_(UserModel.email == email, UserModel.username == username)
+        # Используем метод репозитория для поиска
+        existing_user = await self.user_repository.find_by_email_or_username(
+            email=email, username=username
         )
-
-        result = await self.session.execute(stmt)
-        existing_user = result.scalar_one_or_none()
 
         if existing_user:
             # Определяем какое именно поле дублируется
@@ -170,6 +170,7 @@ class RegisterService(BaseService):
                 raise UserAlreadyExistsError(field="username", value=username)
 
 
+
     async def _create_user_with_role(
         self,
         username: str,
@@ -180,6 +181,7 @@ class RegisterService(BaseService):
         Создать пользователя в БД и присвоить роль user.
 
         Объединяет создание пользователя и присвоение роли в одну транзакцию.
+        Делегирует работу с БД в UserRepository.
 
         Args:
             username: Имя пользователя.
@@ -194,7 +196,6 @@ class RegisterService(BaseService):
             RoleAssignmentError: Ошибка при присвоении роли.
         """
         try:
-            # 1. Создаём пользователя
             user_data = {
                 "username": username,
                 "email": email,
@@ -202,19 +203,11 @@ class RegisterService(BaseService):
                 "is_active": True,
             }
 
-            user = await self.user_repository.create_item(user_data)
-
-            # 2. Присваиваем роль user
-            from src.models.v1.roles import UserRoleModel
-
-            role_data = {
-                "user_id": user.id,
-                "role_code": RoleCode.USER.value,
-            }
-
-            role = UserRoleModel(**role_data)
-            self.session.add(role)
-            await self.session.flush()
+            # Используем метод репозитория для создания пользователя с ролью
+            user = await self.user_repository.create_user_with_role(
+                user_data=user_data,
+                role_code=RoleCode.USER.value,
+            )
 
             self.logger.info(
                 "Пользователь '%s' создан с ролью user (id=%s)", username, user.id
@@ -240,8 +233,8 @@ class RegisterService(BaseService):
         """
         Сгенерировать JWT access и refresh токены для пользователя.
 
-        Использует TokenManager напрямую для генерации токенов без Redis.
-        В MVP не используется Redis кэширование токенов (может быть добавлено позже).
+        Использует TokenService для генерации и сохранения токенов в Redis.
+        Конвертирует UserModel в UserCredentialsSchema для генерации payload.
 
         Args:
             user: Созданный UserModel.
@@ -253,9 +246,6 @@ class RegisterService(BaseService):
             >>> tokens = await service._generate_tokens(user)
             >>> print(tokens["access_token"])  # "eyJ0eXAi..."
         """
-        from src.core.security.token_manager import TokenManager
-        from src.schemas.v1.auth import UserCredentialsSchema
-
         # Конвертируем UserModel в UserCredentialsSchema для токена
         user_credentials = UserCredentialsSchema(
             id=user.id,
@@ -266,12 +256,9 @@ class RegisterService(BaseService):
             role="user",  # Всегда user при регистрации
         )
 
-        # Генерируем токены
-        access_payload = TokenManager.create_payload(user_credentials)
-        access_token = TokenManager.generate_token(access_payload)
-
-        refresh_payload = TokenManager.create_refresh_payload(user.id)
-        refresh_token = TokenManager.generate_token(refresh_payload)
+        # Генерируем токены через TokenService
+        access_token = await self.token_service.create_access_token(user_credentials)
+        refresh_token = await self.token_service.create_refresh_token(user.id)
 
         self.logger.info(
             "JWT токены сгенерированы для пользователя %s", user.id,

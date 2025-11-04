@@ -15,10 +15,10 @@ from uuid import UUID
 
 from fastapi import Response
 from fastapi.security import OAuth2PasswordRequestForm
-from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.services.base import BaseService
+from src.services.v1.token import TokenService
 from src.repository.v1.users import UserRepository
 from src.models.v1.users import UserModel
 from src.schemas.v1.auth.base import UserCredentialsSchema, UserCurrentSchema
@@ -29,7 +29,6 @@ from src.schemas.v1.auth.responses import (
     CurrentUserResponseSchema,
 )
 from src.schemas.v1.auth.base import LogoutDataSchema
-from src.core.integrations.cache.authenticate import AuthRedisManager
 from src.core.exceptions import (
     InvalidCredentialsError,
     UserNotFoundError,
@@ -51,21 +50,22 @@ class AuthService(BaseService):
 
     Attributes:
         repository: Репозиторий для работы с UserModel.
+        token_service: Сервис для работы с токенами.
         redis_manager: Менеджер для работы с токенами в Redis.
     """
 
-    def __init__(self, session: AsyncSession, redis: Redis):
+    def __init__(self, session: AsyncSession, token_service: TokenService):
         """
         Инициализация сервиса аутентификации.
 
         Args:
             session: Асинхронная сессия базы данных.
-            redis: Клиент Redis для работы с токенами.
+            token_service: Сервис для работы с токенами.
         """
         super().__init__(session)
-        self.redis = redis
+        self.token_service = token_service
         self.repository = UserRepository(session=session, model=UserModel)
-        self.redis_manager = AuthRedisManager(redis)
+        self.redis_manager = token_service.redis_manager
 
     # ==================== АУТЕНТИФИКАЦИЯ ====================
 
@@ -239,7 +239,7 @@ class AuthService(BaseService):
         self, user_schema: UserCredentialsSchema
     ) -> Tuple[str, str]:
         """
-        Генерирует access и refresh токены.
+        Генерирует access и refresh токены через TokenService.
 
         Args:
             user_schema: Схема пользователя.
@@ -247,53 +247,9 @@ class AuthService(BaseService):
         Returns:
             Tuple[str, str]: Access токен, refresh токен.
         """
-        access_token = await self.create_token(user_schema)
-        refresh_token = await self.create_refresh_token(user_schema.id)
+        access_token = await self.token_service.create_access_token(user_schema)
+        refresh_token = await self.token_service.create_refresh_token(user_schema.id)
         return access_token, refresh_token
-
-    async def create_token(self, user_schema: UserCredentialsSchema) -> str:
-        """
-        Создание JWT access токена.
-
-        Args:
-            user_schema: Схема пользователя.
-
-        Returns:
-            str: Access токен.
-        """
-        payload = TokenManager.create_payload(user_schema)
-        access_token = TokenManager.generate_token(payload)
-
-        await self.redis_manager.save_token(user_schema, access_token)
-
-        self.logger.info(
-            "Access токен создан",
-            extra={"user_id": user_schema.id}
-        )
-
-        return access_token
-
-    async def create_refresh_token(self, user_id: UUID) -> str:
-        """
-        Создание JWT refresh токена.
-
-        Args:
-            user_id: ID пользователя.
-
-        Returns:
-            str: Refresh токен.
-        """
-        payload = TokenManager.create_refresh_payload(user_id)
-        refresh_token = TokenManager.generate_token(payload)
-
-        await self.redis_manager.save_refresh_token(user_id, refresh_token)
-
-        self.logger.info(
-            "Refresh токен создан",
-            extra={"user_id": user_id}
-        )
-
-        return refresh_token
 
     # ==================== ОБНОВЛЕНИЕ ТОКЕНОВ ====================
 
@@ -387,15 +343,8 @@ class AuthService(BaseService):
         Returns:
             Tuple[UserModel, UUID]: Модель пользователя и его ID.
         """
-        payload = TokenManager.decode_token(refresh_token)
-        user_id = TokenManager.validate_refresh_token(payload)
-
-        if not await self.redis_manager.check_refresh_token(user_id, refresh_token):
-            self.logger.warning(
-                "Попытка использовать неизвестный refresh токен",
-                extra={"user_id": user_id}
-            )
-            raise TokenInvalidError()
+        # Валидация через TokenService
+        user_id = await self.token_service.validate_refresh_token(refresh_token)
 
         # Используем метод с eager loading для user_roles
         user_model = await self.repository.get_user_with_roles_by_id(user_id)
@@ -422,9 +371,9 @@ class AuthService(BaseService):
         Returns:
             Tuple[str, str]: Новый access токен и новый refresh токен.
         """
-        access_token = await self.create_token(user_schema)
-        new_refresh_token = await self.create_refresh_token(user_id)
-        await self.redis_manager.remove_refresh_token(user_id, old_refresh_token)
+        access_token = await self.token_service.create_access_token(user_schema)
+        new_refresh_token = await self.token_service.create_refresh_token(user_id)
+        await self.token_service.remove_refresh_token(user_id, old_refresh_token)
         return access_token, new_refresh_token
 
     # ==================== ВЫХОД ====================
@@ -455,8 +404,8 @@ class AuthService(BaseService):
 
         token = TokenManager.get_token_from_header(authorization)
 
-        # Удаление токена из Redis
-        await self.redis_manager.remove_token(token)
+        # Удаление токена из Redis через TokenService
+        await self.token_service.remove_token(token)
 
         # Очистка куков, если требуется
         if response and clear_cookies:

@@ -23,25 +23,34 @@ class RegistrationRequestSchema(CommonBaseSchema):
     покупателя (user), включая проверку силы пароля и корректности формата email.
 
     Attributes:
-        username (str): Имя пользователя (генерируется автоматически из email)
+        username (Optional[str]): Имя пользователя (опционально, генерируется из email)
         email (EmailStr): Email адрес пользователя (автоматическая валидация формата)
         password (str): Пароль с проверкой требований безопасности
 
     Validation Rules:
-        - username: Обязательное поле, уникальное имя пользователя
+        - username: Опциональное поле. Если не указано, генерируется из email (часть до @)
         - email: Обязательное поле, валидный email формат
         - password: Минимум 8 символов, заглавная и строчная буквы, цифра, спецсимвол
 
     Example:
         ```python
+        # Минимальная регистрация (username создастся автоматически)
         registration_data = RegistrationRequestSchema(
+            email="john@example.com",
+            password="SecurePass123!"
+        )
+        # username будет: "john"
+
+        # Регистрация с явным username
+        registration_data = RegistrationRequestSchema(
+            username="john_doe",
             email="john@example.com",
             password="SecurePass123!"
         )
         ```
 
     Note:
-        - Username генерируется автоматически из email
+        - Username опционален и генерируется автоматически из email
         - Роль "admin" не может быть зарегистрирована через публичный endpoint
         - Администраторы создаются через настройки при инициализации приложения
         - Данные профиля (phone) заполняются после регистрации
@@ -49,14 +58,14 @@ class RegistrationRequestSchema(CommonBaseSchema):
     username: Optional[str] = Field(
         None,
         description=(
-            "Имя пользователя. Генерируется автоматически из email, "
-            "поэтому не требуется при регистрации."
+            "Имя пользователя (опциональное). Если не указано, "
+            "генерируется автоматически из email (часть до @)."
         ),
-        examples=["john_doe", "jane.smith"],
+        examples=["john_doe"],
     )
     email: EmailStr = Field(
         description="Email адрес пользователя",
-        examples=["user@example.com", "john.doe@example.org"],
+        examples=["john@example.com"],
     )
 
     password: str = Field(
@@ -67,7 +76,7 @@ class RegistrationRequestSchema(CommonBaseSchema):
             "минимум 8 символов, заглавная и строчная буквы, "
             "цифра, специальный символ"
         ),
-        examples=["SecurePass123!", "MyP@ssw0rd2024"],
+        examples=["SecurePass123!"],
     )
 
     @field_validator("password")

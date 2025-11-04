@@ -29,7 +29,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from src.core.dependencies.database import AsyncSessionDep
-from src.core.dependencies.cache import RedisDep
+from src.core.dependencies.token import TokenServiceDep
 from src.services.v1.auth import AuthService
 
 logger = logging.getLogger(__name__)
@@ -37,18 +37,18 @@ logger = logging.getLogger(__name__)
 
 async def get_auth_service(
     session: AsyncSessionDep,
-    redis: RedisDep,
+    token_service: TokenServiceDep,
 ) -> AuthService:
     """
     Провайдер для AuthService.
 
     Создает экземпляр AuthService с внедренными зависимостями:
     - Сессия базы данных (для работы с UserModel)
-    - Redis клиент (для хранения токенов и blacklist)
+    - TokenService (для работы с токенами)
 
     Args:
         session: Асинхронная сессия базы данных.
-        redis: Redis клиент для работы с токенами.
+        token_service: Сервис для работы с токенами.
 
     Returns:
         AuthService: Настроенный экземпляр сервиса аутентификации.
@@ -69,7 +69,7 @@ async def get_auth_service(
     """
     try:
         logger.debug("Создание экземпляра AuthService")
-        return AuthService(session=session, redis=redis)
+        return AuthService(session=session, token_service=token_service)
     except Exception as e:
         logger.error(
             "Ошибка при создании AuthService: %s", str(e), exc_info=True

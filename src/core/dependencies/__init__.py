@@ -11,10 +11,13 @@ from .database import AsyncSessionDep
 from .cache import RedisDep
 # Health Service dependency
 from .health import HealthServiceDep
+# Token Service dependency
+from .token import TokenServiceDep
 # Auth Service dependency
 from .auth import AuthServiceDep
 # Register Service dependency
 from .register import RegisterServiceDep
+
 __all__ = [
     # Database dependencies
     "AsyncSessionDep",
@@ -22,6 +25,8 @@ __all__ = [
     "RedisDep",
     # Health Service dependency
     "HealthServiceDep",
+    # Token Service dependency
+    "TokenServiceDep",
     # Auth Service dependency
     "AuthServiceDep",
     # Register Service dependency
