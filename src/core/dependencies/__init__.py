@@ -17,6 +17,8 @@ from .token import TokenServiceDep
 from .auth import AuthServiceDep
 # Register Service dependency
 from .register import RegisterServiceDep
+# Issue Service dependency
+from .issues import IssueServiceDep
 
 __all__ = [
     # Database dependencies
@@ -31,4 +33,6 @@ __all__ = [
     "AuthServiceDep",
     # Register Service dependency
     "RegisterServiceDep",
+    # Issue Service dependency
+    "IssueServiceDep",
 ]
