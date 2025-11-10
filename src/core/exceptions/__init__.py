@@ -15,6 +15,8 @@ from .users import (UserNotFoundError, UserExistsError, UserCreationError,
 from .register import (UserAlreadyExistsError, RoleAssignmentError)
 from .issues import (IssueNotFoundError, IssueAlreadyResolvedError,
                      IssuePermissionDeniedError, IssueValidationError)
+from .templates import (TemplateNotFoundError, TemplatePermissionDeniedError,
+                        TemplateValidationError, TemplateInactiveError)
 
 __all__ = [
     # Base
@@ -66,4 +68,10 @@ __all__ = [
     "IssueAlreadyResolvedError",
     "IssuePermissionDeniedError",
     "IssueValidationError",
+
+    # Templates
+    "TemplateNotFoundError",
+    "TemplatePermissionDeniedError",
+    "TemplateValidationError",
+    "TemplateInactiveError",
 ]

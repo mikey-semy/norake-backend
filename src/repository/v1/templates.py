@@ -308,3 +308,41 @@ class TemplateRepository(BaseRepository[TemplateModel]):
                 "Ошибка при активации шаблона %s: %s", template_id, str(e)
             )
             raise
+
+    async def get_by_category(self, category: str) -> List[TemplateModel]:
+        """
+        Получает шаблоны по категории.
+
+        Используется в TemplateService.list_templates() при фильтрации.
+        Возвращает все шаблоны указанной категории (без фильтра по активности).
+
+        Args:
+            category: Категория шаблона (hardware/software/process).
+
+        Returns:
+            Список TemplateModel с указанной категорией.
+
+        Example:
+            >>> hardware = await repository.get_by_category("hardware")
+        """
+        return await self.filter_by(category=category)
+
+    async def get_by_visibility(
+        self, visibility: TemplateVisibility
+    ) -> List[TemplateModel]:
+        """
+        Получает шаблоны по уровню видимости.
+
+        Используется в TemplateService.list_templates() при фильтрации.
+        Возвращает все шаблоны с указанным visibility (без фильтра по активности).
+
+        Args:
+            visibility: Уровень видимости (PUBLIC/PRIVATE/TEAM).
+
+        Returns:
+            Список TemplateModel с указанным visibility.
+
+        Example:
+            >>> public = await repository.get_by_visibility(TemplateVisibility.PUBLIC)
+        """
+        return await self.filter_by(visibility=visibility)
