@@ -5,8 +5,10 @@
     - UserModel, UserRoleModel, RoleCode (пользователи и роли)
     - IssueModel, IssueStatus (проблемы)
     - TemplateModel, TemplateVisibility (шаблоны)
+    - AIModuleModel, WorkspaceModuleModel, AIModuleType (AI модули)
 """
 
+from .ai_modules import AIModuleModel, AIModuleType, WorkspaceModuleModel
 from .issues import IssueModel, IssueStatus
 from .roles import RoleCode, UserRoleModel
 from .templates import TemplateModel, TemplateVisibility
@@ -23,4 +25,8 @@ __all__ = [
     # Templates
     "TemplateModel",
     "TemplateVisibility",
+    # AI Modules
+    "AIModuleModel",
+    "WorkspaceModuleModel",
+    "AIModuleType",
 ]
