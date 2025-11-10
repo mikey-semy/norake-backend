@@ -14,6 +14,9 @@ from .users import (UserNotFoundError, UserExistsError, UserCreationError,
                     UserInactiveError)
 from .register import (UserCreationError, UserAlreadyExistsError,
                        RoleAssignmentError)
+from .issues import (IssueNotFoundError, IssueAlreadyResolvedError,
+                     IssuePermissionDeniedError, IssueValidationError)
+
 __all__ = [
     # Base
     "BaseAPIException",
@@ -59,4 +62,11 @@ __all__ = [
     "UserCreationError",
     "UserAlreadyExistsError",
     "RoleAssignmentError",
+    
+    # Issues
+    "IssueNotFoundError",
+    "IssueAlreadyResolvedError",
+    "IssuePermissionDeniedError",
+    "IssueValidationError",
 ]
+

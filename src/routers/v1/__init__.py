@@ -10,6 +10,7 @@ from .auth import AuthRouter
 from .register import RegisterRouter
 from .protected import ProtectedRouter as ProtectedDemoRouter
 from .users import UsersRouter
+from .issues import IssuePublicRouter, IssueProtectedRouter
 
 
 class APIv1(BaseRouter):
@@ -26,3 +27,5 @@ class APIv1(BaseRouter):
         self.router.include_router(RegisterRouter().get_router())
         self.router.include_router(ProtectedDemoRouter().get_router())
         self.router.include_router(UsersRouter().get_router())
+        self.router.include_router(IssuePublicRouter().get_router())
+        self.router.include_router(IssueProtectedRouter().get_router())
