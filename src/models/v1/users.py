@@ -8,6 +8,7 @@ from ..base import BaseModel
 if TYPE_CHECKING:
     from .issues import IssueModel
     from .roles import UserRoleModel
+    from .templates import TemplateModel
 
 
 class UserModel(BaseModel):
@@ -100,6 +101,14 @@ class UserModel(BaseModel):
     issues: Mapped[List["IssueModel"]] = relationship(
         "IssueModel",
         foreign_keys="[IssueModel.author_id]",
+        back_populates="author",
+        passive_deletes=True,
+        cascade="all, delete-orphan",
+    )
+
+    templates: Mapped[List["TemplateModel"]] = relationship(
+        "TemplateModel",
+        foreign_keys="[TemplateModel.author_id]",
         back_populates="author",
         passive_deletes=True,
         cascade="all, delete-orphan",

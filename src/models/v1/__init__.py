@@ -4,10 +4,12 @@
 Экспортируемые модели:
     - UserModel, UserRoleModel, RoleCode (пользователи и роли)
     - IssueModel, IssueStatus (проблемы)
+    - TemplateModel, TemplateVisibility (шаблоны)
 """
 
 from .issues import IssueModel, IssueStatus
 from .roles import RoleCode, UserRoleModel
+from .templates import TemplateModel, TemplateVisibility
 from .users import UserModel
 
 __all__ = [
@@ -18,4 +20,7 @@ __all__ = [
     # Issues
     "IssueModel",
     "IssueStatus",
+    # Templates
+    "TemplateModel",
+    "TemplateVisibility",
 ]

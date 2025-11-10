@@ -12,8 +12,7 @@ from .auth import (AuthenticationError, InvalidCredentialsError,
                    TokenInvalidError, InvalidUserDataError)
 from .users import (UserNotFoundError, UserExistsError, UserCreationError,
                     UserInactiveError)
-from .register import (UserCreationError, UserAlreadyExistsError,
-                       RoleAssignmentError)
+from .register import (UserAlreadyExistsError, RoleAssignmentError)
 from .issues import (IssueNotFoundError, IssueAlreadyResolvedError,
                      IssuePermissionDeniedError, IssueValidationError)
 
@@ -51,7 +50,7 @@ __all__ = [
     "TokenExpiredError",
     "TokenInvalidError",
     "InvalidUserDataError",
-    
+
     # Users
     "UserNotFoundError",
     "UserExistsError",
@@ -59,14 +58,12 @@ __all__ = [
     "UserInactiveError",
 
     # Registration
-    "UserCreationError",
     "UserAlreadyExistsError",
     "RoleAssignmentError",
-    
+
     # Issues
     "IssueNotFoundError",
     "IssueAlreadyResolvedError",
     "IssuePermissionDeniedError",
     "IssueValidationError",
 ]
-
