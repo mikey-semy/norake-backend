@@ -19,7 +19,6 @@ from typing import List, Optional
 from uuid import UUID
 
 from sqlalchemy import and_, or_, select
-from sqlalchemy.exc import SQLAlchemyError
 
 from src.models.v1.issues import IssueModel, IssueStatus
 from src.repository.base import BaseRepository
@@ -85,24 +84,18 @@ class IssueRepository(BaseRepository[IssueModel]):
             >>> len(red_issues)
             10
         """
-        try:
-            query = select(IssueModel).where(IssueModel.status == status)
+        issues = await self.filter_by(status=status)
 
-            if offset:
-                query = query.offset(offset)
-            if limit:
-                query = query.limit(limit)
+        # Применяем пагинацию вручную (т.к. filter_by не поддерживает limit/offset)
+        if offset:
+            issues = issues[offset:]
+        if limit:
+            issues = issues[:limit]
 
-            result = await self.session.execute(query)
-            issues = result.scalars().all()
-
-            self.logger.info(
-                "Получено %d проблем со статусом %s", len(issues), status.value
-            )
-            return list(issues)
-        except SQLAlchemyError as e:
-            self.logger.error("Ошибка при получении проблем по статусу: %s", e)
-            raise
+        self.logger.info(
+            "Получено %d проблем со статусом %s", len(issues), status.value
+        )
+        return issues
 
     async def get_by_category(
         self,
@@ -124,24 +117,17 @@ class IssueRepository(BaseRepository[IssueModel]):
         Example:
             >>> hardware_issues = await repo.get_by_category("hardware")
         """
-        try:
-            query = select(IssueModel).where(IssueModel.category == category)
+        issues = await self.filter_by(category=category)
 
-            if offset:
-                query = query.offset(offset)
-            if limit:
-                query = query.limit(limit)
+        if offset:
+            issues = issues[offset:]
+        if limit:
+            issues = issues[:limit]
 
-            result = await self.session.execute(query)
-            issues = result.scalars().all()
-
-            self.logger.info(
-                "Получено %d проблем категории '%s'", len(issues), category
-            )
-            return list(issues)
-        except SQLAlchemyError as e:
-            self.logger.error("Ошибка при получении проблем по категории: %s", e)
-            raise
+        self.logger.info(
+            "Получено %d проблем категории '%s'", len(issues), category
+        )
+        return issues
 
     async def get_by_author(
         self,
@@ -163,24 +149,17 @@ class IssueRepository(BaseRepository[IssueModel]):
         Example:
             >>> user_issues = await repo.get_by_author(user_id, limit=20)
         """
-        try:
-            query = select(IssueModel).where(IssueModel.author_id == author_id)
+        issues = await self.filter_by(author_id=author_id)
 
-            if offset:
-                query = query.offset(offset)
-            if limit:
-                query = query.limit(limit)
+        if offset:
+            issues = issues[offset:]
+        if limit:
+            issues = issues[:limit]
 
-            result = await self.session.execute(query)
-            issues = result.scalars().all()
-
-            self.logger.info(
-                "Получено %d проблем пользователя %s", len(issues), author_id
-            )
-            return list(issues)
-        except SQLAlchemyError as e:
-            self.logger.error("Ошибка при получении проблем пользователя: %s", e)
-            raise
+        self.logger.info(
+            "Получено %d проблем пользователя %s", len(issues), author_id
+        )
+        return issues
 
     async def search_by_text(
         self,
@@ -206,30 +185,25 @@ class IssueRepository(BaseRepository[IssueModel]):
             >>> found[0].title
             "Ошибка E401 на станке №3"
         """
-        try:
-            search_pattern = f"%{query_text}%"
-            query = select(IssueModel).where(
-                or_(
-                    IssueModel.title.ilike(search_pattern),
-                    IssueModel.description.ilike(search_pattern),
-                )
+        search_pattern = f"%{query_text}%"
+        query = select(IssueModel).where(
+            or_(
+                IssueModel.title.ilike(search_pattern),
+                IssueModel.description.ilike(search_pattern),
             )
+        )
 
-            if offset:
-                query = query.offset(offset)
-            if limit:
-                query = query.limit(limit)
+        issues = await self.execute_and_return_scalars(query)
 
-            result = await self.session.execute(query)
-            issues = result.scalars().all()
+        if offset:
+            issues = issues[offset:]
+        if limit:
+            issues = issues[:limit]
 
-            self.logger.info(
-                "Найдено %d проблем по запросу '%s'", len(issues), query_text
-            )
-            return list(issues)
-        except SQLAlchemyError as e:
-            self.logger.error("Ошибка при поиске проблем: %s", e)
-            raise
+        self.logger.info(
+            "Найдено %d проблем по запросу '%s'", len(issues), query_text
+        )
+        return issues
 
     async def get_recent(
         self,
@@ -249,24 +223,17 @@ class IssueRepository(BaseRepository[IssueModel]):
         Example:
             >>> recent = await repo.get_recent(limit=10)
         """
-        try:
-            query = (
-                select(IssueModel)
-                .order_by(IssueModel.created_at.desc())
-                .limit(limit)
-            )
+        query = select(IssueModel).order_by(IssueModel.created_at.desc())
 
-            if offset:
-                query = query.offset(offset)
+        issues = await self.execute_and_return_scalars(query)
 
-            result = await self.session.execute(query)
-            issues = result.scalars().all()
+        if offset:
+            issues = issues[offset:]
+        if limit:
+            issues = issues[:limit]
 
-            self.logger.info("Получено %d последних проблем", len(issues))
-            return list(issues)
-        except SQLAlchemyError as e:
-            self.logger.error("Ошибка при получении последних проблем: %s", e)
-            raise
+        self.logger.info("Получено %d последних проблем", len(issues))
+        return issues
 
     async def resolve_issue(
         self,
@@ -288,9 +255,6 @@ class IssueRepository(BaseRepository[IssueModel]):
         Returns:
             Optional[IssueModel]: Обновлённая проблема или None если не найдена.
 
-        Raises:
-            SQLAlchemyError: При ошибке обновления.
-
         Example:
             >>> resolved = await repo.resolve_issue(
             ...     issue_id=uuid,
@@ -301,28 +265,23 @@ class IssueRepository(BaseRepository[IssueModel]):
             >>> resolved.resolved_at
             datetime(2025, 11, 10, 16, 30, 0)
         """
-        try:
-            issue = await self.get_item_by_id(issue_id)
-            if not issue:
-                self.logger.warning("Проблема %s не найдена для решения", issue_id)
-                return None
+        issue = await self.get_item_by_id(issue_id)
+        if not issue:
+            self.logger.warning("Проблема %s не найдена для решения", issue_id)
+            return None
 
-            # Обновляем поля решения
-            issue.status = IssueStatus.GREEN
-            issue.solution = solution
-            issue.resolved_at = datetime.now(timezone.utc)
+        # Обновляем поля решения
+        issue.status = IssueStatus.GREEN
+        issue.solution = solution
+        issue.resolved_at = datetime.now(timezone.utc)
 
-            await self.session.commit()
-            await self.session.refresh(issue)
+        await self.session.commit()
+        await self.session.refresh(issue)
 
-            self.logger.info(
-                "Проблема %s решена: %s", issue_id, solution[:50] + "..."
-            )
-            return issue
-        except SQLAlchemyError as e:
-            await self.session.rollback()
-            self.logger.error("Ошибка при решении проблемы %s: %s", issue_id, e)
-            raise
+        self.logger.info(
+            "Проблема %s решена: %s", issue_id, solution[:50] + "..."
+        )
+        return issue
 
     async def get_filtered(
         self,
@@ -357,35 +316,35 @@ class IssueRepository(BaseRepository[IssueModel]):
             ...     author_id=user_id
             ... )
         """
-        try:
-            query = select(IssueModel)
-            conditions = []
+        query = select(IssueModel)
+        conditions = []
 
-            if status:
-                conditions.append(IssueModel.status == status)
-            if category:
-                conditions.append(IssueModel.category == category)
-            if author_id:
-                conditions.append(IssueModel.author_id == author_id)
-            if search:
-                search_pattern = f"%{search}%"
-                conditions.append(
-                    or_(
-                        IssueModel.title.ilike(search_pattern),
-                        IssueModel.description.ilike(search_pattern),
-                    )
+        if status:
+            conditions.append(IssueModel.status == status)
+        if category:
+            conditions.append(IssueModel.category == category)
+        if author_id:
+            conditions.append(IssueModel.author_id == author_id)
+        if search:
+            search_pattern = f"%{search}%"
+            conditions.append(
+                or_(
+                    IssueModel.title.ilike(search_pattern),
+                    IssueModel.description.ilike(search_pattern),
                 )
+            )
 
-            if conditions:
-                query = query.where(and_(*conditions))
+        if conditions:
+            query = query.where(and_(*conditions))
 
-            query = query.order_by(IssueModel.created_at.desc()).limit(limit).offset(offset)
+        query = query.order_by(IssueModel.created_at.desc())
 
-            result = await self.session.execute(query)
-            issues = result.scalars().all()
+        issues = await self.execute_and_return_scalars(query)
 
-            self.logger.info("Получено %d отфильтрованных проблем", len(issues))
-            return list(issues)
-        except SQLAlchemyError as e:
-            self.logger.error("Ошибка при фильтрации проблем: %s", e)
-            raise
+        if offset:
+            issues = issues[offset:]
+        if limit:
+            issues = issues[:limit]
+
+        self.logger.info("Получено %d отфильтрованных проблем", len(issues))
+        return issues

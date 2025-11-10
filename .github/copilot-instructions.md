@@ -250,6 +250,66 @@ await self.create_item({"username": "john"}) # Create from dict
 await self.update_item(user_id, {"phone": "+123"})  # Update
 ```
 
+### ⚠️ КРИТИЧНО: Переиспользование кода в Repository
+
+**ОБЯЗАТЕЛЬНО**: Всегда используй методы BaseRepository вместо дублирования кода!
+
+❌ **НЕПРАВИЛЬНО** - дублирование логики выполнения запросов:
+```python
+async def get_by_category(self, category: str) -> List[IssueModel]:
+    query = select(IssueModel).where(IssueModel.category == category)
+    result = await self.session.execute(query)  # ❌ Дублирование!
+    issues = result.scalars().all()
+    return list(issues)
+```
+
+✅ **ПРАВИЛЬНО** - использование filter_by из BaseRepository:
+```python
+async def get_by_category(self, category: str) -> List[IssueModel]:
+    return await self.filter_by(category=category)
+```
+
+✅ **ПРАВИЛЬНО** - комбинирование базовых методов:
+```python
+async def get_active_public(self) -> List[TemplateModel]:
+    return await self.filter_by_ordered(
+        "usage_count",
+        ascending=False,
+        is_active=True,
+        visibility=TemplateVisibility.PUBLIC
+    )
+```
+
+✅ **ПРАВИЛЬНО** - расширение базового метода при необходимости:
+```python
+async def search_by_text(self, text: str) -> List[IssueModel]:
+    # Используем execute_and_return_scalars из BaseRepository
+    query = select(IssueModel).where(
+        or_(
+            IssueModel.title.ilike(f"%{text}%"),
+            IssueModel.description.ilike(f"%{text}%")
+        )
+    )
+    return await self.execute_and_return_scalars(query)
+```
+
+**Правила переиспользования**:
+1. **Сначала проверь BaseRepository** - возможно метод уже есть
+2. **Используй filter_by/filter_by_ordered** для простой фильтрации
+3. **Используй execute_and_return_scalars** для кастомных запросов
+4. **НЕ дублируй** `result = await self.session.execute(query)` - это уже в base
+5. **Если нужного метода нет** - добавь в BaseRepository для переиспользования
+
+**Доступные методы BaseRepository**:
+- `get_item_by_id(id)` - получение по UUID
+- `get_item_by_field(field, value)` - получение по любому полю
+- `filter_by(**kwargs)` - фильтрация с операторами (__gt, __lt, __in и т.д.)
+- `filter_by_ordered(order_by, **kwargs)` - фильтрация + сортировка
+- `execute_and_return_scalars(query)` - выполнение + список моделей
+- `execute_and_return_scalar(query)` - выполнение + одна модель
+- `count_items(**filters)` - подсчёт с фильтрами
+- `exists_by_field(field, value)` - проверка существования
+
 ### Model Conventions
 
 - **UUID primary keys** on all models via `BaseModel`
