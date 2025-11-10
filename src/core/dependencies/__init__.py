@@ -21,6 +21,8 @@ from .register import RegisterServiceDep
 from .issues import IssueServiceDep
 # Template Service dependency
 from .templates import TemplateServiceDep
+# Workspace Service dependency
+from .workspaces import WorkspaceServiceDep
 
 __all__ = [
     # Database dependencies
@@ -39,4 +41,6 @@ __all__ = [
     "IssueServiceDep",
     # Template Service dependency
     "TemplateServiceDep",
+    # Workspace Service dependency
+    "WorkspaceServiceDep",
 ]

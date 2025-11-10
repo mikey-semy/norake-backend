@@ -12,6 +12,7 @@ from .protected import ProtectedRouter as ProtectedDemoRouter
 from .users import UsersRouter
 from .issues import IssuePublicRouter, IssueProtectedRouter
 from .templates import TemplateProtectedRouter
+from .workspaces import WorkspaceProtectedRouter
 
 
 class APIv1(BaseRouter):
@@ -31,3 +32,4 @@ class APIv1(BaseRouter):
         self.router.include_router(IssuePublicRouter().get_router())
         self.router.include_router(IssueProtectedRouter().get_router())
         self.router.include_router(TemplateProtectedRouter().get_router())
+        self.router.include_router(WorkspaceProtectedRouter().get_router())
