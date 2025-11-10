@@ -1,20 +1,28 @@
-# 📋 7-Day Sprint Plan - NoRake Backend + Frontend
+# 📋 5-Day Sprint Plan - NoRake Backend MVP
 
-**Deadline**: 17 ноября 2025
+**Deadline**: 15 ноября 2025 (Пятница EOD)
+**Start**: 11 ноября 2025 (Понедельник)
 **Project**: NoRake - Collective Memory System с AI + n8n
-**Status**: 44 задачи в Plane (NORAK-1 до NORAK-44)
+**Status**: 17/44 задач завершено (38.6%)
 
 ---
 
-## 🎯 Цели спринта
+## 🎯 Цели спринта (ОБНОВЛЕНО)
 
-1. ✅ Базовое API для Issues/Templates (**День 1-2**)
-2. ✅ Workspaces (группы проблем) (**День 3**)
-3. ✅ pgvector + AI Modules + RAG (**День 4**)
-4. ⚠️ **n8n workflows (КРИТИЧНО для конкурса)** (**День 5**)
-5. ✅ Advanced Search с AI (**День 6**)
-6. ✅ Comments + Preferences + Demo (**День 7**)
-7. 🎨 Frontend (Next.js 14) - **параллельно дням 4-6**
+**Завершено (38.6%)**:
+1. ✅ Issues API (NORAK-1 до 10) - **День 1-2 завершён**
+2. ✅ Templates API (NORAK-13 до 17) - **День 3 завершён**
+
+**Критично для конкурса (оставшиеся 5 дней)**:
+3. ⚠️ **pgvector + AI Infrastructure** (**Понедельник 11.11**)
+4. ⚠️ **Workspaces + KB Models** (**Вторник 12.11**)
+5. ⚠️ **n8n Workflows (КРИТИЧНО!)** (**Среда-Четверг 13-14.11**)
+6. ⚠️ **RAG Search + API** (**Пятница 15.11 утро**)
+7. 🎨 **Frontend (минимум)** - **После дедлайна / выходные**
+
+> **⏰ ВНИМАНИЕ**: Осталось **5 рабочих дней** (11-15 ноября)
+> **Приоритет**: Backend + n8n workflows для демо конкурса
+> **Frontend**: Можно сделать минимальный после 15-го для презентации
 
 > **📝 Заметка про KAG**: Knowledge-augmented Generation (KAG) — это улучшенная версия RAG с графом знаний.
 > Планируется как **пост-спринт улучшение** после успешной демо. KAG добавит:
@@ -26,161 +34,177 @@
 
 ---
 
-## 📅 Распределение по дням
+## 📅 Распределение по дням (ОБНОВЛЁННЫЙ ПЛАН)
 
-### **День 1 (Понедельник 11.11)** - Issues Foundation
+### ✅ **Дни 1-3 (Завершено)** - Issues + Templates MVP
 
-**Задачи (6.5 часов)**:
-- ✅ **NORAK-1** (2ч): Создать модели для проблем (Issues)
-- ✅ **NORAK-2** (2ч): Создать Pydantic схемы для Issues
-- ✅ **NORAK-3** (2ч): Создать IssueRepository
-- ✅ **NORAK-8** (30мин): Создать миграцию БД для таблицы issues
+**Завершено 10 ноября 2025**:
+- ✅ NORAK-1 до 9: Issues полный CRUD API
+- ✅ NORAK-13 до 17: Templates полный CRUD API
+- ✅ Архитектура: 4 слоя, DI, exceptions, migrations
 
-**Результат**: Модели + репозиторий готовы, БД обновлена
-
----
-
-### **День 2 (Вторник 12.11)** - Issues API
-
-**Задачи (6.75 часов)**:
-- ✅ **NORAK-4** (3ч): Создать IssueService с бизнес-логикой
-- ✅ **NORAK-5** (2ч): Создать IssueRouter с API endpoints
-- ✅ **NORAK-6** (30мин): Настроить Dependency Injection для Issues
-- ✅ **NORAK-7** (1ч): Создать кастомные исключения для Issues
-- ✅ **NORAK-9** (15мин): Зарегистрировать IssueRouter в главном роутере
-
-**Результат**: ✅ Issues API полностью работает! Тестирование через Postman
+**Результат**: 17 задач Done, базовый API готов к расширению
 
 ---
 
-### **День 3 (Среда 13.11)** - Templates + Workspaces
+### **День 4 (Понедельник 11.11)** - pgvector + AI Infrastructure
 
-**Templates (6 часов)**:
-- ✅ **NORAK-13** (2ч): Создать TemplateModel с JSONB полями
-- ✅ **NORAK-14** (1ч): Создать TemplateRepository с методами CRUD
-- ✅ **NORAK-15** (1ч): Создать Pydantic схемы для Template
-- ✅ **NORAK-16** (1ч): Реализовать TemplateService с бизнес-логикой
-- ✅ **NORAK-17** (1ч): Создать Template API endpoints в роутере
+**NORAK-27: Настроить pgvector (2 часа)** ⚠️ НАЧАТЬ С ЭТОГО
+- Обновить `docker-compose.dev.yml`: image → `pgvector/pgvector:pg16`
+- Обновить `docker-compose.test.yml`: image → `pgvector/pgvector:pg16`
+- Обновить `docker-compose.yml` (PROD): создать отдельную БД с pgvector
+- Создать `scripts/init-pgvector.sql` с `CREATE EXTENSION vector;`
+- Тестировать: `SELECT * FROM pg_extension WHERE extname = 'vector';`
 
-**Workspaces (5 часов)**:
-- ✅ **NORAK-28** (2ч): Создать модели Workspace и WorkspaceMember
-- ✅ **NORAK-29** (3ч): Создать Workspace API (минимальная версия)
-  - WorkspaceRepository, WorkspaceService, WorkspaceRouter
-  - POST /workspaces, GET /workspaces/me, POST /workspaces/{id}/members
+**NORAK-30: AI Models (2 часа)**
+- `AIModuleModel` (id, name, type, provider, config: JSONB, is_active)
+- `WorkspaceModuleModel` (workspace_id, module_id, config: JSONB)
+- Миграция Alembic
 
-**Результат**: ✅ Можно создавать проблемы по шаблонам + группы работают
+**NORAK-31: OpenRouter Integration (2 часа)**
+- Создать `src/core/integrations/openrouter.py`
+- Класс `OpenRouterEmbeddings` с методами:
+  - `embed(texts: List[str]) -> List[List[float]]`
+  - `embed_query(text: str) -> List[float]`
+- Добавить в `.env.dev`: `OPENROUTER_API_KEY=...`
+- Unit-тест с mock
 
----
-
-### **День 4 (Четверг 14.11)** - pgvector + AI Infrastructure
-
-**Docker + pgvector (1ч)**:
-- ✅ **NORAK-27** (1ч): Настроить pgvector в PostgreSQL (Docker)
-  - Изменить image на `pgvector/pgvector:pg16`
-  - Создать `scripts/init-pgvector.sql`
-
-**AI Models (2ч)**:
-- ✅ **NORAK-30** (2ч): Создать модели AIModule и WorkspaceModule
-  - `AIModuleModel` (registry модулей)
-  - `WorkspaceModuleModel` (подключение к workspace)
-
-**OpenRouter (2ч)**:
-- ✅ **NORAK-31** (2ч): Интегрировать OpenRouter для embeddings
-  - Создать `src/core/integrations/openrouter.py`
-  - Класс `OpenRouterEmbeddings` с методами `embed()`, `embed_query()`
-
-**Knowledge Base (5ч)**:
-- ✅ **NORAK-32** (3ч): Создать модели KnowledgeBase и Document
-  - `KnowledgeBaseModel`, `DocumentModel`, `DocumentChunkModel`
-  - pgvector колонка `embedding: vector(1536)`
-- ✅ **NORAK-33** (2ч): Создать KB Upload API (без индексации)
-  - POST /kb/{id}/upload (multipart)
-
-**Результат**: ✅ Можно загружать документы, pgvector готов к индексации
-
-**Параллельно**: 🎨 **Frontend начало** (4 часа)
+**Итого**: **6 часов** (pgvector + AI models + OpenRouter)
 
 ---
 
-### **День 5 (Пятница 15.11)** - n8n Workflows ⚠️ КРИТИЧНО
+### **День 5 (Вторник 12.11)** - Workspaces + Knowledge Base
 
-**N8n Models (1ч)**:
-- ✅ **NORAK-34** (1ч): Создать модель N8nWorkflow
-  - API для регистрации workflows
+**NORAK-28: Workspace Models (2 часа)**
+- `WorkspaceModel` (id, name, slug, visibility, owner_id, settings: JSONB)
+- `WorkspaceMemberModel` (workspace_id, user_id, role: Enum)
+- Миграция Alembic
 
-**Workflows в n8n UI + регистрация (7ч)**:
-- ⚠️ **NORAK-35** (2ч): n8n Workflow: Auto-categorize Issues
-  - Webhook → OpenRouter Analysis → Update Category
-- ⚠️ **NORAK-36** (2ч): n8n Workflow: KB Indexing Pipeline
-  - Webhook → Split Text → Embeddings → pgvector Insert
-- ⚠️ **NORAK-37** (2ч): n8n Workflow: Smart Search Helper
-  - Parallel(DB + RAG + Tavily) → Merge → Response
-- ✅ **NORAK-38** (1ч): n8n Workflow: Weekly Digest
-  - Cron → Stats → Email/Slack
+**NORAK-29: Workspace API минимум (3 часа)**
+- WorkspaceRepository, WorkspaceService, WorkspaceRouter
+- POST /workspaces - создать workspace
+- GET /workspaces/me - список моих workspaces
+- POST /workspaces/{id}/members - добавить участника
+- GET /workspaces/{id}/members - список участников
 
-**Результат**: ⚠️ n8n workflows работают! Главное для конкурса готово
+**NORAK-32: Knowledge Base Models (3 часа)**
+- `KnowledgeBaseModel` (id, workspace_id, name, description)
+- `DocumentModel` (id, kb_id, filename, content_type, size)
+- `DocumentChunkModel` (id, doc_id, content: TEXT, embedding: vector(1536), metadata: JSONB)
+- Миграция Alembic с pgvector колонкой
 
-**Параллельно**: 🎨 **Frontend продолжение** (6 часов)
-
----
-
-### **День 6 (Суббота 16.11)** - Advanced Search + RAG
-
-**RAG Service (3ч)**:
-- ✅ **NORAK-39** (3ч): Создать RAG Search Service с pgvector
-  - Методы `search()`, `similarity_search()`
-  - pgvector similarity: `ORDER BY embedding <=> $2`
-
-**Hybrid Search (2ч)**:
-- ✅ **NORAK-40** (2ч): Создать Hybrid SearchService
-  - Объединение DB + RAG + n8n
-  - Ранжирование результатов
-  - Redis кеширование
-
-**Search API (1ч)**:
-- ✅ **NORAK-41** (1ч): Создать Search API endpoint
-  - POST /api/v1/search
-  - `SearchRequest`, `SearchResponse` схемы
-
-**Testing (2ч)**:
-- Загрузить тестовую документацию
-- Проиндексировать через n8n
-- Протестировать поиск
-- Исправить баги
-
-**Результат**: ✅ Умный поиск с RAG работает!
-
-**Параллельно**: 🎨 **Frontend завершение** (6 часов)
+**Итого**: **8 часов** (Workspaces + KB ready для загрузки)
 
 ---
 
-### **День 7 (Воскресенье 17.11)** - Полировка + Demo
+### **День 6 (Среда 13.11)** - n8n Workflows Setup ⚠️ КРИТИЧНО
 
-**Comments Minimal (3ч)**:
-- ✅ **NORAK-42** (3ч): Создать Comments (минимальная версия)
-  - `IssueCommentModel` без вложенности
-  - Basic CRUD API
+**NORAK-34: N8nWorkflow Model (1 час)**
+- `N8nWorkflowModel` (id, workspace_id, name, workflow_id: str, webhook_url, is_active)
+- API для регистрации workflows
+- POST /n8n/workflows, GET /n8n/workflows
 
-**User Preferences (1ч)**:
-- ✅ **NORAK-43** (1ч): Создать User Preferences (Favorites)
-  - `UserPreferencesModel` с `last_workspace_id`, `favorite_template_ids`
+**NORAK-33: KB Upload API (2 часа)**
+- POST /kb/{kb_id}/upload (multipart/form-data)
+- Загрузка файла → сохранение в БД
+- Вызов n8n webhook для индексации (background task)
 
-**Demo Preparation (2ч)**:
+**NORAK-35: n8n Workflow - Auto-categorize (2 часа)**
+- Webhook → HTTP Request (OpenRouter) → Categorize → Update Issue
+- Тестирование через Postman
+- Регистрация в БД через API
+
+**NORAK-36: n8n Workflow - KB Indexing (2 часа)**
+- Webhook → Split Text (chunks 1000 chars) → OpenRouter Embeddings → pgvector INSERT
+- SQL Node: `INSERT INTO document_chunks (doc_id, content, embedding) VALUES (...)`
+- Тестирование с PDF файлом
+
+**Итого**: **7 часов** (n8n infrastructure + 2 critical workflows)
+
+---
+
+### **День 7 (Четверг 14.11)** - RAG + Search
+
+**NORAK-37: n8n Workflow - Smart Search (2 часа)**
+- Webhook → Parallel:
+  - Branch 1: DB Search (Issues with similar titles)
+  - Branch 2: RAG Search (pgvector similarity)
+  - Branch 3: Tavily Web Search
+- Merge → Rank → Return JSON
+
+**NORAK-39: RAG Service (3 часа)**
+- `RAGService` с методами:
+  - `similarity_search(query: str, kb_id: UUID, limit: int) -> List[DocumentChunk]`
+  - Query: `SELECT * FROM document_chunks WHERE kb_id = $1 ORDER BY embedding <=> $2 LIMIT $3`
+- OpenRouter для query embedding
+- Redis кеш для embeddings
+
+**NORAK-40: Hybrid SearchService (2 часа)**
+- Объединение DB + RAG + n8n webhook call
+- Ранжирование результатов (score merging)
+- `SearchService.search(query, workspace_id, sources: List[str])`
+
+**Итого**: **7 часов** (RAG + Smart Search working)
+
+---
+
+### **День 8 (Пятница 15.11)** - Search API + Demo Prep
+
+**NORAK-41: Search API (1 час)**
+- POST /api/v1/search
+- `SearchRequestSchema` (query, workspace_id, sources: List[str], limit)
+- `SearchResponseSchema` (results: List[source, title, content, score])
+
+**NORAK-38: Weekly Digest Workflow (1 час)** [OPTIONAL]
+- Cron (weekly) → Aggregate Stats → Email/Slack
+- Можно пропустить если не успеваем
+
+**Demo Preparation (2 часа)**
 - Создать demo workspace "AEP-Production"
-- Загрузить 5-10 тестовых документов
-- Создать 10-15 тестовых Issues
+- Загрузить 3-5 тестовых PDF через API
 - Проиндексировать через n8n
-- Протестировать все workflows
+- Создать 5-10 Issues (часть через шаблоны)
+- Протестировать Smart Search
 
-**Documentation (2ч)**:
-- Обновить README.md с фичами
-- Архитектурная диаграмма
-- Скриншоты/видео демо
-- Инструкции запуска
+**Documentation (2 часа)**
+- Обновить README.md с инструкциями запуска
+- Добавить примеры API calls
+- Описание n8n workflows
+- Скриншоты n8n UI
 
-**Результат**: ✅ Готово к демонстрации!
+**Итого**: **6 часов** (API + Demo + Docs)
 
 ---
+
+## 🎨 Frontend (Next.js 14) - После дедлайна
+
+**NORAK-44** (12-16 часов) - **OPTIONAL / Выходные 16-17 ноября**
+
+**Минимальный UI для презентации:**
+- `/login` - вход
+- `/workspaces/[id]/issues` - список проблем
+- `/issues/[id]` - детали проблемы
+- `/search` - умный поиск
+
+---
+
+## 📊 Статус задач в Plane (ОБНОВЛЕНО)
+
+**Всего**: 44 задачи
+**✅ Done**: 17 задач (38.6%) - Issues + Templates MVP
+**📋 Todo**: 1 задача (NORAK-24 - валидация custom_fields)
+**🔴 Backlog**: 26 задач (59%)
+
+**Приоритеты на неделю 11-15 ноября:**
+- **🔥 Urgent** (День 6-7): NORAK-34, 35, 36, 37 - n8n workflows
+- **⚠️ High** (День 4-5): NORAK-27, 28, 29, 30, 31, 32 - Infrastructure
+- **⚠️ High** (День 7-8): NORAK-39, 40, 41 - Search
+- **📝 Medium**: NORAK-33, 38 - KB Upload, Digest
+- **❌ Out of scope**: NORAK-42 (Comments), 43 (Preferences), 44 (Frontend)
+
+---
+
+## ⚠️ Риски и Митигация (ОБНОВЛЕНО)
 
 ## 🎨 Frontend (Next.js 14) - Параллельная разработка
 
@@ -280,16 +304,99 @@ POST /api/v1/search?q="ошибка E401 на оборудовании"
 
 ---
 
-## ⚠️ Риски и Митигация
+## ⚠️ Риски и Митигация (ОБНОВЛЕНО)
 
-| Риск | Вероятность | Митигация |
-|------|-------------|-----------|
-| pgvector не запустится | Средняя | Резервный день 4 вечер, fallback на in-memory |
-| OpenRouter rate limits | Низкая | Кеширование embeddings в Redis |
-| n8n workflows сложные | Средняя | Готовые templates, упростить логику |
-| Не успеем Frontend | Высокая | Минимальный UI, фокус на demo сценарий |
-| Не успеем Comments | Высокая | Это optional, можно без них |
-| Баги в поиске | Средняя | День 6 полностью на тестирование |
+| Риск | Вероятность | Митигация | Статус |
+|------|-------------|-----------|--------|
+| pgvector не запустится в prod | Средняя | Отдельная БД с pgvector, тестирование на dev/test | ⏳ |
+| OpenRouter rate limits | Низкая | Кеширование embeddings в Redis | ✅ |
+| n8n workflows сложные | Высокая | Готовые templates, упростить логику | ⚠️ |
+| Не успеем за 5 дней | Высокая | Убрать Comments, Preferences, Frontend из scope | ✅ |
+| Баги в поиске | Средняя | День 8 на тестирование и фиксы | ⏳ |
+| PROD database отдельная | Высокая | Создать новую БД с pgvector, изменить docker-compose.yml | 🔥 |
+
+---
+
+## ✅ Критерии успеха (Must Have для 15 ноября)
+
+**Backend** (критично):
+- ✅ Issues CRUD работает
+- ✅ Templates для создания Issues
+- ⚠️ Workspaces (группы) - **День 5**
+- ⚠️ pgvector + RAG search - **День 4-7**
+- 🔥 **3+ n8n workflows работают (КРИТИЧНО)** - **День 6-7**
+- ⚠️ Smart Search показывает результаты из разных источников - **День 7-8**
+
+**Frontend** (optional):
+- ❌ Login + Issues CRUD UI - **После 15-го**
+- ❌ Smart Search page - **После 15-го**
+
+**Demo** (критично):
+- ✅ Работающий demo workspace с данными - **День 8**
+- ✅ README с инструкциями - **День 8**
+- ✅ n8n workflows screenshots - **День 6-7**
+
+---
+
+## 🛠️ Технические решения (ОБНОВЛЕНО)
+
+| Компонент | Решение | Изменения |
+|-----------|---------|-----------|
+| **Vector Store** | Supabase pgvector (PostgreSQL) | ✅ Все 3 окружения (dev/test/prod) |
+| **PROD Database** | Отдельная БД с pgvector | 🔥 Создать новую БД в docker-compose.yml |
+| **Embeddings** | OpenRouter API | ✅ Бесплатные модели |
+| **n8n** | Self-hosted (Docker) | ✅ Уже есть + MCP подключен |
+| **Frontend** | Next.js 14 + shadcn/ui | ❌ После дедлайна |
+| **Deployment** | Docker Compose | ✅ 3 окружения готовы |
+
+---
+
+## 🚀 Следующие шаги (СЕЙЧАС - Понедельник 11.11)
+
+**Приоритет 1: NORAK-27 - pgvector setup (2 часа)**
+1. ✅ Обновить `docker-compose.dev.yml` → `pgvector/pgvector:pg16`
+2. ✅ Обновить `docker-compose.test.yml` → `pgvector/pgvector:pg16`
+3. 🔥 **Создать новую БД в `docker-compose.yml` (PROD)** с pgvector
+4. ✅ Создать `scripts/init-pgvector.sql` с `CREATE EXTENSION vector;`
+5. ✅ Тестировать на всех 3 окружениях
+
+**Приоритет 2: NORAK-30-31 (4 часа)**
+6. AI Models (AIModuleModel, WorkspaceModuleModel)
+7. OpenRouter Integration (embeddings)
+
+**Цель дня**: **pgvector работает на dev/test/prod + AI infrastructure готова**
+
+---
+
+## 📈 Прогресс Sprint (Daily Updates)
+
+**10.11 (Воскресенье - Prep)**:
+- ✅ 17 задач завершено (Issues + Templates MVP)
+- ✅ План обновлён под 5 дней (11-15 ноября)
+- ⏳ Готовы начать NORAK-27 (pgvector)
+
+**11.11 (Понедельник - День 4)**:
+- ⏳ NORAK-27: pgvector setup (dev/test/prod)
+- ⏳ NORAK-30: AI Models
+- ⏳ NORAK-31: OpenRouter Integration
+
+**12.11 (Вторник - День 5)**:
+- ⏳ NORAK-28-29: Workspaces MVP
+- ⏳ NORAK-32: KB Models
+
+**13.11 (Среда - День 6)**:
+- ⏳ NORAK-34: N8nWorkflow Model
+- ⏳ NORAK-33: KB Upload API
+- ⏳ NORAK-35-36: 2 critical n8n workflows
+
+**14.11 (Четверг - День 7)**:
+- ⏳ NORAK-37: Smart Search Workflow
+- ⏳ NORAK-39-40: RAG + Hybrid Search
+
+**15.11 (Пятница - День 8)**:
+- ⏳ NORAK-41: Search API
+- ⏳ Demo Preparation
+- ⏳ Documentation
 
 ---
 
