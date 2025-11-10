@@ -18,7 +18,7 @@
     ...     message="Проблема получена",
     ...     data=issue
     ... )
-    
+
     >>> # Список проблем
     >>> issues = [IssueListItemSchema.model_validate(i) for i in issue_models]
     >>> response = IssueListResponseSchema(

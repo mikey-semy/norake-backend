@@ -75,6 +75,8 @@ class IssueService(BaseService):
         ... )
     """
 
+    # TODO: Вынести в конфиг или БД - сейчас хардкод в 3 местах (IssueService, TemplateService, TemplateBaseSchema)
+    # Планируется: динамические категории через admin API или settings
     ALLOWED_CATEGORIES = ["hardware", "software", "process"]
 
     def __init__(self, session: AsyncSession):

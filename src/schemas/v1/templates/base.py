@@ -263,6 +263,8 @@ class TemplateBaseSchema(CommonBaseSchema):
         Raises:
             ValueError: Если категория не входит в список допустимых.
         """
+        # TODO: Вынести в общую конфигурацию - дублируется с IssueService и TemplateService
+        # Планируется: получать из CategoryModel или settings
         allowed_categories = {"hardware", "software", "process"}
         if v not in allowed_categories:
             raise ValueError(

@@ -26,6 +26,8 @@ from src.schemas.v1.templates.requests import (
     TemplateQueryRequestSchema,
 )
 
+# TODO: Вынести в общую конфигурацию или БД - дублируется с IssueService и TemplateBaseSchema
+# Планируется: CategoryModel в БД + admin API для управления категориями
 # Разрешённые категории шаблонов (синхронизировано с IssueModel)
 ALLOWED_CATEGORIES = ["hardware", "software", "process"]
 
