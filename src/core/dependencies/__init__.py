@@ -19,6 +19,8 @@ from .auth import AuthServiceDep
 from .register import RegisterServiceDep
 # Issue Service dependency
 from .issues import IssueServiceDep
+# Template Service dependency
+from .templates import TemplateServiceDep
 
 __all__ = [
     # Database dependencies
@@ -35,4 +37,6 @@ __all__ = [
     "RegisterServiceDep",
     # Issue Service dependency
     "IssueServiceDep",
+    # Template Service dependency
+    "TemplateServiceDep",
 ]
