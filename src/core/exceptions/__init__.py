@@ -17,6 +17,7 @@ from .issues import (IssueNotFoundError, IssueAlreadyResolvedError,
                      IssuePermissionDeniedError, IssueValidationError)
 from .templates import (TemplateNotFoundError, TemplatePermissionDeniedError,
                         TemplateValidationError, TemplateInactiveError)
+from .openrouter import (OpenRouterError, OpenRouterConfigError)
 
 __all__ = [
     # Base
@@ -74,4 +75,8 @@ __all__ = [
     "TemplatePermissionDeniedError",
     "TemplateValidationError",
     "TemplateInactiveError",
+
+    # OpenRouter
+    "OpenRouterError",
+    "OpenRouterConfigError",
 ]

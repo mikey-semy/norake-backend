@@ -39,9 +39,9 @@ CATEGORIES = {
 # src/models/v1/categories.py
 class CategoryModel(BaseModel):
     """Модель категории проблем/шаблонов."""
-    
+
     __tablename__ = "categories"
-    
+
     name: Mapped[str] = mapped_column(String(50), unique=True, index=True)
     label: Mapped[str] = mapped_column(String(100))
     description: Mapped[Optional[str]] = mapped_column(Text)
