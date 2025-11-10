@@ -149,17 +149,20 @@ class IssueService(BaseService):
         title: str,
         description: str,
         category: str,
+        template_id: Optional[UUID] = None,
     ) -> IssueModel:
         """
         Создать новую проблему.
 
         Статус автоматически устанавливается в RED.
+        Если указан template_id, увеличивает счётчик использований шаблона.
 
         Args:
             author_id: UUID автора проблемы.
             title: Заголовок проблемы.
             description: Подробное описание.
             category: Категория (hardware/software/process).
+            template_id: UUID шаблона (опционально).
 
         Returns:
             IssueModel: Созданная проблема.
@@ -172,7 +175,8 @@ class IssueService(BaseService):
             ...     author_id=user_id,
             ...     title="Ошибка E401",
             ...     description="Проблема с оборудованием",
-            ...     category="hardware"
+            ...     category="hardware",
+            ...     template_id=template_uuid  # опционально
             ... )
         """
         # Валидация
@@ -189,6 +193,26 @@ class IssueService(BaseService):
         }
 
         issue = await self.repository.create_item(issue_data)
+
+        # Увеличить usage_count шаблона если указан
+        if template_id:
+            try:
+                from src.repository.v1.templates import TemplateRepository
+                template_repo = TemplateRepository(self.session)
+                await template_repo.increment_usage_count(template_id)
+                self.logger.info(
+                    "Увеличен счётчик шаблона %s для проблемы %s",
+                    template_id,
+                    issue.id,
+                )
+            except Exception as e:
+                # Не критично если не удалось обновить счётчик
+                self.logger.warning(
+                    "Не удалось обновить счётчик шаблона %s: %s",
+                    template_id,
+                    str(e),
+                )
+
         self.logger.info(
             "Создана проблема %s пользователем %s", issue.id, author_id
         )

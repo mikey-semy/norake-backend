@@ -192,7 +192,7 @@ class TemplateRepository(BaseRepository[TemplateModel]):
         )
         return templates
 
-    async def increment_usage_count(self, template_id: UUID) -> None:
+    async def increment_usage_count(self, template_id: UUID) -> TemplateModel:
         """
         Увеличивает счётчик использований шаблона.
 
@@ -202,35 +202,33 @@ class TemplateRepository(BaseRepository[TemplateModel]):
         Args:
             template_id: UUID шаблона.
 
+        Returns:
+            Обновлённый TemplateModel с увеличенным usage_count.
+
         Raises:
-            ValueError: Если шаблон не найден.
+            ValueError: Если шаблон не найден (через get_item_by_id).
 
         Example:
             >>> # После создания Issue с template_id
-            >>> await repository.increment_usage_count(template_id)
+            >>> template = await repository.increment_usage_count(template_id)
+            >>> print(f"Использован {template.usage_count} раз")
         """
-        try:
-            template = await self.get_item_by_id(template_id)
-            if not template:
-                raise ValueError(f"Шаблон с ID {template_id} не найден")
+        # Получить текущее значение usage_count
+        template = await self.get_item_by_id(template_id)
+        if not template:
+            raise ValueError(f"Шаблон с ID {template_id} не найден")
 
-            template.usage_count += 1
-            await self.session.commit()
+        # Увеличить счётчик через update_item
+        updated = await self.update_item(
+            template_id, {"usage_count": template.usage_count + 1}
+        )
 
-            self.logger.info(
-                "Увеличен счётчик использований шаблона %s до %d",
-                template_id,
-                template.usage_count,
-            )
-
-        except Exception as e:
-            await self.session.rollback()
-            self.logger.error(
-                "Ошибка при увеличении счётчика шаблона %s: %s",
-                template_id,
-                str(e),
-            )
-            raise
+        self.logger.info(
+            "Увеличен счётчик использований шаблона %s до %d",
+            template_id,
+            updated.usage_count,
+        )
+        return updated
 
     async def deactivate_template(self, template_id: UUID) -> TemplateModel:
         """
@@ -246,30 +244,15 @@ class TemplateRepository(BaseRepository[TemplateModel]):
             Обновлённый TemplateModel с is_active=False.
 
         Raises:
-            ValueError: Если шаблон не найден.
+            ValueError: Если шаблон не найден (через update_item).
 
         Example:
             >>> deactivated = await repository.deactivate_template(template_id)
             >>> assert deactivated.is_active is False
         """
-        try:
-            template = await self.get_item_by_id(template_id)
-            if not template:
-                raise ValueError(f"Шаблон с ID {template_id} не найден")
-
-            template.is_active = False
-            await self.session.commit()
-            await self.session.refresh(template)
-
-            self.logger.info("Деактивирован шаблон %s", template_id)
-            return template
-
-        except Exception as e:
-            await self.session.rollback()
-            self.logger.error(
-                "Ошибка при деактивации шаблона %s: %s", template_id, str(e)
-            )
-            raise
+        deactivated = await self.update_item(template_id, {"is_active": False})
+        self.logger.info("Деактивирован шаблон %s", template_id)
+        return deactivated
 
     async def activate_template(self, template_id: UUID) -> TemplateModel:
         """
@@ -284,30 +267,15 @@ class TemplateRepository(BaseRepository[TemplateModel]):
             Обновлённый TemplateModel с is_active=True.
 
         Raises:
-            ValueError: Если шаблон не найден.
+            ValueError: Если шаблон не найден (через update_item).
 
         Example:
             >>> activated = await repository.activate_template(template_id)
             >>> assert activated.is_active is True
         """
-        try:
-            template = await self.get_item_by_id(template_id)
-            if not template:
-                raise ValueError(f"Шаблон с ID {template_id} не найден")
-
-            template.is_active = True
-            await self.session.commit()
-            await self.session.refresh(template)
-
-            self.logger.info("Активирован шаблон %s", template_id)
-            return template
-
-        except Exception as e:
-            await self.session.rollback()
-            self.logger.error(
-                "Ошибка при активации шаблона %s: %s", template_id, str(e)
-            )
-            raise
+        activated = await self.update_item(template_id, {"is_active": True})
+        self.logger.info("Активирован шаблон %s", template_id)
+        return activated
 
     async def get_by_category(self, category: str) -> List[TemplateModel]:
         """

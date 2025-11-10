@@ -224,8 +224,8 @@ class TemplateService:
         # Проверка прав (только владелец)
         self._check_permission(template, user_id, "delete")
 
-        # Soft delete: деактивация
-        deactivated = await self.repository.update_item(template_id, {"is_active": False})
+        # Soft delete через метод репозитория
+        deactivated = await self.repository.deactivate_template(template_id)
         return deactivated
 
     async def list_templates(
@@ -315,8 +315,8 @@ class TemplateService:
                 reason="Шаблон уже активен",
             )
 
-        # Активация
-        activated = await self.repository.update_item(template_id, {"is_active": True})
+        # Активация через метод репозитория
+        activated = await self.repository.activate_template(template_id)
         return activated
 
     async def deactivate_template(
@@ -356,8 +356,8 @@ class TemplateService:
                 reason="Шаблон уже деактивирован",
             )
 
-        # Деактивация
-        deactivated = await self.repository.update_item(template_id, {"is_active": False})
+        # Деактивация через метод репозитория
+        deactivated = await self.repository.deactivate_template(template_id)
         return deactivated
 
     async def get_active_templates(self) -> List[TemplateModel]:
