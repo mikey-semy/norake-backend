@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..base import BaseModel
 
 if TYPE_CHECKING:
+    from .issues import IssueModel
     from .roles import UserRoleModel
 
 
@@ -21,9 +22,11 @@ class UserModel(BaseModel):
         is_active (bool): Флаг активности аккаунта (деактивированные не могут входить).
 
         user_roles (List[UserRoleModel]): Список ролей пользователя (admin/user).
+        issues (List[IssueModel]): Список проблем, созданных пользователем.
 
     Relationships:
         user_roles: One-to-Many связь с UserRoleModel (роли пользователя).
+        issues: One-to-Many связь с IssueModel (проблемы автора).
 
     Properties:
         role: Основная роль пользователя для API ("admin" или "user").
@@ -90,6 +93,14 @@ class UserModel(BaseModel):
         "UserRoleModel",
         foreign_keys="[UserRoleModel.user_id]",
         back_populates="user",
+        passive_deletes=True,
+        cascade="all, delete-orphan",
+    )
+
+    issues: Mapped[List["IssueModel"]] = relationship(
+        "IssueModel",
+        foreign_keys="[IssueModel.author_id]",
+        back_populates="author",
         passive_deletes=True,
         cascade="all, delete-orphan",
     )
