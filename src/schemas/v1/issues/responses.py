@@ -52,7 +52,7 @@ class IssueDetailSchema(BaseSchema):
     Содержит полную информацию о проблеме, включая автора и решение.
 
     Attributes:
-        id: UUID проблемы.
+        id: UUID проблемы (наследуется из BaseSchema).
         title: Заголовок проблемы.
         description: Подробное описание.
         category: Категория (hardware/software/process).
@@ -61,8 +61,8 @@ class IssueDetailSchema(BaseSchema):
         author: Информация об авторе.
         author_id: UUID автора.
         resolved_at: Дата и время решения.
-        created_at: Дата создания.
-        updated_at: Дата последнего обновления.
+        created_at: Дата создания (наследуется из BaseSchema).
+        updated_at: Дата последнего обновления (наследуется из BaseSchema).
 
     Example:
         {
@@ -84,7 +84,6 @@ class IssueDetailSchema(BaseSchema):
         }
     """
 
-    id: uuid.UUID = Field(description="UUID проблемы")
     title: str = Field(description="Заголовок проблемы")
     description: str = Field(description="Подробное описание")
     category: str = Field(description="Категория проблемы")
@@ -93,8 +92,6 @@ class IssueDetailSchema(BaseSchema):
     author: IssueAuthorSchema = Field(description="Информация об авторе")
     author_id: uuid.UUID = Field(description="UUID автора")
     resolved_at: Optional[datetime] = Field(None, description="Дата решения")
-    created_at: datetime = Field(description="Дата создания")
-    updated_at: datetime = Field(description="Дата обновления")
 
 
 class IssueListItemSchema(BaseSchema):
@@ -104,12 +101,12 @@ class IssueListItemSchema(BaseSchema):
     Используется в списках проблем, не содержит полное описание и решение.
 
     Attributes:
-        id: UUID проблемы.
+        id: UUID проблемы (наследуется из BaseSchema).
         title: Заголовок проблемы.
         category: Категория.
         status: Статус (red/green).
         author_id: UUID автора.
-        created_at: Дата создания.
+        created_at: Дата создания (наследуется из BaseSchema).
         resolved_at: Дата решения (если решена).
 
     Example:
@@ -124,12 +121,10 @@ class IssueListItemSchema(BaseSchema):
         }
     """
 
-    id: uuid.UUID = Field(description="UUID проблемы")
     title: str = Field(description="Заголовок проблемы")
     category: str = Field(description="Категория проблемы")
     status: str = Field(description="Статус проблемы (red/green)")
     author_id: uuid.UUID = Field(description="UUID автора")
-    created_at: datetime = Field(description="Дата создания")
     resolved_at: Optional[datetime] = Field(None, description="Дата решения")
 
 

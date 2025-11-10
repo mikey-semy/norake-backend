@@ -37,7 +37,6 @@ See Also:
 """
 
 import uuid
-from datetime import datetime
 from typing import List
 
 from pydantic import Field
@@ -76,7 +75,7 @@ class TemplateDetailSchema(BaseSchema):
     Содержит полную информацию о шаблоне, включая автора и JSONB поля.
 
     Attributes:
-        id: UUID шаблона.
+        id: UUID шаблона (наследуется из BaseSchema).
         title: Название шаблона.
         description: Описание назначения.
         category: Категория (hardware/software/process).
@@ -86,8 +85,8 @@ class TemplateDetailSchema(BaseSchema):
         is_active: Активен ли шаблон.
         author: Информация об авторе.
         author_id: UUID автора.
-        created_at: Дата создания.
-        updated_at: Дата последнего обновления.
+        created_at: Дата создания (наследуется из BaseSchema).
+        updated_at: Дата последнего обновления (наследуется из BaseSchema).
 
     Example:
         {
@@ -118,7 +117,6 @@ class TemplateDetailSchema(BaseSchema):
         }
     """
 
-    id: uuid.UUID = Field(description="UUID шаблона")
     title: str = Field(description="Название шаблона")
     description: str | None = Field(description="Описание назначения")
     category: str = Field(description="Категория шаблона")
@@ -130,8 +128,6 @@ class TemplateDetailSchema(BaseSchema):
     is_active: bool = Field(description="Активен ли шаблон")
     author: TemplateAuthorSchema = Field(description="Информация об авторе")
     author_id: uuid.UUID = Field(description="UUID автора")
-    created_at: datetime = Field(description="Дата создания")
-    updated_at: datetime = Field(description="Дата обновления")
 
 
 class TemplateListItemSchema(BaseSchema):
@@ -142,7 +138,7 @@ class TemplateListItemSchema(BaseSchema):
     Используется в списках для оптимизации размера ответа.
 
     Attributes:
-        id: UUID шаблона.
+        id: UUID шаблона (наследуется из BaseSchema).
         title: Название шаблона.
         description: Описание (краткое).
         category: Категория.
@@ -150,7 +146,7 @@ class TemplateListItemSchema(BaseSchema):
         usage_count: Количество использований.
         is_active: Активен ли шаблон.
         author_id: UUID автора.
-        created_at: Дата создания.
+        created_at: Дата создания (наследуется из BaseSchema).
 
     Example:
         {
@@ -166,7 +162,6 @@ class TemplateListItemSchema(BaseSchema):
         }
     """
 
-    id: uuid.UUID = Field(description="UUID шаблона")
     title: str = Field(description="Название шаблона")
     description: str | None = Field(description="Описание")
     category: str = Field(description="Категория")
@@ -174,18 +169,17 @@ class TemplateListItemSchema(BaseSchema):
     usage_count: int = Field(description="Количество использований")
     is_active: bool = Field(description="Активен ли")
     author_id: uuid.UUID = Field(description="UUID автора")
-    created_at: datetime = Field(description="Дата создания")
 
 
 class TemplateResponseSchema(BaseResponseSchema):
     """
     Схема ответа API для одного шаблона.
 
-    Обёртка для TemplateDetailSchema с полями success и message.
+    Обёртка для TemplateDetailSchema. Наследует success и message из BaseResponseSchema.
 
     Attributes:
-        success: Успешность операции.
-        message: Сообщение о результате.
+        success: Успешность операции (наследуется из BaseResponseSchema).
+        message: Сообщение о результате (наследуется из BaseResponseSchema).
         data: Детальная информация о шаблоне.
 
     Example:
@@ -207,11 +201,11 @@ class TemplateListResponseSchema(BaseResponseSchema):
     """
     Схема ответа API для списка шаблонов.
 
-    Обёртка для List[TemplateListItemSchema] с полями success и message.
+    Обёртка для List[TemplateListItemSchema]. Наследует success и message из BaseResponseSchema.
 
     Attributes:
-        success: Успешность операции.
-        message: Сообщение о результате.
+        success: Успешность операции (наследуется из BaseResponseSchema).
+        message: Сообщение о результате (наследуется из BaseResponseSchema).
         data: Список шаблонов.
 
     Example:
