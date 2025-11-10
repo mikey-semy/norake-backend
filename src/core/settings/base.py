@@ -621,6 +621,13 @@ class Settings(BaseSettings):
     # Настройки безопасности
     TOKEN_SECRET_KEY: SecretStr
 
+    # Настройки OpenRouter AI Integration
+    OPENROUTER_API_KEY: Optional[str] = None
+    OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
+    OPENROUTER_EMBEDDING_MODEL: str = "openai/text-embedding-ada-002"
+    OPENROUTER_TIMEOUT: int = 30
+    OPENROUTER_MAX_RETRIES: int = 3
+
     # Настройки CORS
     ALLOW_ORIGINS: List[str] = [
         "https://norake.ru",
