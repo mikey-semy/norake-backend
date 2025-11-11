@@ -10,6 +10,7 @@ from ..base import BaseModel
 
 if TYPE_CHECKING:
     from .ai_modules import WorkspaceModuleModel
+    from .knowledge_bases import KnowledgeBaseModel
     from .users import UserModel
 
 
@@ -227,6 +228,13 @@ class WorkspaceModel(BaseModel):
 
     ai_modules: Mapped[List["WorkspaceModuleModel"]] = relationship(
         "WorkspaceModuleModel",
+        back_populates="workspace",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+
+    knowledge_bases: Mapped[List["KnowledgeBaseModel"]] = relationship(
+        "KnowledgeBaseModel",
         back_populates="workspace",
         cascade="all, delete-orphan",
         lazy="selectin",
