@@ -218,6 +218,60 @@ class IssueService(BaseService):
         self.logger.info(
             "Создана проблема %s пользователем %s", issue.id, author_id
         )
+
+        # Вызов n8n webhook для авто-категоризации (опционально)
+        await self._trigger_autocategorize_webhook(issue)
+
+        return issue
+
+    async def _trigger_autocategorize_webhook(self, issue: IssueModel) -> None:
+        """Вызвать n8n webhook для авто-категоризации Issue.
+
+        Ищет активный workflow AUTO_CATEGORIZE для workspace Issue
+        и вызывает его webhook в фоновом режиме.
+
+        Args:
+            issue: Созданная Issue для категоризации.
+        """
+        try:
+            from src.repository.v1.n8n_workflows import N8nWorkflowRepository
+            from src.core.integrations.n8n import n8n_webhook_client
+
+            workflow_repo = N8nWorkflowRepository(self.session)
+
+            # Ищем активный workflow AUTO_CATEGORIZE для workspace Issue
+            # TODO: Добавить workspace_id в IssueModel когда будет реализовано
+            # Пока пропускаем - нет связи Issue → Workspace
+            # workflows = await workflow_repo.filter_by(
+            #     workspace_id=issue.workspace_id,
+            #     workflow_type="AUTO_CATEGORIZE",
+            #     is_active=True
+            # )
+
+            # if workflows:
+            #     webhook_url = workflows[0].webhook_url
+            #     n8n_webhook_client.trigger_autocategorize_background(
+            #         webhook_url=webhook_url,
+            #         issue_id=issue.id,
+            #         title=issue.title,
+            #         description=issue.description,
+            #     )
+            #     self.logger.debug(
+            #         "Вызван webhook auto-categorize для issue %s", issue.id
+            #     )
+
+            # Временное решение: логируем что пропустили вызов
+            self.logger.debug(
+                "Auto-categorize webhook пропущен для issue %s (workspace не подключен)",
+                issue.id,
+            )
+
+        except Exception as e:
+            # Не критично если не удалось вызвать webhook
+            self.logger.warning(
+                "Не удалось вызвать auto-categorize webhook: %s",
+                str(e),
+            )
         return issue
 
     # ==================== READ ====================
