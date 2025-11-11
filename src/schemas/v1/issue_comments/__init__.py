@@ -7,9 +7,9 @@ Pydantic схемы для комментариев к проблемам.
     Responses: CommentDetailSchema, CommentListItemSchema, CommentResponseSchema, CommentListResponseSchema
 """
 
-from src.schemas.v1.issue_comments.base import CommentBaseSchema
-from src.schemas.v1.issue_comments.requests import CommentCreateSchema
-from src.schemas.v1.issue_comments.responses import (
+from .base import CommentBaseSchema
+from .requests import CommentCreateSchema
+from .responses import (
     CommentDetailSchema,
     CommentListItemSchema,
     CommentListResponseSchema,
