@@ -635,6 +635,18 @@ class Settings(BaseSettings):
     N8N_WEBHOOK_RETRY_ATTEMPTS: int = 2
     N8N_WEBHOOK_RETRY_DELAY: float = 1.0
 
+    # Настройки поиска (NORAK-40)
+    # Приоритеты для ранжирования источников поиска
+    SEARCH_PRIORITY_DB: float = 1.0
+    SEARCH_PRIORITY_RAG: float = 0.8
+    SEARCH_PRIORITY_MCP: float = 0.6
+
+    # TTL для Redis кеша результатов поиска (в секундах)
+    SEARCH_CACHE_TTL: int = 300
+
+    # URL webhook для n8n smart search helper (опционально)
+    N8N_SMART_SEARCH_WEBHOOK: Optional[str] = None
+
     # Настройки CORS
     ALLOW_ORIGINS: List[str] = [
         "https://norake.ru",

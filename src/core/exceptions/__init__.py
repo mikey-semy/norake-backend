@@ -19,6 +19,7 @@ from .templates import (TemplateNotFoundError, TemplatePermissionDeniedError,
                         TemplateValidationError, TemplateInactiveError)
 from .openrouter import (OpenRouterError, OpenRouterConfigError)
 from .knowledge_bases import (KnowledgeBaseNotFoundError, DocumentNotFoundError)
+from .search import (SearchError, SearchTimeoutError)
 
 __all__ = [
     # Base
@@ -84,4 +85,8 @@ __all__ = [
     # Knowledge Bases
     "KnowledgeBaseNotFoundError",
     "DocumentNotFoundError",
+
+    # Search
+    "SearchError",
+    "SearchTimeoutError",
 ]

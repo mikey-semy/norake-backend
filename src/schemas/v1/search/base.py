@@ -73,7 +73,7 @@ class SearchPatternEnum(str, Enum):
     FUZZY = "fuzzy"
 
 
-class SearchResultBaseSchema(CommonBaseSchema):
+class SearchResultSchema(CommonBaseSchema):
     """
     Базовая схема для результата поиска.
 
@@ -88,7 +88,7 @@ class SearchResultBaseSchema(CommonBaseSchema):
         metadata: Дополнительные метаданные (категория, дата, приоритет и т.д.).
 
     Example:
-        >>> result = SearchResultBaseSchema(
+        >>> result = SearchResultSchema(
         ...     id=uuid4(),
         ...     title="Ошибка E401",
         ...     content="При запуске станка возникает ошибка",

@@ -6,10 +6,10 @@
         - SearchSourceEnum: Enum источников поиска
         - SearchResultBaseSchema: Базовая схема результата
         - SearchMetadataSchema: Схема метаданных
-    
+
     Запросы:
         - SearchRequestSchema: Схема запроса на поиск
-    
+
     Ответы:
         - SearchResultSchema: Схема результата в ответе
         - SearchResponseSchema: Схема полного ответа
@@ -22,18 +22,20 @@
     ... )
 """
 
-from .base import SearchMetadataSchema, SearchResultBaseSchema, SearchSourceEnum
-from .requests import SearchRequestSchema
-from .responses import SearchResponseSchema, SearchResultSchema
+from .base import SearchStatsSchema, SearchResultSchema, SearchSourceEnum, SearchPatternEnum
+from .requests import SearchRequestSchema, SearchFiltersRequestSchema
+from .responses import SearchResponseSchema, SearchResultDetailSchema
 
 __all__ = [
     # Base
     "SearchSourceEnum",
-    "SearchResultBaseSchema",
-    "SearchMetadataSchema",
+    "SearchPatternEnum",
+    "SearchResultSchema",
+    "SearchStatsSchema",
     # Requests
     "SearchRequestSchema",
+    "SearchFiltersRequestSchema",
     # Responses
-    "SearchResultSchema",
+    "SearchResultDetailSchema",
     "SearchResponseSchema",
 ]

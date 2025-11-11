@@ -40,14 +40,14 @@ from typing import List, Optional
 from pydantic import Field
 
 from src.schemas.base import BaseResponseSchema
-from .base import SearchStatsSchema, SearchResultBaseSchema
+from .base import SearchStatsSchema, SearchResultSchema
 
 
-class SearchResultSchema(SearchResultBaseSchema):
+class SearchResultDetailSchema(SearchResultSchema):
     """
     Детальная схема результата поиска для ответов API.
 
-    Наследует все поля из SearchResultBaseSchema.
+    Наследует все поля из SearchResultSchema.
 
     Attributes:
         id: UUID результата (наследуется).
@@ -72,7 +72,7 @@ class SearchResultSchema(SearchResultBaseSchema):
         }
     """
 
-    model_config = SearchResultBaseSchema.model_config
+    model_config = SearchResultSchema.model_config
 
 
 class SearchResponseSchema(BaseResponseSchema):
@@ -113,7 +113,7 @@ class SearchResponseSchema(BaseResponseSchema):
         }
     """
 
-    data: List[SearchResultSchema] = Field(
+    data: List[SearchResultDetailSchema] = Field(
         default=[],
         description="Список результатов поиска",
     )

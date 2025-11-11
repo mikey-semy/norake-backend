@@ -15,7 +15,7 @@
     ...     use_ai=True,
     ...     limit=10
     ... )
-    
+
     >>> # Простой поиск по DB
     >>> search_data = SearchRequestSchema(
     ...     query="ошибка станка",
@@ -33,13 +33,50 @@ See Also:
     - src.services.v1.search: SearchService
 """
 
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
+from datetime import datetime
 
 from pydantic import Field
 
-from src.schemas.base import BaseRequestSchema
+from src.schemas.base import BaseRequestSchema, CommonBaseSchema
 from .base import SearchPatternEnum
+
+
+class SearchFiltersRequestSchema(CommonBaseSchema):
+    """
+    Схема фильтров для поиска Issues в БД.
+
+    Attributes:
+        categories: Список категорий для фильтрации
+        statuses: Список статусов для фильтрации
+        author_id: UUID автора Issue
+        date_from: Начало временного диапазона
+        date_to: Конец временного диапазона
+    """
+
+    categories: Optional[List[str]] = Field(
+        default=None,
+        description="Список категорий (hardware, software, ...)",
+        examples=[["hardware", "software"]],
+    )
+    statuses: Optional[List[str]] = Field(
+        default=None,
+        description="Список статусов (red, yellow, green)",
+        examples=[["red", "yellow"]],
+    )
+    author_id: Optional[UUID] = Field(
+        default=None,
+        description="UUID автора Issue",
+    )
+    date_from: Optional[datetime] = Field(
+        default=None,
+        description="Начало временного диапазона",
+    )
+    date_to: Optional[datetime] = Field(
+        default=None,
+        description="Конец временного диапазона",
+    )
 
 
 class SearchRequestSchema(BaseRequestSchema):
@@ -116,4 +153,8 @@ class SearchRequestSchema(BaseRequestSchema):
         le=1.0,
         description="Минимальный порог релевантности (0.0-1.0)",
         examples=[0.5, 0.7, 0.8],
+    )
+    filters: Optional[SearchFiltersRequestSchema] = Field(
+        default=None,
+        description="Фильтры для поиска в БД (категории, статусы, автор, даты)",
     )
