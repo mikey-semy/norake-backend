@@ -17,6 +17,14 @@ from .token import TokenServiceDep
 from .auth import AuthServiceDep
 # Register Service dependency
 from .register import RegisterServiceDep
+# Issue Service dependency
+from .issues import IssueServiceDep
+# Template Service dependency
+from .templates import TemplateServiceDep
+# Workspace Service dependency
+from .workspaces import WorkspaceServiceDep
+# Search Service dependencies
+from .search import RAGSearchServiceDep, SearchServiceDep
 
 __all__ = [
     # Database dependencies
@@ -31,4 +39,13 @@ __all__ = [
     "AuthServiceDep",
     # Register Service dependency
     "RegisterServiceDep",
+    # Issue Service dependency
+    "IssueServiceDep",
+    # Template Service dependency
+    "TemplateServiceDep",
+    # Workspace Service dependency
+    "WorkspaceServiceDep",
+    # Search Service dependencies
+    "RAGSearchServiceDep",
+    "SearchServiceDep",
 ]

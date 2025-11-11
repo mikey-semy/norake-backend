@@ -10,51 +10,140 @@ NoRake Backend is a FastAPI-based collective memory system for tracking and reso
 
 **CRITICAL**: All development tasks are managed in Plane (MCP integration available).
 
+### Plane Connection Details
+
+**ВАЖНО**: Убедись что MCP подключён с правильными параметрами:
+- **PLANE_API_HOST_URL**: `https://plane.equiply.ru/`
+- **PLANE_WORKSPACE_SLUG**: `projects` (НЕ "profitool-store"!)
+- **Project ID**: `c4ea1c3f-97d2-4f56-8aaa-5cce4b185f58`
+- **Project Identifier**: `NORAK`
+
+**API URL формат**: `https://plane.equiply.ru/api/v1/workspaces/projects/projects/`
+
+### Git Workflow for Tasks
+
+**ОБЯЗАТЕЛЬНО**: Для каждой задачи создавать отдельную ветку от `development`:
+
+1. **Перед началом работы:**
+   ```bash
+   git checkout development
+   git pull origin development
+   git checkout -b feature/NORAK-XX-short-description
+   ```
+
+2. **Обновить статус в Plane** → "In Progress" (state_id: `6e814f64-8acd-4b61-992d-b89ebf6bf55e`)
+
+3. **Разработка с коммитами:**
+   ```bash
+   git commit -m "feat(NORAK-XX): краткое описание изменений"
+   ```
+
+4. **После завершения:**
+   - Обновить статус в Plane → "Done" (state_id: `749a5e1b-a62a-4b50-964b-816ffe1f4dad`)
+   - Добавить комментарий в Plane с кратким описанием
+   - Создать Pull Request в `development`
+   - После мержа удалить feature-ветку
+
 ### Before Starting Work
 
-1. **Check Plane for current tasks**: Use MCP Plane tools to list project issues
-2. **Pick next task**: Start with the lowest unassigned NORAK-\* number
-3. **Update task status**: Mark issue as "in progress" before coding
-4. **Read task description**: All requirements are in the issue description
+1. **Получить задачу из Plane** по readable ID (NORAK-XX):
+   ```python
+   issue = await mcp_plane_get_issue_using_readable_identifier(
+       project_identifier="NORAK",
+       issue_identifier="1"  # Номер задачи
+   )
+   ```
+
+2. **Создать ветку** от `development` с префиксом `feature/NORAK-XX-description`
+
+3. **Обновить статус** на "In Progress":
+   ```python
+   await mcp_plane_update_issue(
+       project_id="c4ea1c3f-97d2-4f56-8aaa-5cce4b185f58",
+       issue_id=issue["id"],  # UUID из предыдущего запроса
+       state="6e814f64-8acd-4b61-992d-b89ebf6bf55e"  # In Progress
+   )
+   ```
+
+4. **Прочитать описание задачи** - все требования в `description_html`
 
 ### During Development
 
-1. **Follow task requirements**: Implementation details are in Plane issue descriptions
-2. **Check acceptance criteria**: Each task has specific success criteria
-3. **Reference related tasks**: Issues reference each other (e.g., "depends on NORAK-1")
-4. **Add comments**: Use Plane comments to document blockers or decisions
+1. **Следовать требованиям** из описания задачи в Plane
+2. **Делать коммиты** с префиксом `feat(NORAK-XX):` или `fix(NORAK-XX):`
+3. **Проверять acceptance criteria** перед завершением
+4. **Добавлять комментарии в Plane** при блокерах или важных решениях
 
 ### After Completing Work
 
-1. **Update issue status**: Mark as "completed" when all acceptance criteria met
-2. **Add completion comment**: Brief summary of what was implemented
-3. **Link related commits**: Reference NORAK-\* in commit messages
-4. **Move to next task**: Check Plane for dependent or next priority task
+1. **Обновить статус** на "Done":
+   ```python
+   await mcp_plane_update_issue(
+       project_id="c4ea1c3f-97d2-4f56-8aaa-5cce4b185f58",
+       issue_id=issue["id"],
+       state="749a5e1b-a62a-4b50-964b-816ffe1f4dad"  # Done
+   )
+   ```
 
-### Plane MCP Commands (Available)
+2. **Добавить комментарий** с кратким итогом:
+   ```python
+   await mcp_plane_add_issue_comment(
+       project_id="c4ea1c3f-97d2-4f56-8aaa-5cce4b185f58",
+       issue_id=issue["id"],
+       comment_html="<p><strong>Завершено</strong>: Реализовано XYZ. Коммит: abc123</p>"
+   )
+   ```
+
+3. **Создать PR** в `development` с описанием изменений
+4. **После мержа** удалить feature-ветку
+
+### Plane State IDs (NoRake Backend)
 
 ```python
-# List all project issues
-mcp_plane_list_project_issues(project_id="c4ea1c3f-97d2-4f56-8aaa-5cce4b185f58")
+STATES = {
+    "backlog": "ee55ae62-d94b-4236-8044-bf51830e89be",
+    "todo": "a2bf76ee-e462-4e3b-aba8-732b7133e13a",
+    "in_progress": "6e814f64-8acd-4b61-992d-b89ebf6bf55e",
+    "done": "749a5e1b-a62a-4b50-964b-816ffe1f4dad",
+    "cancelled": "a292224e-8a52-4835-81c1-9e7b36743166"
+}
+```
 
-# Get specific issue details
-mcp_plane_get_issue_using_readable_identifier(
+### Plane MCP Commands Reference
+
+```python
+# Получить задачу по readable ID (ВСЕГДА использовать это первым!)
+issue = await mcp_plane_get_issue_using_readable_identifier(
     project_identifier="NORAK",
-    issue_identifier="1"  # For NORAK-1
+    issue_identifier="1"
 )
 
-# Update issue status (mark as completed)
-mcp_plane_update_issue(
-    project_id="c4ea1c3f-97d2-4f56-8aaa-5cce4b185f58",
-    issue_id="<uuid>",
-    issue_data={"state": "<completed_state_id>"}
+# Извлечь актуальные ID
+issue_id = issue["id"]
+project_id = issue["project"]
+
+# Список всех задач проекта
+await mcp_plane_list_project_issues(
+    project_id="c4ea1c3f-97d2-4f56-8aaa-5cce4b185f58"
 )
 
-# Add comment to issue
-mcp_plane_add_issue_comment(
-    project_id="c4ea1c3f-97d2-4f56-8aaa-5cce4b185f58",
-    issue_id="<uuid>",
-    comment_html="<p>Task completed. Implemented XYZ.</p>"
+# Обновить статус задачи
+await mcp_plane_update_issue(
+    project_id=project_id,
+    issue_id=issue_id,
+    state="6e814f64-8acd-4b61-992d-b89ebf6bf55e"  # In Progress / Done
+)
+
+# Добавить комментарий (НЕ больше 2-3KB!)
+await mcp_plane_add_issue_comment(
+    project_id=project_id,
+    issue_id=issue_id,
+    comment_html="<p>Краткий комментарий</p>"
+)
+
+# Получить все статусы проекта
+await mcp_plane_list_states(
+    project_id="c4ea1c3f-97d2-4f56-8aaa-5cce4b185f58"
 )
 ```
 
@@ -160,6 +249,66 @@ await self.filter_by_ordered("created_at", is_active=True)  # Filter + sort
 await self.create_item({"username": "john"}) # Create from dict
 await self.update_item(user_id, {"phone": "+123"})  # Update
 ```
+
+### ⚠️ КРИТИЧНО: Переиспользование кода в Repository
+
+**ОБЯЗАТЕЛЬНО**: Всегда используй методы BaseRepository вместо дублирования кода!
+
+❌ **НЕПРАВИЛЬНО** - дублирование логики выполнения запросов:
+```python
+async def get_by_category(self, category: str) -> List[IssueModel]:
+    query = select(IssueModel).where(IssueModel.category == category)
+    result = await self.session.execute(query)  # ❌ Дублирование!
+    issues = result.scalars().all()
+    return list(issues)
+```
+
+✅ **ПРАВИЛЬНО** - использование filter_by из BaseRepository:
+```python
+async def get_by_category(self, category: str) -> List[IssueModel]:
+    return await self.filter_by(category=category)
+```
+
+✅ **ПРАВИЛЬНО** - комбинирование базовых методов:
+```python
+async def get_active_public(self) -> List[TemplateModel]:
+    return await self.filter_by_ordered(
+        "usage_count",
+        ascending=False,
+        is_active=True,
+        visibility=TemplateVisibility.PUBLIC
+    )
+```
+
+✅ **ПРАВИЛЬНО** - расширение базового метода при необходимости:
+```python
+async def search_by_text(self, text: str) -> List[IssueModel]:
+    # Используем execute_and_return_scalars из BaseRepository
+    query = select(IssueModel).where(
+        or_(
+            IssueModel.title.ilike(f"%{text}%"),
+            IssueModel.description.ilike(f"%{text}%")
+        )
+    )
+    return await self.execute_and_return_scalars(query)
+```
+
+**Правила переиспользования**:
+1. **Сначала проверь BaseRepository** - возможно метод уже есть
+2. **Используй filter_by/filter_by_ordered** для простой фильтрации
+3. **Используй execute_and_return_scalars** для кастомных запросов
+4. **НЕ дублируй** `result = await self.session.execute(query)` - это уже в base
+5. **Если нужного метода нет** - добавь в BaseRepository для переиспользования
+
+**Доступные методы BaseRepository**:
+- `get_item_by_id(id)` - получение по UUID
+- `get_item_by_field(field, value)` - получение по любому полю
+- `filter_by(**kwargs)` - фильтрация с операторами (__gt, __lt, __in и т.д.)
+- `filter_by_ordered(order_by, **kwargs)` - фильтрация + сортировка
+- `execute_and_return_scalars(query)` - выполнение + список моделей
+- `execute_and_return_scalar(query)` - выполнение + одна модель
+- `count_items(**filters)` - подсчёт с фильтрами
+- `exists_by_field(field, value)` - проверка существования
 
 ### Model Conventions
 

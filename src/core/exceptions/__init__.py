@@ -12,8 +12,15 @@ from .auth import (AuthenticationError, InvalidCredentialsError,
                    TokenInvalidError, InvalidUserDataError)
 from .users import (UserNotFoundError, UserExistsError, UserCreationError,
                     UserInactiveError)
-from .register import (UserCreationError, UserAlreadyExistsError,
-                       RoleAssignmentError)
+from .register import (UserAlreadyExistsError, RoleAssignmentError)
+from .issues import (IssueNotFoundError, IssueAlreadyResolvedError,
+                     IssuePermissionDeniedError, IssueValidationError)
+from .templates import (TemplateNotFoundError, TemplatePermissionDeniedError,
+                        TemplateValidationError, TemplateInactiveError)
+from .openrouter import (OpenRouterError, OpenRouterConfigError)
+from .knowledge_bases import (KnowledgeBaseNotFoundError, DocumentNotFoundError)
+from .search import (SearchError, SearchTimeoutError)
+
 __all__ = [
     # Base
     "BaseAPIException",
@@ -48,7 +55,7 @@ __all__ = [
     "TokenExpiredError",
     "TokenInvalidError",
     "InvalidUserDataError",
-    
+
     # Users
     "UserNotFoundError",
     "UserExistsError",
@@ -56,7 +63,30 @@ __all__ = [
     "UserInactiveError",
 
     # Registration
-    "UserCreationError",
     "UserAlreadyExistsError",
     "RoleAssignmentError",
+
+    # Issues
+    "IssueNotFoundError",
+    "IssueAlreadyResolvedError",
+    "IssuePermissionDeniedError",
+    "IssueValidationError",
+
+    # Templates
+    "TemplateNotFoundError",
+    "TemplatePermissionDeniedError",
+    "TemplateValidationError",
+    "TemplateInactiveError",
+
+    # OpenRouter
+    "OpenRouterError",
+    "OpenRouterConfigError",
+
+    # Knowledge Bases
+    "KnowledgeBaseNotFoundError",
+    "DocumentNotFoundError",
+
+    # Search
+    "SearchError",
+    "SearchTimeoutError",
 ]

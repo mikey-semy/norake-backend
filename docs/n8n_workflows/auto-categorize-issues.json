@@ -1,0 +1,222 @@
+{
+  "name": "NoRake: Auto-categorize Issues",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "autocategorize-issue",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-autocategorize",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "auto-categorize-issues"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "issue_id",
+              "value": "={{ $json.body.issue_id }}"
+            },
+            {
+              "name": "title",
+              "value": "={{ $json.body.title }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $json.body.description }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-issue-data",
+      "name": "Extract Issue Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "HTTP-Referer",
+              "value": "https://norake.equiply.ru"
+            },
+            {
+              "name": "X-Title",
+              "value": "NoRake Backend"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "bodyParameters": {
+          "parameters": []
+        },
+        "jsonParameters": true,
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        },
+        "body": {
+          "model": "qwen/qwen-3-coder-480b-a35b:free",
+          "messages": "={{ [{role: 'system', content: 'Ты помощник для категоризации производственных проблем. Определи категорию проблемы из списка: hardware, software, process, documentation, safety, quality, maintenance, training, other. Ответь ТОЛЬКО названием категории на английском, без объяснений.'}, {role: 'user', content: 'Проблема: ' + $json.title + '\\n\\nОписание: ' + $json.description}] }}",
+          "temperature": 0.2,
+          "max_tokens": 50
+        }
+      },
+      "id": "openrouter-categorize",
+      "name": "OpenRouter: Categorize",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "category",
+              "value": "={{ $json.choices[0].message.content.trim().toLowerCase() }}"
+            },
+            {
+              "name": "issue_id",
+              "value": "={{ $('Extract Issue Data').item.json.issue_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-category",
+      "name": "Extract Category",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.BACKEND_URL }}/api/v1/issues/{{ $json.issue_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "jsonParameters": true,
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        },
+        "body": {
+          "category": "={{ $json.category }}"
+        }
+      },
+      "id": "update-issue-category",
+      "name": "Update Issue Category",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, issue_id: $json.issue_id, category: $json.category, message: 'Issue categorized successfully' } }}",
+        "options": {}
+      },
+      "id": "respond-success",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Issue Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Issue Data": {
+      "main": [
+        [
+          {
+            "node": "OpenRouter: Categorize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter: Categorize": {
+      "main": [
+        [
+          {
+            "node": "Extract Category",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Category": {
+      "main": [
+        [
+          {
+            "node": "Update Issue Category",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Issue Category": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "NoRake",
+      "createdAt": "2025-11-11T01:00:00.000Z",
+      "updatedAt": "2025-11-11T01:00:00.000Z"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-11T01:40:00.000Z",
+  "versionId": "1"
+}

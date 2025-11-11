@@ -6,7 +6,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..base import BaseModel
 
 if TYPE_CHECKING:
+    from .issues import IssueModel
     from .roles import UserRoleModel
+    from .templates import TemplateModel
+    from .workspaces import WorkspaceMemberModel, WorkspaceModel
 
 
 class UserModel(BaseModel):
@@ -21,9 +24,15 @@ class UserModel(BaseModel):
         is_active (bool): Флаг активности аккаунта (деактивированные не могут входить).
 
         user_roles (List[UserRoleModel]): Список ролей пользователя (admin/user).
+        issues (List[IssueModel]): Список проблем, созданных пользователем.
+        owned_workspaces (List[WorkspaceModel]): Список workspace, где user - владелец.
+        workspace_memberships (List[WorkspaceMemberModel]): Участие в workspace.
 
     Relationships:
         user_roles: One-to-Many связь с UserRoleModel (роли пользователя).
+        issues: One-to-Many связь с IssueModel (проблемы автора).
+        owned_workspaces: One-to-Many связь с WorkspaceModel (владение workspace).
+        workspace_memberships: One-to-Many связь с WorkspaceMemberModel (участие).
 
     Properties:
         role: Основная роль пользователя для API ("admin" или "user").
@@ -89,6 +98,38 @@ class UserModel(BaseModel):
     user_roles: Mapped[List["UserRoleModel"]] = relationship(
         "UserRoleModel",
         foreign_keys="[UserRoleModel.user_id]",
+        back_populates="user",
+        passive_deletes=True,
+        cascade="all, delete-orphan",
+    )
+
+    issues: Mapped[List["IssueModel"]] = relationship(
+        "IssueModel",
+        foreign_keys="[IssueModel.author_id]",
+        back_populates="author",
+        passive_deletes=True,
+        cascade="all, delete-orphan",
+    )
+
+    templates: Mapped[List["TemplateModel"]] = relationship(
+        "TemplateModel",
+        foreign_keys="[TemplateModel.author_id]",
+        back_populates="author",
+        passive_deletes=True,
+        cascade="all, delete-orphan",
+    )
+
+    owned_workspaces: Mapped[List["WorkspaceModel"]] = relationship(
+        "WorkspaceModel",
+        foreign_keys="[WorkspaceModel.owner_id]",
+        back_populates="owner",
+        passive_deletes=True,
+        cascade="all, delete-orphan",
+    )
+
+    workspace_memberships: Mapped[List["WorkspaceMemberModel"]] = relationship(
+        "WorkspaceMemberModel",
+        foreign_keys="[WorkspaceMemberModel.user_id]",
         back_populates="user",
         passive_deletes=True,
         cascade="all, delete-orphan",
