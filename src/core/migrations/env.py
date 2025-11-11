@@ -14,7 +14,6 @@ from src.models import BaseModel
 config = context.config
 
 # Устанавливаем database_url из settings в конфигурацию Alembic
-# Используем alembic_database_url с экранированными процентами для ConfigParser
 section = config.config_ini_section
 config.set_section_option(section, "sqlalchemy.url", settings.database_url)
 
