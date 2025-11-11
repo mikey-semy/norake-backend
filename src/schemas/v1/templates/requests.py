@@ -49,11 +49,11 @@ class TemplateCreateRequestSchema(BaseRequestSchema):
     Схема для создания нового шаблона проблемы.
 
     Attributes:
-        title: Название шаблона (3-200 символов).
-        description: Описание назначения шаблона.
-        category: Категория (hardware/software/process).
-        fields: Список динамических полей (JSONB).
-        visibility: Уровень видимости (PUBLIC/PRIVATE/TEAM).
+        template_name: Название шаблона (1-255 символов).
+        category: Категория (hardware/software/process/documentation/safety/
+            quality/maintenance/training/other).
+        visibility: Видимость (PUBLIC/PRIVATE).
+        fields: Список конфигураций полей (FieldConfigSchema).
 
     Note:
         Поля author_id, usage_count, is_active устанавливаются автоматически:
@@ -101,11 +101,11 @@ class TemplateCreateRequestSchema(BaseRequestSchema):
         examples=["Шаблон для описания проблем с оборудованием"],
     )
 
-    category: str = Field(
-        ...,
-        max_length=50,
-        description="Категория шаблона (hardware, software, process)",
-        examples=["hardware", "software", "process"],
+    category: Optional[str] = Field(
+        None,
+        description="Категория шаблона (hardware, software, process, documentation, "
+        "safety, quality, maintenance, training, other)",
+        examples=["hardware", "software", "process", "documentation", "safety"],
     )
 
     fields: List[TemplateFieldSchema] = Field(

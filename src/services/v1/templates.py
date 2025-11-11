@@ -29,7 +29,18 @@ from src.schemas.v1.templates.requests import (
 # TODO: Вынести в общую конфигурацию или БД - дублируется с IssueService и TemplateBaseSchema
 # Планируется: CategoryModel в БД + admin API для управления категориями
 # Разрешённые категории шаблонов (синхронизировано с IssueModel)
-ALLOWED_CATEGORIES = ["hardware", "software", "process"]
+# Соответствует категориям в n8n workflow auto-categorize-issues.json
+ALLOWED_CATEGORIES = [
+    "hardware",
+    "software",
+    "process",
+    "documentation",
+    "safety",
+    "quality",
+    "maintenance",
+    "training",
+    "other",
+]
 
 # Валидация типов полей в JSONB
 ALLOWED_FIELD_TYPES = ["text", "number", "select", "multiselect", "date"]

@@ -48,7 +48,8 @@ class IssueModel(BaseModel):
     Attributes:
         title (str): Заголовок проблемы (до 255 символов).
         description (str): Подробное описание проблемы.
-        category (str): Категория проблемы (hardware, software, process).
+        category (str): Категория проблемы (hardware/software/process/documentation/
+            safety/quality/maintenance/training/other).
         status (IssueStatus): Текущий статус проблемы (RED/GREEN).
         solution (Optional[str]): Текст решения проблемы (заполняется при закрытии).
         author_id (UUID): Foreign Key на users.id (автор проблемы).

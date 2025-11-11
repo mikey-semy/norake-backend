@@ -78,7 +78,8 @@ class TemplateDetailSchema(BaseSchema):
         id: UUID шаблона (наследуется из BaseSchema).
         title: Название шаблона.
         description: Описание назначения.
-        category: Категория (hardware/software/process).
+        category: Категория (hardware/software/process/documentation/safety/
+            quality/maintenance/training/other).
         fields: Список динамических полей (JSONB).
         visibility: Уровень видимости (PUBLIC/PRIVATE/TEAM).
         usage_count: Количество использований.

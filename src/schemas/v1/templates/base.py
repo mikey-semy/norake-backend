@@ -197,7 +197,8 @@ class TemplateBaseSchema(CommonBaseSchema):
     Attributes:
         title: Название шаблона.
         description: Описание назначения шаблона.
-        category: Категория (hardware, software, process).
+        category: Категория (hardware/software/process/documentation/safety/
+            quality/maintenance/training/other).
         fields: Список динамических полей шаблона (JSONB).
         visibility: Уровень видимости (PUBLIC/PRIVATE/TEAM).
 
@@ -234,8 +235,9 @@ class TemplateBaseSchema(CommonBaseSchema):
 
     category: str = Field(
         ...,
-        description="Категория шаблона (hardware, software, process)",
-        examples=["hardware", "software", "process"],
+        description="Категория шаблона (hardware, software, process, documentation, "
+        "safety, quality, maintenance, training, other)",
+        examples=["hardware", "software", "process", "documentation", "safety"],
     )
 
     fields: List[TemplateFieldSchema] = Field(

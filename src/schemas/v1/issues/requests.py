@@ -44,10 +44,11 @@ class IssueCreateRequestSchema(BaseRequestSchema):
     Схема для создания новой проблемы.
 
     Attributes:
-        title: Заголовок проблемы (до 255 символов).
-        description: Подробное описание проблемы.
-        category: Категория проблемы (hardware/software/process).
-        workspace_id: UUID рабочего пространства (workspace).
+        title: Заголовок проблемы (обязательно, 1-255 символов).
+        description: Подробное описание (обязательно).
+        category: Категория проблемы (hardware/software/process/documentation/
+            safety/quality/maintenance/training/other).
+        template_id: UUID шаблона (опционально).
 
     Note:
         Поля status, author_id, solution, resolved_at устанавливаются автоматически:
@@ -76,9 +77,10 @@ class IssueCreateRequestSchema(BaseRequestSchema):
         examples=["При запуске станка возникает ошибка E401, индикатор мигает красным"],
     )
     category: str = Field(
-        max_length=50,
-        description="Категория проблемы (hardware, software, process)",
-        examples=["hardware", "software", "process"],
+        ...,
+        description="Категория проблемы (hardware, software, process, documentation, "
+        "safety, quality, maintenance, training, other)",
+        examples=["hardware", "software", "process", "documentation", "safety"],
     )
     workspace_id: UUID = Field(
         description="UUID рабочего пространства",
@@ -174,8 +176,9 @@ class IssueQueryRequestSchema(BaseRequestSchema):
     )
     category: Optional[str] = Field(
         None,
-        description="Фильтр по категории",
-        examples=["hardware", "software", "process"],
+        description="Фильтр по категории (hardware, software, process, documentation, "
+        "safety, quality, maintenance, training, other)",
+        examples=["hardware", "software", "process", "documentation", "safety"],
     )
     author_id: Optional[str] = Field(
         None,

@@ -25,7 +25,7 @@ def upgrade() -> None:
         'issues',
         sa.Column('workspace_id', sa.UUID(), nullable=True)
     )
-    
+
     # Create foreign key constraint
     op.create_foreign_key(
         'fk_issues_workspace_id',
@@ -35,14 +35,14 @@ def upgrade() -> None:
         ['id'],
         ondelete='CASCADE'
     )
-    
+
     # Create index for better query performance
     op.create_index(
         'ix_issues_workspace_id',
         'issues',
         ['workspace_id']
     )
-    
+
     # Make workspace_id NOT NULL after data migration (if needed)
     # Note: В реальном сценарии нужно сначала заполнить workspace_id для существующих Issues
     # Для демо/dev окружения можем сразу сделать NOT NULL если нет данных
@@ -57,9 +57,9 @@ def downgrade() -> None:
     """Downgrade schema."""
     # Drop index
     op.drop_index('ix_issues_workspace_id', table_name='issues')
-    
+
     # Drop foreign key
     op.drop_constraint('fk_issues_workspace_id', 'issues', type_='foreignkey')
-    
+
     # Drop column
     op.drop_column('issues', 'workspace_id')
