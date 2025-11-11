@@ -41,6 +41,32 @@ class IssueStatus(str, enum.Enum):
     GREEN = "green"
 
 
+class IssueVisibility(str, enum.Enum):
+    """
+    Enum для видимости проблем.
+
+    Attributes:
+        PUBLIC: Проблема доступна всем без аутентификации (коллективная память).
+        WORKSPACE: Проблема видна только участникам воркспейса и администраторам.
+        PRIVATE: Проблема видна только автору и администраторам.
+
+    Note:
+        - PUBLIC: быстрый доступ к решениям без логина, видна в публичном поиске.
+        - WORKSPACE: для внутренних проблем компании/подразделения.
+        - PRIVATE: для конфиденциальных данных (future: ACL per-user/team).
+
+    Example:
+        >>> issue = IssueModel(visibility=IssueVisibility.PUBLIC)
+        >>> issue.visibility
+        <IssueVisibility.PUBLIC: 'public'>
+        >>> issue.visibility = IssueVisibility.WORKSPACE
+    """
+
+    PUBLIC = "public"
+    WORKSPACE = "workspace"
+    PRIVATE = "private"
+
+
 class IssueModel(BaseModel):
     """
     Модель проблемы (Issue).
@@ -51,6 +77,7 @@ class IssueModel(BaseModel):
         category (str): Категория проблемы (hardware/software/process/documentation/
             safety/quality/maintenance/training/other).
         status (IssueStatus): Текущий статус проблемы (RED/GREEN).
+        visibility (IssueVisibility): Видимость проблемы (PUBLIC/WORKSPACE/PRIVATE).
         solution (Optional[str]): Текст решения проблемы (заполняется при закрытии).
         author_id (UUID): Foreign Key на users.id (автор проблемы).
         workspace_id (UUID): Foreign Key на workspaces.id (рабочее пространство).
@@ -99,6 +126,13 @@ class IssueModel(BaseModel):
         Enum(IssueStatus, name="issue_status"),
         nullable=False,
         default=IssueStatus.RED,
+        index=True,
+    )
+    visibility: Mapped[IssueVisibility] = mapped_column(
+        Enum(IssueVisibility, name="issue_visibility"),
+        nullable=False,
+        default=IssueVisibility.PUBLIC,
+        server_default="public",
         index=True,
     )
     solution: Mapped[Optional[str]] = mapped_column(Text, nullable=True)

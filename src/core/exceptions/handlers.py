@@ -81,7 +81,6 @@ def create_error_response(
             "status_code": status_code,
             "timestamp": timestamp,
             "request_id": request_id,
-            "error": extra,
         }
 
         # Добавляем дополнительные поля из extra, если они есть
@@ -92,7 +91,7 @@ def create_error_response(
         # Вложенная структура для стандартного формата API
         content = {
             "success": False,
-            "message": None,
+            "message": detail,  # Используем detail как message для единообразия
             "data": None,
             "error": {
                 "detail": detail,
@@ -100,19 +99,22 @@ def create_error_response(
                 "status_code": status_code,
                 "timestamp": timestamp,
                 "request_id": request_id,
-                "extra": extra,
+                **(extra or {}),  # Распаковываем extra напрямую в error объект
             },
         }
 
     return JSONResponse(status_code=status_code, content=content, headers=headers)
 
 
-async def api_exception_handler(_request: Request, exc: BaseAPIException):
+async def api_exception_handler(request: Request, exc: BaseAPIException):
     """
     Обработчик для кастомных исключений, наследующихся от BaseAPIException.
 
     Преобразует BaseAPIException в структурированный JSON-ответ с сохранением
     всей информации из исключения и добавлением полей для соответствия схеме ErrorResponseSchema.
+
+    Для OAuth2 endpoints (Swagger UI authorization) использует упрощённый формат,
+    чтобы Swagger мог правильно отобразить ошибку.
 
     Args:
         request (Request): Объект HTTP-запроса FastAPI
@@ -123,12 +125,18 @@ async def api_exception_handler(_request: Request, exc: BaseAPIException):
     """
     request_id = exc.extra.get("request_id", None)
 
+    # Для OAuth2 endpoints (например /auth/login) используем плоскую структуру
+    # чтобы Swagger UI мог правильно отобразить ошибку в форме авторизации
+    is_oauth2_endpoint = "/auth/login" in str(request.url) or "/token" in str(request.url)
+    use_flat = is_oauth2_endpoint and exc.status_code == 401
+
     return create_error_response(
         status_code=exc.status_code,
         detail=exc.detail,
         error_type=exc.error_type,
         request_id=request_id,
         extra=exc.extra,
+        flat_structure=use_flat,
     )
 
 
