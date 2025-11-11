@@ -11,6 +11,7 @@ from ..base import BaseModel
 if TYPE_CHECKING:
     from .ai_modules import WorkspaceModuleModel
     from .knowledge_bases import KnowledgeBaseModel
+    from .n8n_workflows import N8nWorkflowModel
     from .users import UserModel
 
 
@@ -235,6 +236,13 @@ class WorkspaceModel(BaseModel):
 
     knowledge_bases: Mapped[List["KnowledgeBaseModel"]] = relationship(
         "KnowledgeBaseModel",
+        back_populates="workspace",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+
+    n8n_workflows: Mapped[List["N8nWorkflowModel"]] = relationship(
+        "N8nWorkflowModel",
         back_populates="workspace",
         cascade="all, delete-orphan",
         lazy="selectin",
