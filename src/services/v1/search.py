@@ -27,8 +27,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.settings import settings
 from src.repository.v1.issues import IssueRepository
-from src.schemas.v1.search.base import SearchPatternEnum, SearchResultSchema, SearchSourceEnum
+from src.schemas.v1.search.base import (
+    SearchPatternEnum,
+    SearchResultSchema,
+    SearchSourceEnum,
+    SearchStatsSchema,
+)
 from src.schemas.v1.search.requests import SearchFiltersRequestSchema, SearchRequestSchema
+from src.schemas.v1.search.responses import SearchResultDetailSchema, SearchResponseSchema
 from src.services.base import BaseService
 from src.services.v1.rag_search import RAGSearchService
 
@@ -86,27 +92,52 @@ class SearchService(BaseService):
 
     async def search_with_ai(
         self,
-        request: SearchRequestSchema,
-    ) -> tuple[List[SearchResultSchema], Dict[str, Any]]:
+        query: str,
+        workspace_id: Optional[UUID] = None,
+        use_ai: bool = True,
+        kb_id: Optional[UUID] = None,
+        pattern: SearchPatternEnum = SearchPatternEnum.MATCH,
+        limit: int = 20,
+        min_score: float = 0.0,
+        filters: Optional[SearchFiltersRequestSchema] = None,
+        current_user_id: Optional[UUID] = None,
+        is_admin: bool = False,
+        public_only: bool = False,
+    ) -> SearchResponseSchema:
         """
         Гибридный поиск с объединением результатов из всех источников.
 
         Процесс:
-        1. Проверка кеша Redis (ключ от query + filters)
-        2. DB search (всегда выполняется)
+        1. Проверка кеша Redis (ключ от query + filters + visibility context)
+        2. DB search (всегда выполняется) с visibility фильтрацией
         3. Если use_ai=True:
            - RAG search (если указан kb_id)
            - MCP search (через n8n webhook)
         4. Объединение результатов с ранжированием
         5. Сохранение в кеш
 
+        Visibility правила (применяются в DB search):
+            - public_only=True: только PUBLIC issues (для публичного API)
+            - is_admin=True: доступ ко всем issues
+            - current_user_id + workspace_id: PUBLIC + WORKSPACE + PRIVATE (автор)
+            - current_user_id only: PUBLIC + PRIVATE (автор)
+            - None: только PUBLIC
+
         Args:
-            request: SearchRequestSchema с параметрами поиска
+            query: Поисковый запрос (1-500 символов)
+            workspace_id: UUID воркспейса (для WORKSPACE visibility)
+            use_ai: Использовать AI поиск (RAG + MCP)
+            kb_id: UUID Knowledge Base для RAG
+            pattern: Паттерн поиска (MATCH/PHRASE/FUZZY)
+            limit: Макс. результатов (1-100)
+            min_score: Минимальный score (0.0-1.0)
+            filters: Фильтры (categories, statuses, author_id, date_range)
+            current_user_id: UUID текущего пользователя (для visibility)
+            is_admin: Флаг админа (bypasses visibility)
+            public_only: Только PUBLIC issues (для публичного поиска)
 
         Returns:
-            tuple: (results, stats)
-                - results: List[SearchResultSchema] - отсортированные результаты
-                - stats: Dict с метриками (total_results, db_results, rag_results, mcp_results, search_time_ms, cached)
+            SearchResponseSchema: Результаты с stats
 
         Raises:
             SearchError: При критических ошибках поиска
@@ -114,18 +145,30 @@ class SearchService(BaseService):
         start_time = time.time()
 
         # 1. Проверка кеша
-        cache_key = self._generate_cache_key(request)
+        cache_key = self._generate_cache_key(
+            query=query,
+            workspace_id=workspace_id,
+            pattern=pattern,
+            filters=filters,
+            current_user_id=current_user_id if not public_only else None,
+            public_only=public_only,
+        )
         cached_data = await self._get_cached_results(cache_key)
         if cached_data:
             logger.info("Возвращены результаты из кеша: %s", cache_key)
-            return cached_data["results"], cached_data["stats"]
+            # Cached data уже SearchResponseSchema
+            return cached_data
 
-        # 2. DB search (всегда выполняется)
-        logger.info("Выполняется DB search: query='%s'", request.query)
+        # 2. DB search (всегда выполняется) с visibility фильтрацией
+        logger.info("Выполняется DB search: query='%s', public_only=%s", query, public_only)
         db_results = await self._search_db(
-            query=request.query,
-            pattern=request.pattern,
-            filters=request.filters,
+            query=query,
+            pattern=pattern,
+            filters=filters,
+            workspace_id=workspace_id,
+            current_user_id=current_user_id,
+            is_admin=is_admin,
+            public_only=public_only,
         )
         logger.info("DB search завершён: найдено %d результатов", len(db_results))
 
@@ -133,19 +176,19 @@ class SearchService(BaseService):
         mcp_results: List[SearchResultSchema] = []
 
         # 3. AI search (если включено)
-        if request.use_ai:
+        if use_ai:
             # RAG search (если указан KB)
-            if request.kb_id:
-                logger.info("Выполняется RAG search: kb_id=%s", request.kb_id)
+            if kb_id:
+                logger.info("Выполняется RAG search: kb_id=%s", kb_id)
                 rag_results = await self._search_rag(
-                    query=request.query,
-                    kb_id=request.kb_id,
+                    query=query,
+                    kb_id=kb_id,
                 )
                 logger.info("RAG search завершён: найдено %d результатов", len(rag_results))
 
             # MCP search (через n8n webhook)
             logger.info("Выполняется MCP search через n8n")
-            mcp_results = await self._search_mcp(query=request.query)
+            mcp_results = await self._search_mcp(query=query)
             logger.info("MCP search завершён: найдено %d результатов", len(mcp_results))
 
         # 4. Объединение и ранжирование
@@ -155,46 +198,72 @@ class SearchService(BaseService):
             mcp_results=mcp_results,
         )
 
-        # 5. Подсчёт статистики
-        search_time = (time.time() - start_time) * 1000  # в миллисекундах
-        stats = {
-            "total_results": len(merged_results),
-            "db_results": len(db_results),
-            "rag_results": len(rag_results),
-            "mcp_results": len(mcp_results),
-            "search_time_ms": round(search_time, 2),
-            "cached": False,
-        }
+        # 5. Применение limit и min_score фильтров
+        filtered_results = [r for r in merged_results if r.score >= min_score]
+        limited_results = filtered_results[:limit]
 
-        # 6. Сохранение в кеш
-        await self._cache_results(cache_key, merged_results, stats)
+        # 6. Подсчёт статистики
+        search_time = (time.time() - start_time) * 1000  # в миллисекундах
+        stats = SearchStatsSchema(
+            total=len(limited_results),
+            sources={
+                "database": len(db_results),
+                "rag": len(rag_results),
+                "mcp_n8n": len(mcp_results),
+            },
+            query_time=round(search_time, 2),
+        )
+
+        # 7. Формирование response
+        response = SearchResponseSchema(
+            success=True,
+            data={
+                "results": [SearchResultDetailSchema.model_validate(r) for r in limited_results],
+                "stats": stats,
+            }
+        )
+
+        # 8. Сохранение в кеш
+        await self._cache_results(cache_key, response)
 
         logger.info(
             "Поиск завершён: %d результатов за %.2fms",
-            stats["total_results"],
-            stats["search_time_ms"],
+            stats.total,
+            stats.query_time,
         )
-        return merged_results, stats
+        return response
 
     async def _search_db(
         self,
         query: str,
         pattern: SearchPatternEnum,
         filters: Optional[SearchFiltersRequestSchema],
+        workspace_id: Optional[UUID] = None,
+        current_user_id: Optional[UUID] = None,
+        is_admin: bool = False,
+        public_only: bool = False,
     ) -> List[SearchResultSchema]:
         """
-        Поиск по Issues в базе данных.
+        Поиск по Issues в базе данных с visibility фильтрацией.
 
-        Использует IssueRepository для поиска по title/description.
-        Поддерживает фильтры по категории, статусу, автору.
+        Использует IssueRepository.get_filtered с visibility rules:
+        - public_only=True: только PUBLIC issues
+        - is_admin=True: все issues (admin override)
+        - current_user_id + workspace_id: PUBLIC + WORKSPACE + PRIVATE (автор)
+        - current_user_id only: PUBLIC + PRIVATE (автор)
+        - None: только PUBLIC
 
         Args:
             query: Поисковый запрос
             pattern: Паттерн поиска (MATCH/PHRASE/FUZZY)
             filters: Фильтры (category, status, author_id, date_from, date_to)
+            workspace_id: UUID воркспейса (для WORKSPACE visibility)
+            current_user_id: UUID текущего пользователя (для PRIVATE visibility)
+            is_admin: Флаг админа (bypasses visibility)
+            public_only: Только PUBLIC issues (для публичного API)
 
         Returns:
-            List[SearchResultSchema]: Результаты из БД с source='db'
+            List[SearchResultSchema]: Результаты из БД с source='database'
         """
         try:
             # Преобразуем statuses из строк в IssueStatus enum
@@ -208,12 +277,16 @@ class SearchService(BaseService):
                 except ValueError:
                     logger.warning("Неизвестный статус: %s, игнорируем фильтр", status_str)
 
-            # Используем метод get_filtered из IssueRepository
+            # Используем метод get_filtered с visibility параметрами
             issues = await self.issue_repository.get_filtered(
                 status=status_filter,
                 category=filters.categories[0] if filters and filters.categories else None,
                 author_id=filters.author_id if filters else None,
-                search=query,  # search_by_text внутри get_filtered
+                search=query,
+                workspace_id=workspace_id,
+                current_user_id=current_user_id,
+                is_admin=is_admin,
+                public_only=public_only,
                 limit=settings.DB_SEARCH_LIMIT,
                 offset=0,
             )
@@ -397,22 +470,41 @@ class SearchService(BaseService):
 
         return all_results
 
-    def _generate_cache_key(self, request: SearchRequestSchema) -> str:
+    def _generate_cache_key(
+        self,
+        query: str,
+        workspace_id: Optional[UUID],
+        pattern: SearchPatternEnum,
+        filters: Optional[SearchFiltersRequestSchema],
+        current_user_id: Optional[UUID],
+        public_only: bool,
+    ) -> str:
         """
-        Генерирует ключ кеша на основе параметров запроса.
+        Генерирует ключ кеша с учётом visibility context.
+
+        Важно: Кеши изолируются по visibility для безопасности:
+        - Публичные запросы (public_only=True) кэшируются отдельно.
+        - Приватные запросы включают current_user_id или workspace_id в ключ.
 
         Args:
-            request: Параметры поиска
+            query: Поисковый запрос
+            workspace_id: UUID воркспейса
+            pattern: Паттерн поиска
+            filters: Фильтры
+            current_user_id: UUID текущего пользователя
+            public_only: Флаг публичного поиска
 
         Returns:
-            str: MD5 хеш от query + filters
+            str: MD5 хеш от параметров + visibility context
         """
         cache_data = {
-            "query": request.query,
-            "pattern": request.pattern.value,
-            "use_ai": request.use_ai,
-            "kb_id": str(request.kb_id) if request.kb_id else None,
-            "filters": request.filters.model_dump() if request.filters else None,
+            "query": query,
+            "pattern": pattern.value,
+            "filters": filters.model_dump() if filters else None,
+            # Visibility context для изоляции кеша
+            "public_only": public_only,
+            "workspace_id": str(workspace_id) if workspace_id and not public_only else None,
+            "user_id": str(current_user_id) if current_user_id and not public_only else None,
         }
         cache_str = json.dumps(cache_data, sort_keys=True)
         hash_obj = hashlib.md5(cache_str.encode())
@@ -421,25 +513,19 @@ class SearchService(BaseService):
     async def _cache_results(
         self,
         cache_key: str,
-        results: List[SearchResultSchema],
-        stats: Dict[str, Any],
+        response: SearchResponseSchema,
     ) -> None:
         """
-        Сохраняет результаты поиска в Redis.
+        Сохраняет SearchResponseSchema в Redis.
 
         Args:
-            cache_key: Ключ кеша
-            results: Результаты поиска
-            stats: Статистика поиска
+            cache_key: Ключ кеша (изолированный по visibility)
+            response: Полный response schema для кэширования
         """
         try:
-            cache_data = {
-                "results": [r.model_dump() for r in results],
-                "stats": {**stats, "cached": True},
-            }
             await self.redis.set(
                 cache_key,
-                json.dumps(cache_data),
+                response.model_dump_json(),
                 ex=settings.SEARCH_CACHE_TTL,
             )
             logger.debug("Результаты сохранены в кеш: %s", cache_key)
@@ -449,7 +535,7 @@ class SearchService(BaseService):
     async def _get_cached_results(
         self,
         cache_key: str,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[SearchResponseSchema]:
         """
         Получает результаты поиска из Redis.
 
@@ -457,17 +543,13 @@ class SearchService(BaseService):
             cache_key: Ключ кеша
 
         Returns:
-            Optional[Dict]: {"results": [...], "stats": {...}} или None
+            Optional[SearchResponseSchema]: Кешированный response или None
         """
         try:
             cached = await self.redis.get(cache_key)
             if cached:
-                data = json.loads(cached)
-                # Восстанавливаем Pydantic объекты
-                data["results"] = [
-                    SearchResultSchema.model_validate(r) for r in data["results"]
-                ]
-                return data
-        except (ValueError, TypeError, KeyError, json.JSONDecodeError) as e:
+                return SearchResponseSchema.model_validate_json(cached)
+            return None
+        except (ValueError, TypeError, KeyError, Exception) as e:
             logger.error("Ошибка чтения из кеша: %s", e)
-        return None
+            return None
