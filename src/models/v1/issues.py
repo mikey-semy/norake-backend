@@ -17,6 +17,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..base import BaseModel
 
 if TYPE_CHECKING:
+    from .issue_comments import IssueCommentModel
     from .users import UserModel
 
 
@@ -129,7 +130,11 @@ class IssueModel(BaseModel):
         index=True,
     )
     visibility: Mapped[IssueVisibility] = mapped_column(
-        Enum(IssueVisibility, name="issue_visibility"),
+        Enum(
+            IssueVisibility,
+            name="issue_visibility",
+            values_callable=lambda x: [e.value for e in x],
+        ),
         nullable=False,
         default=IssueVisibility.PUBLIC,
         server_default="public",
@@ -151,6 +156,13 @@ class IssueModel(BaseModel):
         "UserModel",
         back_populates="issues",
         lazy="joined",
+    )
+
+    comments: Mapped[list["IssueCommentModel"]] = relationship(
+        "IssueCommentModel",
+        back_populates="issue",
+        lazy="selectin",
+        cascade="all, delete-orphan",
     )
 
     @property

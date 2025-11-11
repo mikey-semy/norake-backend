@@ -4,6 +4,7 @@
 Экспортируемые модели:
     - UserModel, UserRoleModel, RoleCode (пользователи и роли)
     - IssueModel, IssueStatus (проблемы)
+    - IssueCommentModel (комментарии к проблемам)
     - TemplateModel, TemplateVisibility (шаблоны)
     - AIModuleModel, WorkspaceModuleModel, AIModuleType (AI модули)
     - WorkspaceModel, WorkspaceMemberModel, WorkspaceVisibility, WorkspaceMemberRole (workspace)
@@ -12,6 +13,7 @@
 """
 
 from .ai_modules import AIModuleModel, AIModuleType, WorkspaceModuleModel
+from .issue_comments import IssueCommentModel
 from .issues import IssueModel, IssueStatus
 from .knowledge_bases import (
     DocumentChunkModel,
@@ -39,6 +41,8 @@ __all__ = [
     # Issues
     "IssueModel",
     "IssueStatus",
+    # Issue Comments
+    "IssueCommentModel",
     # Templates
     "TemplateModel",
     "TemplateVisibility",
