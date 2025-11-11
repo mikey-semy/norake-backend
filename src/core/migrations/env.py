@@ -14,8 +14,9 @@ from src.models import BaseModel
 config = context.config
 
 # Устанавливаем database_url из settings в конфигурацию Alembic
+# Используем alembic_database_url с экранированными процентами для ConfigParser
 section = config.config_ini_section
-config.set_section_option(section, "sqlalchemy.url", str(settings.database_url))
+config.set_section_option(section, "sqlalchemy.url", settings.alembic_database_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
