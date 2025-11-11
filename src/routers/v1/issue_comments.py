@@ -273,7 +273,7 @@ class IssueCommentProtectedRouter(ProtectedRouter):
             summary="🗑️ Удалить комментарий",
         )
         async def delete_comment(
-            issue_id: UUID,  # Для REST-структуры URL
+            _issue_id: UUID,  # Для REST-структуры URL (не используется в логике)
             comment_id: UUID,
             current_user: CurrentUserDep = None,
             service: IssueCommentServiceDep = None,
