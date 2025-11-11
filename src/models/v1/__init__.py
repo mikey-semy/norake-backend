@@ -8,6 +8,7 @@
     - AIModuleModel, WorkspaceModuleModel, AIModuleType (AI модули)
     - WorkspaceModel, WorkspaceMemberModel, WorkspaceVisibility, WorkspaceMemberRole (workspace)
     - KnowledgeBaseModel, DocumentModel, DocumentChunkModel, KnowledgeBaseType, DocumentStatus (KB)
+    - N8nWorkflowModel, N8nWorkflowType (n8n workflows)
 """
 
 from .ai_modules import AIModuleModel, AIModuleType, WorkspaceModuleModel
@@ -19,6 +20,7 @@ from .knowledge_bases import (
     KnowledgeBaseModel,
     KnowledgeBaseType,
 )
+from .n8n_workflows import N8nWorkflowModel, N8nWorkflowType
 from .roles import RoleCode, UserRoleModel
 from .templates import TemplateModel, TemplateVisibility
 from .users import UserModel
@@ -55,4 +57,7 @@ __all__ = [
     "DocumentChunkModel",
     "KnowledgeBaseType",
     "DocumentStatus",
+    # n8n Workflows
+    "N8nWorkflowModel",
+    "N8nWorkflowType",
 ]
