@@ -25,6 +25,7 @@ from src.core.exceptions import (
     IssuePermissionDeniedError,
     IssueValidationError,
 )
+from src.core.settings import settings
 from src.models.v1.issues import IssueModel, IssueStatus
 from src.repository.v1.issues import IssueRepository
 from src.services.base import BaseService
@@ -76,21 +77,6 @@ class IssueService(BaseService):
         ... )
     """
 
-    # TODO: Вынести в конфиг или БД - сейчас хардкод в 3 местах (IssueService, TemplateService, TemplateBaseSchema)
-    # Планируется: динамические категории через admin API или settings
-    # Соответствует категориям в n8n workflow auto-categorize-issues.json
-    ALLOWED_CATEGORIES = [
-        "hardware",
-        "software",
-        "process",
-        "documentation",
-        "safety",
-        "quality",
-        "maintenance",
-        "training",
-        "other",
-    ]
-
     def __init__(self, session: AsyncSession):
         """
         Инициализирует IssueService.
@@ -131,10 +117,10 @@ class IssueService(BaseService):
         Raises:
             IssueValidationError: Если категория не из разрешённого списка.
         """
-        if category not in self.ALLOWED_CATEGORIES:
+        if category not in settings.ISSUE_CATEGORIES:
             raise IssueValidationError(
                 "category",
-                f"Категория должна быть одной из: {', '.join(self.ALLOWED_CATEGORIES)}",
+                f"Категория должна быть одной из: {', '.join(settings.ISSUE_CATEGORIES)}",
             )
 
     async def _check_permission(

@@ -647,6 +647,20 @@ class Settings(BaseSettings):
     # URL webhook для n8n smart search helper (опционально)
     N8N_SMART_SEARCH_WEBHOOK: Optional[str] = None
 
+    # Категории Issue и Template (синхронизированы с n8n workflow)
+    # TODO: Переделать в CategoryModel в БД + admin API для управления
+    ISSUE_CATEGORIES: List[str] = [
+        "hardware",
+        "software",
+        "process",
+        "documentation",
+        "safety",
+        "quality",
+        "maintenance",
+        "training",
+        "other",
+    ]
+
     # Настройки CORS
     ALLOW_ORIGINS: List[str] = [
         "https://norake.ru",

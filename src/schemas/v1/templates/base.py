@@ -41,6 +41,7 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import Field, field_validator
 
+from src.core.settings import settings
 from src.models.v1.templates import TemplateVisibility
 from src.schemas.base import CommonBaseSchema
 
@@ -265,12 +266,9 @@ class TemplateBaseSchema(CommonBaseSchema):
         Raises:
             ValueError: Если категория не входит в список допустимых.
         """
-        # TODO: Вынести в общую конфигурацию - дублируется с IssueService и TemplateService
-        # Планируется: получать из CategoryModel или settings
-        allowed_categories = {"hardware", "software", "process"}
-        if v not in allowed_categories:
+        if v not in settings.ISSUE_CATEGORIES:
             raise ValueError(
                 f"Недопустимая категория '{v}'. "
-                f"Разрешены: {', '.join(allowed_categories)}"
+                f"Разрешены: {', '.join(settings.ISSUE_CATEGORIES)}"
             )
         return v

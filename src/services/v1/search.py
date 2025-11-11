@@ -197,9 +197,20 @@ class SearchService(BaseService):
             List[SearchResultSchema]: Результаты из БД с source='db'
         """
         try:
+            # Преобразуем statuses из строк в IssueStatus enum
+            status_filter = None
+            if filters and filters.statuses:
+                # Берём первый статус из списка (get_filtered принимает Optional[IssueStatus])
+                status_str = filters.statuses[0]
+                try:
+                    from src.models.v1.issues import IssueStatus
+                    status_filter = IssueStatus(status_str)  # "red" → IssueStatus.RED
+                except ValueError:
+                    logger.warning("Неизвестный статус: %s, игнорируем фильтр", status_str)
+
             # Используем метод get_filtered из IssueRepository
             issues = await self.issue_repository.get_filtered(
-                status=None,  # TODO: преобразовать filters.statuses в IssueStatus
+                status=status_filter,
                 category=filters.categories[0] if filters and filters.categories else None,
                 author_id=filters.author_id if filters else None,
                 search=query,  # search_by_text внутри get_filtered
@@ -212,7 +223,7 @@ class SearchService(BaseService):
             for issue in issues:
                 # Вычисляем score на основе релевантности (простая эвристика)
                 score = 1.0  # Базовый score для DB результатов
-                
+
                 # Повышаем score если query встречается в title
                 if query.lower() in issue.title.lower():
                     score = 1.0
@@ -455,5 +466,3 @@ class SearchService(BaseService):
         except (ValueError, TypeError, KeyError, json.JSONDecodeError) as e:
             logger.error("Ошибка чтения из кеша: %s", e)
         return None
-
-

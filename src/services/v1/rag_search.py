@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.settings import settings
 from src.core.exceptions import KnowledgeBaseNotFoundError
+from src.core.integrations.ai.embeddings.openrouter import OpenRouterEmbeddings
 from src.repository.v1.document_chunks import DocumentChunkRepository
 from src.repository.v1.knowledge_bases import KnowledgeBaseRepository
 
@@ -64,7 +65,7 @@ class RAGSearchService:
     def __init__(
         self,
         session: AsyncSession,
-        openrouter_client,  # TODO: типизация после создания OpenRouter client
+        openrouter_client: OpenRouterEmbeddings,
     ):
         """
         Инициализация RAG Search Service.
@@ -177,15 +178,12 @@ class RAGSearchService:
 
         Returns:
             List[float]: Вектор embedding (обычно 1536 чисел)
-        """
-        # TODO: Реализовать после создания OpenRouter client
-        # Временная заглушка для проверки архитектуры
-        response = await self.openrouter.embeddings.create(
-            model=settings.OPENROUTER_EMBEDDING_MODEL,
-            input=query,
-        )
 
-        embedding = response.data[0].embedding
+        Raises:
+            OpenRouterError: При ошибках API
+        """
+        # Генерируем embedding через OpenRouter API
+        embedding = await self.openrouter.embed_query(query)
         return embedding
 
     async def rerank_results(
