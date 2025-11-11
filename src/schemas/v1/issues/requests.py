@@ -31,8 +31,8 @@ See Also:
     - src.schemas.v1.issues.base: Базовые схемы
     - src.schemas.v1.issues.responses: Схемы ответов
 """
-
 from typing import Optional
+from uuid import UUID
 
 from pydantic import Field
 
@@ -47,6 +47,7 @@ class IssueCreateRequestSchema(BaseRequestSchema):
         title: Заголовок проблемы (до 255 символов).
         description: Подробное описание проблемы.
         category: Категория проблемы (hardware/software/process).
+        workspace_id: UUID рабочего пространства (workspace).
 
     Note:
         Поля status, author_id, solution, resolved_at устанавливаются автоматически:
@@ -60,7 +61,8 @@ class IssueCreateRequestSchema(BaseRequestSchema):
         {
             "title": "Ошибка E401 на станке №3",
             "description": "При запуске станка возникает ошибка E401",
-            "category": "hardware"
+            "category": "hardware",
+            "workspace_id": "123e4567-e89b-12d3-a456-426614174000"
         }
     """
 
@@ -77,6 +79,10 @@ class IssueCreateRequestSchema(BaseRequestSchema):
         max_length=50,
         description="Категория проблемы (hardware, software, process)",
         examples=["hardware", "software", "process"],
+    )
+    workspace_id: UUID = Field(
+        description="UUID рабочего пространства",
+        examples=["123e4567-e89b-12d3-a456-426614174000"],
     )
 
 

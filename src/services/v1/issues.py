@@ -240,31 +240,30 @@ class IssueService(BaseService):
             workflow_repo = N8nWorkflowRepository(self.session)
 
             # Ищем активный workflow AUTO_CATEGORIZE для workspace Issue
-            # TODO: Добавить workspace_id в IssueModel когда будет реализовано
-            # Пока пропускаем - нет связи Issue → Workspace
-            # workflows = await workflow_repo.filter_by(
-            #     workspace_id=issue.workspace_id,
-            #     workflow_type="AUTO_CATEGORIZE",
-            #     is_active=True
-            # )
-
-            # if workflows:
-            #     webhook_url = workflows[0].webhook_url
-            #     n8n_webhook_client.trigger_autocategorize_background(
-            #         webhook_url=webhook_url,
-            #         issue_id=issue.id,
-            #         title=issue.title,
-            #         description=issue.description,
-            #     )
-            #     self.logger.debug(
-            #         "Вызван webhook auto-categorize для issue %s", issue.id
-            #     )
-
-            # Временное решение: логируем что пропустили вызов
-            self.logger.debug(
-                "Auto-categorize webhook пропущен для issue %s (workspace не подключен)",
-                issue.id,
+            workflows = await workflow_repo.filter_by(
+                workspace_id=issue.workspace_id,
+                workflow_type="AUTO_CATEGORIZE",
+                is_active=True
             )
+
+            if workflows:
+                webhook_url = workflows[0].webhook_url
+                n8n_webhook_client.trigger_autocategorize_background(
+                    webhook_url=webhook_url,
+                    issue_id=issue.id,
+                    title=issue.title,
+                    description=issue.description,
+                )
+                self.logger.debug(
+                    "Вызван webhook auto-categorize для issue %s (workspace %s)",
+                    issue.id,
+                    issue.workspace_id,
+                )
+            else:
+                self.logger.debug(
+                    "Auto-categorize workflow не найден для workspace %s",
+                    issue.workspace_id,
+                )
 
         except Exception as e:
             # Не критично если не удалось вызвать webhook
@@ -272,9 +271,8 @@ class IssueService(BaseService):
                 "Не удалось вызвать auto-categorize webhook: %s",
                 str(e),
             )
-        return issue
 
-    # ==================== READ ====================
+    # ==================== READ ====================    # ==================== READ ====================
 
     async def get_issue(self, issue_id: UUID) -> IssueModel:
         """
