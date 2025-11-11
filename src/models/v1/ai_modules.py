@@ -212,7 +212,7 @@ class WorkspaceModuleModel(BaseModel):
 
     # Relationships
     workspace: Mapped["WorkspaceModel"] = relationship(
-        "WorkspaceModel", back_populates="modules"
+        "WorkspaceModel", back_populates="ai_modules"
     )
 
     module: Mapped["AIModuleModel"] = relationship(
