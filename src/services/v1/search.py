@@ -214,23 +214,20 @@ class SearchService(BaseService):
                 category=filters.categories[0] if filters and filters.categories else None,
                 author_id=filters.author_id if filters else None,
                 search=query,  # search_by_text внутри get_filtered
-                limit=50,
+                limit=settings.DB_SEARCH_LIMIT,
                 offset=0,
             )
 
             # Преобразуем IssueModel в SearchResultSchema
             results = []
             for issue in issues:
-                # Вычисляем score на основе релевантности (простая эвристика)
-                score = 1.0  # Базовый score для DB результатов
-
-                # Повышаем score если query встречается в title
+                # Вычисляем score на основе релевантности (эвристика из settings)
                 if query.lower() in issue.title.lower():
-                    score = 1.0
+                    score = settings.DB_SEARCH_SCORE_TITLE
                 elif query.lower() in (issue.description or "").lower():
-                    score = 0.8
+                    score = settings.DB_SEARCH_SCORE_DESCRIPTION
                 else:
-                    score = 0.6
+                    score = settings.DB_SEARCH_SCORE_OTHER
 
                 results.append(
                     SearchResultSchema(
@@ -277,8 +274,7 @@ class SearchService(BaseService):
             rag_results = await self.rag_service.search(
                 query=query,
                 kb_id=kb_id,
-                limit=10,
-                min_similarity=0.7,
+                # limit и min_similarity берутся из settings в RAGSearchService
             )
 
             # Преобразуем RAGSearchResult в SearchResultSchema

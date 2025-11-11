@@ -647,6 +647,14 @@ class Settings(BaseSettings):
     # URL webhook для n8n smart search helper (опционально)
     N8N_SMART_SEARCH_WEBHOOK: Optional[str] = None
 
+    # Настройки DB поиска
+    # Максимальное количество результатов из БД
+    DB_SEARCH_LIMIT: int = 50
+    # Score эвристика для DB поиска (на основе местоположения совпадения)
+    DB_SEARCH_SCORE_TITLE: float = 1.0  # Совпадение в заголовке
+    DB_SEARCH_SCORE_DESCRIPTION: float = 0.8  # Совпадение в описании
+    DB_SEARCH_SCORE_OTHER: float = 0.6  # Совпадение в других полях
+
     # Настройки RAG поиска
     # Дефолтное количество результатов из векторного поиска
     RAG_SEARCH_LIMIT: int = 5
