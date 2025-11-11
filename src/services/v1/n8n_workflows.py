@@ -156,10 +156,11 @@ class N8nWorkflowService:
         if not workflow.is_active:
             raise ValueError("Workflow неактивен")
 
-        await self.repository.increment_execution_count(workflow_id)
-        await self.repository.update_item(
+        # Обновляем счетчик и время последнего запуска
+        return await self.repository.update_item(
             workflow_id,
-            {"last_triggered_at": datetime.utcnow()},
+            {
+                "execution_count": workflow.execution_count + 1,
+                "last_triggered_at": datetime.utcnow(),
+            },
         )
-
-        return await self.repository.get_item_by_id(workflow_id)

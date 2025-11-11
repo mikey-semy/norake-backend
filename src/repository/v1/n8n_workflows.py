@@ -3,8 +3,6 @@
 from typing import List
 from uuid import UUID
 
-from sqlalchemy import select
-
 from src.models.v1.n8n_workflows import N8nWorkflowModel
 from src.repository.base import BaseRepository
 
@@ -66,13 +64,19 @@ class N8nWorkflowRepository(BaseRepository[N8nWorkflowModel]):
             workflow_type=workflow_type,
         )
 
-    async def increment_execution_count(self, workflow_id: UUID) -> None:
+    async def increment_execution_count(self, workflow_id: UUID) -> N8nWorkflowModel:
         """Увеличить счетчик выполнений workflow.
 
         Args:
             workflow_id: UUID workflow.
+
+        Returns:
+            N8nWorkflowModel: Обновлённый workflow.
         """
         workflow = await self.get_item_by_id(workflow_id)
         if workflow:
-            workflow.execution_count += 1
-            await self.session.commit()
+            return await self.update_item(
+                workflow_id,
+                {"execution_count": workflow.execution_count + 1},
+            )
+        return workflow
