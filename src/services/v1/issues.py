@@ -36,9 +36,7 @@ class IssueService(BaseService):
     Сервис для работы с проблемами (Issues).
 
     Содержит бизнес-логику: валидацию, проверку прав доступа,
-    орке
-
-страцию действий. Возвращает domain objects (IssueModel).
+    оркестрацию действий. Возвращает domain objects (IssueModel).
 
     Attributes:
         repository: Репозиторий для работы с IssueModel.

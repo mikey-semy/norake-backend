@@ -292,8 +292,17 @@ class SearchService(BaseService):
                 )
                 for result in rag_results
             ]
-        except (ValueError, TypeError, KeyError) as e:
-            logger.error("RAG search ошибка: %s", e)
+        except ValueError as e:
+            logger.error("RAG search validation error: %s", e)
+            return []
+        except TypeError as e:
+            logger.error("RAG search type error (возможно некорректный формат данных): %s", e)
+            return []
+        except KeyError as e:
+            logger.error("RAG search missing key error: %s", e)
+            return []
+        except Exception as e:
+            logger.exception("RAG search unexpected error: %s", e)
             return []
 
     async def _search_mcp(self, query: str) -> List[SearchResultSchema]:

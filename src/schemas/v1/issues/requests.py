@@ -68,11 +68,13 @@ class IssueCreateRequestSchema(BaseRequestSchema):
     """
 
     title: str = Field(
+        min_length=1,
         max_length=255,
         description="Заголовок проблемы",
         examples=["Ошибка E401 на станке №3"],
     )
     description: str = Field(
+        min_length=1,
         description="Подробное описание проблемы",
         examples=["При запуске станка возникает ошибка E401, индикатор мигает красным"],
     )

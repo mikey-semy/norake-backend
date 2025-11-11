@@ -107,8 +107,9 @@ class RAGSearchService:
             KnowledgeBaseNotFoundError: Если KB не найдена
         """
         # Используем значения из settings если не переданы
-        limit = limit or settings.RAG_SEARCH_LIMIT
-        min_similarity = min_similarity or settings.RAG_MIN_SIMILARITY
+        limit = limit if limit is not None else settings.RAG_SEARCH_LIMIT
+        min_similarity = min_similarity if min_similarity is not None else settings.RAG_MIN_SIMILARITY
+        
         # Проверка существования KB
         kb = await self.kb_repository.get_item_by_id(kb_id)
         if not kb:
@@ -149,8 +150,8 @@ class RAGSearchService:
             List[RAGSearchResult]: Результаты поиска
         """
         # Используем значения из settings если не переданы
-        limit = limit or settings.RAG_SEARCH_LIMIT
-        min_similarity = min_similarity or settings.RAG_MIN_SIMILARITY
+        limit = limit if limit is not None else settings.RAG_SEARCH_LIMIT
+        min_similarity = min_similarity if min_similarity is not None else settings.RAG_MIN_SIMILARITY
 
         # Делегируем поиск в репозиторий (DB access только через repository)
         rows = await self.chunk_repository.vector_search(
@@ -218,7 +219,7 @@ class RAGSearchService:
             В текущей реализации просто обрезает до top_k.
         """
         # Используем значение из settings если не передано
-        top_k = top_k or settings.RAG_RERANK_TOP_K
+        top_k = top_k if top_k is not None else settings.RAG_RERANK_TOP_K
 
         # TODO: Интегрировать reranking модель если необходимо
         # Пока просто возвращаем топ-K без изменений
