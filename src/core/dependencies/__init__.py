@@ -23,6 +23,8 @@ from .issues import IssueServiceDep
 from .templates import TemplateServiceDep
 # Workspace Service dependency
 from .workspaces import WorkspaceServiceDep
+# Search Service dependencies
+from .search import RAGSearchServiceDep, SearchServiceDep
 
 __all__ = [
     # Database dependencies
@@ -43,4 +45,7 @@ __all__ = [
     "TemplateServiceDep",
     # Workspace Service dependency
     "WorkspaceServiceDep",
+    # Search Service dependencies
+    "RAGSearchServiceDep",
+    "SearchServiceDep",
 ]
