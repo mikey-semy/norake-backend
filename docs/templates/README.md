@@ -2,7 +2,16 @@
 
 Этот каталог содержит готовые шаблоны для структурированного создания Issues.
 
-## 📋 Доступные шаблоны
+## � Навигация по документации
+
+- **[QUICKSTART.md](QUICKSTART.md)** - Быстрый старт (5 минут)
+- **[WORKFLOW.md](WORKFLOW.md)** - Визуальная диаграмма workflow с метриками
+- **[developer-issue-template.md](developer-issue-template.md)** - Полное руководство с примерами
+- **[developer-issue-template.json](developer-issue-template.json)** - JSON для API
+- **[create_developer_template.sql](create_developer_template.sql)** - SQL скрипт для PostgreSQL
+- **[create_developer_template.py](create_developer_template.py)** - Python автоматизация
+
+## �📋 Доступные шаблоны
 
 ### 1. Developer Issue Template (Запрос помощи: Программирование)
 
