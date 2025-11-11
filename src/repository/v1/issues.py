@@ -20,7 +20,7 @@ from uuid import UUID
 
 from sqlalchemy import and_, or_, select
 
-from src.models.v1.issues import IssueModel, IssueStatus
+from src.models.v1.issues import IssueModel, IssueStatus, IssueVisibility
 from src.repository.base import BaseRepository
 
 
@@ -289,19 +289,34 @@ class IssueRepository(BaseRepository[IssueModel]):
         category: Optional[str] = None,
         author_id: Optional[UUID] = None,
         search: Optional[str] = None,
+        workspace_id: Optional[UUID] = None,
+        current_user_id: Optional[UUID] = None,
+        is_admin: bool = False,
+        public_only: bool = False,
         limit: int = 50,
         offset: int = 0,
     ) -> List[IssueModel]:
         """
-        Получить проблемы с множественными фильтрами.
+        Получить проблемы с множественными фильтрами и visibility правилами.
 
         Комбинирует фильтры через AND. Все параметры опциональны.
+
+        Visibility rules:
+            - public_only=True: только PUBLIC issues (anonymous search).
+            - is_admin=True: доступ ко всем issues (admin override).
+            - workspace_id + current_user_id: PUBLIC + WORKSPACE (для этого workspace) + PRIVATE (если author).
+            - current_user_id only: PUBLIC + PRIVATE (если author).
+            - None: только PUBLIC (fallback).
 
         Args:
             status: Фильтр по статусу.
             category: Фильтр по категории.
             author_id: Фильтр по автору.
             search: Поиск по title/description.
+            workspace_id: UUID воркспейса (для WORKSPACE visibility).
+            current_user_id: UUID текущего пользователя (для PRIVATE visibility).
+            is_admin: Флаг админа (bypasses visibility checks).
+            public_only: Только PUBLIC issues (для публичного поиска).
             limit: Максимальное количество результатов.
             offset: Смещение для пагинации.
 
@@ -309,16 +324,23 @@ class IssueRepository(BaseRepository[IssueModel]):
             List[IssueModel]: Список отфильтрованных проблем.
 
         Example:
-            >>> # Нерешённые проблемы hardware конкретного пользователя
-            >>> issues = await repo.get_filtered(
-            ...     status=IssueStatus.RED,
-            ...     category="hardware",
-            ...     author_id=user_id
+            >>> # Публичный поиск (anonymous)
+            >>> public_issues = await repo.get_filtered(public_only=True, search="error")
+            
+            >>> # Workspace member search
+            >>> ws_issues = await repo.get_filtered(
+            ...     workspace_id=workspace_id,
+            ...     current_user_id=user_id,
+            ...     status=IssueStatus.RED
             ... )
+            
+            >>> # Admin search
+            >>> all_issues = await repo.get_filtered(is_admin=True)
         """
         query = select(IssueModel)
         conditions = []
 
+        # === Basic filters ===
         if status:
             conditions.append(IssueModel.status == status)
         if category:
@@ -334,6 +356,48 @@ class IssueRepository(BaseRepository[IssueModel]):
                 )
             )
 
+        # === Visibility filters ===
+        visibility_conditions = []
+
+        if public_only:
+            # Публичный поиск: только PUBLIC
+            visibility_conditions.append(IssueModel.visibility == IssueVisibility.PUBLIC)
+        elif is_admin:
+            # Админ видит всё: no visibility filter
+            pass
+        elif current_user_id and workspace_id:
+            # Workspace member: PUBLIC + WORKSPACE (для этого workspace) + PRIVATE (если автор)
+            visibility_conditions.append(
+                or_(
+                    IssueModel.visibility == IssueVisibility.PUBLIC,
+                    and_(
+                        IssueModel.visibility == IssueVisibility.WORKSPACE,
+                        IssueModel.workspace_id == workspace_id,
+                    ),
+                    and_(
+                        IssueModel.visibility == IssueVisibility.PRIVATE,
+                        IssueModel.author_id == current_user_id,
+                    ),
+                )
+            )
+        elif current_user_id:
+            # Authenticated user без workspace: PUBLIC + PRIVATE (если автор)
+            visibility_conditions.append(
+                or_(
+                    IssueModel.visibility == IssueVisibility.PUBLIC,
+                    and_(
+                        IssueModel.visibility == IssueVisibility.PRIVATE,
+                        IssueModel.author_id == current_user_id,
+                    ),
+                )
+            )
+        else:
+            # Fallback: только PUBLIC
+            visibility_conditions.append(IssueModel.visibility == IssueVisibility.PUBLIC)
+
+        if visibility_conditions:
+            conditions.extend(visibility_conditions)
+
         if conditions:
             query = query.where(and_(*conditions))
 
@@ -346,5 +410,10 @@ class IssueRepository(BaseRepository[IssueModel]):
         if limit:
             issues = issues[:limit]
 
-        self.logger.info("Получено %d отфильтрованных проблем", len(issues))
+        self.logger.info(
+            "Получено %d отфильтрованных проблем (public_only=%s, is_admin=%s)",
+            len(issues),
+            public_only,
+            is_admin,
+        )
         return issues
