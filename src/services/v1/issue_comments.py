@@ -86,14 +86,15 @@ class IssueCommentService:
             'Решение найдено'
         """
         logger.info(
-            f"✨ Создание комментария для проблемы {issue_id} "
-            f"от пользователя {author_id}"
+            "✨ Создание комментария для проблемы %s от пользователя %s",
+            issue_id,
+            author_id,
         )
 
         # Проверка существования проблемы
         issue = await self.issue_repository.get_item_by_id(issue_id)
         if not issue:
-            logger.warning(f"⚠️ Проблема {issue_id} не найдена")
+            logger.warning("⚠️ Проблема %s не найдена", issue_id)
             raise IssueNotFoundError(issue_id=issue_id)
 
         # Создание комментария
@@ -107,7 +108,9 @@ class IssueCommentService:
         comment = await self.comment_repository.create_item(comment_data)
 
         logger.info(
-            f"✅ Комментарий {comment.id} успешно создан для проблемы {issue_id}"
+            "✅ Комментарий %s успешно создан для проблемы %s",
+            comment.id,
+            issue_id,
         )
         return comment
 
@@ -132,12 +135,12 @@ class IssueCommentService:
             >>> len(comments)
             5
         """
-        logger.info(f"✨ Получение комментариев для проблемы {issue_id}")
+        logger.info("✨ Получение комментариев для проблемы %s", issue_id)
 
         # Проверка существования проблемы
         issue = await self.issue_repository.get_item_by_id(issue_id)
         if not issue:
-            logger.warning(f"⚠️ Проблема {issue_id} не найдена")
+            logger.warning("⚠️ Проблема %s не найдена", issue_id)
             raise IssueNotFoundError(issue_id=issue_id)
 
         # Получение комментариев
@@ -147,7 +150,9 @@ class IssueCommentService:
         )
 
         logger.info(
-            f"✅ Получено {len(comments)} комментариев для проблемы {issue_id}"
+            "✅ Получено %s комментариев для проблемы %s",
+            len(comments),
+            issue_id,
         )
         return comments
 
@@ -180,20 +185,25 @@ class IssueCommentService:
             Только автор комментария или администратор могут удалить комментарий.
         """
         logger.info(
-            f"✨ Удаление комментария {comment_id} пользователем {user_id}"
+            "✨ Удаление комментария %s пользователем %s",
+            comment_id,
+            user_id,
         )
 
         # Получение комментария
         comment = await self.comment_repository.get_item_by_id(comment_id)
         if not comment:
-            logger.warning(f"⚠️ Комментарий {comment_id} не найден")
+            logger.warning("⚠️ Комментарий %s не найден", comment_id)
             raise CommentNotFoundError(comment_id=comment_id)
 
         # Проверка прав доступа
         if not is_admin and comment.author_id != user_id:
             logger.warning(
-                f"⚠️ Пользователь {user_id} не имеет прав удалить "
-                f"комментарий {comment_id} (автор: {comment.author_id})"
+                "⚠️ Пользователь %s не имеет прав удалить "
+                "комментарий %s (автор: %s)",
+                user_id,
+                comment_id,
+                comment.author_id,
             )
             raise CommentAccessDeniedError(
                 comment_id=comment_id,
@@ -203,7 +213,7 @@ class IssueCommentService:
         # Удаление комментария
         await self.comment_repository.delete_item(comment_id)
 
-        logger.info(f"✅ Комментарий {comment_id} успешно удалён")
+        logger.info("✅ Комментарий %s успешно удалён", comment_id)
 
     async def mark_as_solution(
         self,
@@ -238,27 +248,30 @@ class IssueCommentService:
             Только автор проблемы или администратор могут отмечать решения.
         """
         logger.info(
-            f"✨ Отметка комментария {comment_id} как решения "
-            f"пользователем {user_id}"
+            "✨ Отметка комментария %s как решения пользователем %s",
+            comment_id,
+            user_id,
         )
 
         # Получение комментария
         comment = await self.comment_repository.get_item_by_id(comment_id)
         if not comment:
-            logger.warning(f"⚠️ Комментарий {comment_id} не найден")
+            logger.warning("⚠️ Комментарий %s не найден", comment_id)
             raise CommentNotFoundError(comment_id=comment_id)
 
         # Получение проблемы для проверки прав
         issue = await self.issue_repository.get_item_by_id(comment.issue_id)
         if not issue:
-            logger.warning(f"⚠️ Проблема {comment.issue_id} не найдена")
+            logger.warning("⚠️ Проблема %s не найдена", comment.issue_id)
             raise IssueNotFoundError(issue_id=comment.issue_id)
 
         # Проверка прав: только автор проблемы или админ
         if not is_admin and issue.author_id != user_id:
             logger.warning(
-                f"⚠️ Пользователь {user_id} не является автором проблемы "
-                f"{issue.id} (автор: {issue.author_id})"
+                "⚠️ Пользователь %s не является автором проблемы %s (автор: %s)",
+                user_id,
+                issue.id,
+                issue.author_id,
             )
             raise CommentAccessDeniedError(
                 comment_id=comment_id,
@@ -271,5 +284,5 @@ class IssueCommentService:
             is_solution=True,
         )
 
-        logger.info(f"✅ Комментарий {comment_id} отмечен как решение")
+        logger.info("✅ Комментарий %s отмечен как решение", comment_id)
         return updated_comment  # type: ignore
