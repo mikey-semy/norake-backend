@@ -1,0 +1,475 @@
+{
+  "name": "NoRake: Smart Search Helper",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "smart-search",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-smart-search",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 400],
+      "webhookId": "smart-search"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "query",
+              "name": "query",
+              "value": "={{ $json.body.query }}",
+              "type": "string"
+            },
+            {
+              "id": "workspace_id",
+              "name": "workspace_id",
+              "value": "={{ $json.body.workspace_id }}",
+              "type": "string"
+            },
+            {
+              "id": "limit",
+              "name": "limit",
+              "value": "={{ $json.body.limit || 5 }}",
+              "type": "number"
+            },
+            {
+              "id": "search_web",
+              "name": "search_web",
+              "value": "={{ $json.body.search_web !== false }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-search-params",
+      "name": "Extract Search Params",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [450, 400]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, title, description, category, status, similarity_score FROM (\n  SELECT \n    id, \n    title, \n    description, \n    category, \n    status,\n    ts_rank(to_tsvector('russian', title || ' ' || description), plainto_tsquery('russian', $1)) AS similarity_score\n  FROM issues\n  WHERE \n    workspace_id = $2\n    AND to_tsvector('russian', title || ' ' || description) @@ plainto_tsquery('russian', $1)\n  ORDER BY similarity_score DESC\n  LIMIT $3\n) AS results\nWHERE similarity_score > 0",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "1",
+              "value": "={{ $json.query }}"
+            },
+            {
+              "name": "2",
+              "value": "={{ $json.workspace_id }}"
+            },
+            {
+              "name": "3",
+              "value": "={{ $json.limit }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "db-fulltext-search",
+      "name": "DB: Full-Text Search",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [650, 200],
+      "credentials": {
+        "postgres": {
+          "id": "norake-postgres",
+          "name": "NoRake PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "HTTP-Referer",
+              "value": "https://norake.equiply.ru"
+            },
+            {
+              "name": "X-Title",
+              "value": "NoRake Backend"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "openai/text-embedding-3-small"
+            },
+            {
+              "name": "input",
+              "value": "={{ $json.query }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "generate-query-embedding",
+      "name": "Generate Query Embedding",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 400]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "query-embedding",
+              "name": "query_embedding",
+              "value": "={{ $json.data[0].embedding }}",
+              "type": "array"
+            },
+            {
+              "id": "keep-query",
+              "name": "query",
+              "value": "={{ $('Extract Search Params').item.json.query }}",
+              "type": "string"
+            },
+            {
+              "id": "keep-workspace",
+              "name": "workspace_id",
+              "value": "={{ $('Extract Search Params').item.json.workspace_id }}",
+              "type": "string"
+            },
+            {
+              "id": "keep-limit",
+              "name": "limit",
+              "value": "={{ $('Extract Search Params').item.json.limit }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-embedding",
+      "name": "Extract Embedding",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  dc.document_id,\n  d.filename,\n  dc.content,\n  dc.chunk_index,\n  1 - (dc.embedding <=> $1::vector) AS cosine_similarity\nFROM document_chunks dc\nJOIN documents d ON d.id = dc.document_id\nWHERE \n  d.kb_id IN (\n    SELECT id FROM knowledge_base WHERE workspace_id = $2\n  )\n  AND dc.embedding IS NOT NULL\nORDER BY dc.embedding <=> $1::vector\nLIMIT $3",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "1",
+              "value": "=[{{ $json.query_embedding.join(',') }}]"
+            },
+            {
+              "name": "2",
+              "value": "={{ $json.workspace_id }}"
+            },
+            {
+              "name": "3",
+              "value": "={{ $json.limit }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "rag-vector-search",
+      "name": "RAG: Vector Search",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1050, 400],
+      "credentials": {
+        "postgres": {
+          "id": "norake-postgres",
+          "name": "NoRake PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $('Extract Search Params').item.json.search_web }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "check-web-search",
+      "name": "Check if Web Search Enabled",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [650, 600]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $('Extract Search Params').item.json.query }}"
+            },
+            {
+              "name": "search_depth",
+              "value": "basic"
+            },
+            {
+              "name": "include_domains",
+              "value": "=[\"stackoverflow.com\", \"github.com\", \"docs.python.org\", \"medium.com\"]"
+            },
+            {
+              "name": "max_results",
+              "value": "={{ $('Extract Search Params').item.json.limit }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "tavily-web-search",
+      "name": "Tavily: Web Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [850, 550],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "tavily-api-key",
+          "name": "Tavily API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "no-web-results",
+              "name": "web_results",
+              "value": "=[]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "no-web-search",
+      "name": "No Web Search",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [850, 650]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "id": "merge-all-results",
+      "name": "Merge All Results",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [1250, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize and rank results from all sources\nconst dbResults = $('DB: Full-Text Search').all();\nconst ragResults = $('RAG: Vector Search').all();\nconst webData = $input.first().json;\n\nconst ranked = [];\n\n// DB Results (weight: 1.0 - exact matches)\nfor (const item of dbResults) {\n  ranked.push({\n    source: 'database',\n    type: 'issue',\n    id: item.json.id,\n    title: item.json.title,\n    description: item.json.description,\n    category: item.json.category,\n    status: item.json.status,\n    score: item.json.similarity_score || 1.0,\n    relevance: item.json.similarity_score || 1.0\n  });\n}\n\n// RAG Results (weight: 0.8 - semantic similarity)\nfor (const item of ragResults) {\n  ranked.push({\n    source: 'knowledge_base',\n    type: 'document',\n    document_id: item.json.document_id,\n    filename: item.json.filename,\n    content: item.json.content,\n    chunk_index: item.json.chunk_index,\n    score: item.json.cosine_similarity * 0.8,\n    relevance: item.json.cosine_similarity\n  });\n}\n\n// Web Results (weight: 0.6 - external sources)\nif (webData.results && Array.isArray(webData.results)) {\n  for (const item of webData.results) {\n    ranked.push({\n      source: 'web',\n      type: 'article',\n      title: item.title,\n      url: item.url,\n      content: item.content,\n      score: (item.score || 0.5) * 0.6,\n      relevance: item.score || 0.5\n    });\n  }\n}\n\n// Sort by score descending\nranked.sort((a, b) => b.score - a.score);\n\n// Take top N results\nconst limit = $('Extract Search Params').item.json.limit;\nconst topResults = ranked.slice(0, limit);\n\nreturn { json: { results: topResults, total: ranked.length } };"
+      },
+      "id": "rank-results",
+      "name": "Rank Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1450, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"query\": $('Extract Search Params').item.json.query,\n  \"sources\": {\n    \"database\": $('DB: Full-Text Search').all().length,\n    \"knowledge_base\": $('RAG: Vector Search').all().length,\n    \"web\": $json.results.filter(r => r.source === 'web').length\n  },\n  \"results\": $json.results,\n  \"total_found\": $json.total\n} }}",
+        "options": {}
+      },
+      "id": "respond-to-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1650, 400]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Search Params",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Search Params": {
+      "main": [
+        [
+          {
+            "node": "DB: Full-Text Search",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Query Embedding",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check if Web Search Enabled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB: Full-Text Search": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Query Embedding": {
+      "main": [
+        [
+          {
+            "node": "Extract Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Embedding": {
+      "main": [
+        [
+          {
+            "node": "RAG: Vector Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAG: Vector Search": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Check if Web Search Enabled": {
+      "main": [
+        [
+          {
+            "node": "Tavily: Web Search",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Web Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily: Web Search": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "No Web Search": {
+      "main": [
+        [
+          {
+            "node": "Merge All Results",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge All Results": {
+      "main": [
+        [
+          {
+            "node": "Rank Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rank Results": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-11T05:00:00.000Z",
+  "versionId": "1"
+}
