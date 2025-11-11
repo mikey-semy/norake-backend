@@ -647,6 +647,14 @@ class Settings(BaseSettings):
     # URL webhook для n8n smart search helper (опционально)
     N8N_SMART_SEARCH_WEBHOOK: Optional[str] = None
 
+    # Настройки RAG поиска
+    # Дефолтное количество результатов из векторного поиска
+    RAG_SEARCH_LIMIT: int = 5
+    # Минимальный порог cosine similarity (0-1)
+    RAG_MIN_SIMILARITY: float = 0.7
+    # Количество результатов для reranking
+    RAG_RERANK_TOP_K: int = 3
+
     # Категории Issue и Template (синхронизированы с n8n workflow)
     # TODO: Переделать в CategoryModel в БД + admin API для управления
     ISSUE_CATEGORIES: List[str] = [

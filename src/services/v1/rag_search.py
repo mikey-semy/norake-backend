@@ -83,8 +83,8 @@ class RAGSearchService:
         self,
         query: str,
         kb_id: UUID,
-        limit: int = 5,
-        min_similarity: float = 0.7,
+        limit: int | None = None,
+        min_similarity: float | None = None,
     ) -> List[RAGSearchResult]:
         """
         Семантический поиск по запросу в Knowledge Base.
@@ -97,8 +97,8 @@ class RAGSearchService:
         Args:
             query: Поисковый запрос на естественном языке
             kb_id: UUID Knowledge Base для поиска
-            limit: Максимальное количество результатов (default: 5)
-            min_similarity: Минимальный порог similarity (0-1, default: 0.7)
+            limit: Максимальное количество результатов (default: из settings.RAG_SEARCH_LIMIT)
+            min_similarity: Минимальный порог similarity (0-1, default: из settings.RAG_MIN_SIMILARITY)
 
         Returns:
             List[RAGSearchResult]: Отсортированные результаты (от более релевантных)
@@ -106,6 +106,9 @@ class RAGSearchService:
         Raises:
             KnowledgeBaseNotFoundError: Если KB не найдена
         """
+        # Используем значения из settings если не переданы
+        limit = limit or settings.RAG_SEARCH_LIMIT
+        min_similarity = min_similarity or settings.RAG_MIN_SIMILARITY
         # Проверка существования KB
         kb = await self.kb_repository.get_item_by_id(kb_id)
         if not kb:
@@ -128,8 +131,8 @@ class RAGSearchService:
         self,
         embedding: List[float],
         kb_id: UUID,
-        limit: int = 5,
-        min_similarity: float = 0.7,
+        limit: int | None = None,
+        min_similarity: float | None = None,
     ) -> List[RAGSearchResult]:
         """
         Векторный поиск по готовому embedding.
@@ -139,12 +142,16 @@ class RAGSearchService:
         Args:
             embedding: Векторное представление запроса (1536 dimensions)
             kb_id: UUID Knowledge Base
-            limit: Макс. количество результатов
-            min_similarity: Минимальный порог similarity (0-1)
+            limit: Макс. количество результатов (default: из settings.RAG_SEARCH_LIMIT)
+            min_similarity: Минимальный порог similarity (0-1, default: из settings.RAG_MIN_SIMILARITY)
 
         Returns:
             List[RAGSearchResult]: Результаты поиска
         """
+        # Используем значения из settings если не переданы
+        limit = limit or settings.RAG_SEARCH_LIMIT
+        min_similarity = min_similarity or settings.RAG_MIN_SIMILARITY
+        
         # Делегируем поиск в репозиторий (DB access только через repository)
         rows = await self.chunk_repository.vector_search(
             embedding=embedding,
@@ -190,7 +197,7 @@ class RAGSearchService:
         self,
         results: List[RAGSearchResult],
         query: str,
-        top_k: int = 3,
+        top_k: int | None = None,
     ) -> List[RAGSearchResult]:
         """
         Reranking результатов поиска (опционально).
@@ -201,7 +208,7 @@ class RAGSearchService:
         Args:
             results: Список результатов из similarity_search
             query: Исходный поисковый запрос
-            top_k: Сколько топовых результатов вернуть
+            top_k: Сколько топовых результатов вернуть (default: из settings.RAG_RERANK_TOP_K)
 
         Returns:
             List[RAGSearchResult]: Переранжированные результаты
@@ -210,6 +217,9 @@ class RAGSearchService:
             Требует интеграции с reranking моделью (напр. Cohere Rerank).
             В текущей реализации просто обрезает до top_k.
         """
+        # Используем значение из settings если не передано
+        top_k = top_k or settings.RAG_RERANK_TOP_K
+        
         # TODO: Интегрировать reranking модель если необходимо
         # Пока просто возвращаем топ-K без изменений
         return results[:top_k]
