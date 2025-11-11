@@ -15,7 +15,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from ...base import BaseResponseSchema
+from src.schemas.base import BaseResponseSchema
 from .base import CommentBaseSchema
 
 

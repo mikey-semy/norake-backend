@@ -4,9 +4,6 @@ Pydantic схемы для входных данных (requests) коммент
 Содержит:
     CommentCreateSchema - схема для создания комментария.
 """
-
-from pydantic import Field
-
 from .base import CommentBaseSchema
 
 
