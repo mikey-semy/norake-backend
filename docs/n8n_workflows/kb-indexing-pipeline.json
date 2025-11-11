@@ -1,0 +1,621 @@
+{
+  "name": "NoRake: KB Indexing Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kb-index-document",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-kb-index",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 400],
+      "webhookId": "kb-index-document"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "document_id",
+              "value": "={{ $json.body.document_id }}"
+            },
+            {
+              "name": "kb_id",
+              "value": "={{ $json.body.kb_id }}"
+            },
+            {
+              "name": "content",
+              "value": "={{ $json.body.content }}"
+            },
+            {
+              "name": "filename",
+              "value": "={{ $json.body.filename }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-document-data",
+      "name": "Extract Document Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [450, 400]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.BACKEND_URL }}/api/v1/documents/{{ $json.document_id }}",
+        "method": "PATCH",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "indexing"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "update-status-indexing",
+      "name": "Update Status: INDEXING",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [650, 400]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "chunk-config",
+              "name": "chunk_size",
+              "value": 500,
+              "type": "number"
+            },
+            {
+              "id": "overlap-config",
+              "name": "overlap",
+              "value": 50,
+              "type": "number"
+            },
+            {
+              "id": "chunk-config-chars",
+              "name": "chunk_size_chars",
+              "value": "={{ $json.chunk_size * 4 }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-chunk-config",
+      "name": "Set Chunk Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "split-by-tokens",
+                    "leftValue": "={{ $json.content.length }}",
+                    "rightValue": "={{ $json.chunk_size }}",
+                    "operator": {
+                      "type": "number",
+                      "operation": "gt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "split_chunks"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "check-needs-splitting",
+      "name": "Check if Needs Splitting",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Proper text splitting with word boundaries\nconst content = $input.item.json.content;\nconst chunkSizeChars = $input.item.json.chunk_size_chars;\nconst overlap = $input.item.json.overlap;\n\nconst chunks = [];\nlet startIndex = 0;\n\nwhile (startIndex < content.length) {\n  const endIndex = Math.min(startIndex + chunkSizeChars, content.length);\n  let chunk = content.substring(startIndex, endIndex);\n  \n  // Try to break at word boundary if not at end\n  if (endIndex < content.length) {\n    const lastSpace = chunk.lastIndexOf(' ');\n    if (lastSpace > chunkSizeChars * 0.8) { // At least 80% of desired size\n      chunk = chunk.substring(0, lastSpace);\n      startIndex += lastSpace + 1;\n    } else {\n      startIndex = endIndex;\n    }\n  } else {\n    startIndex = endIndex;\n  }\n  \n  chunks.push(chunk.trim());\n}\n\nreturn { json: { chunks } };"
+      },
+      "id": "split-into-chunks",
+      "name": "Split into Chunks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "single-chunk",
+              "name": "chunks",
+              "value": "={{ [$json.content] }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "create-single-chunk",
+      "name": "Create Single Chunk",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [1250, 500]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "id": "merge-chunks",
+      "name": "Merge Chunks",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [1450, 400]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "chunks",
+        "options": {}
+      },
+      "id": "split-out-chunks",
+      "name": "Split Out Chunks",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [1650, 400]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "add-chunk-index",
+              "name": "chunk_index",
+              "value": "={{ $itemIndex }}",
+              "type": "number"
+            },
+            {
+              "id": "add-chunk-content",
+              "name": "chunk_content",
+              "value": "={{ $json.chunks }}",
+              "type": "string"
+            },
+            {
+              "id": "keep-document-id",
+              "name": "document_id",
+              "value": "={{ $('Extract Document Data').item.json.document_id }}",
+              "type": "string"
+            },
+            {
+              "id": "keep-kb-id",
+              "name": "kb_id",
+              "value": "={{ $('Extract Document Data').item.json.kb_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "add-chunk-metadata",
+      "name": "Add Chunk Metadata",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [1850, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/embeddings",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "HTTP-Referer",
+              "value": "https://norake.equiply.ru"
+            },
+            {
+              "name": "X-Title",
+              "value": "NoRake Backend"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "openai/text-embedding-3-small"
+            },
+            {
+              "name": "input",
+              "value": "={{ $json.chunk_content }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "openrouter-embeddings",
+      "name": "OpenRouter: Generate Embeddings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2050, 400]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "extract-embedding",
+              "name": "embedding",
+              "value": "={{ $json.data[0].embedding }}",
+              "type": "array"
+            },
+            {
+              "id": "token-count",
+              "name": "token_count",
+              "value": "={{ Math.ceil($json.chunk_content.length / 4) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-embedding",
+      "name": "Extract Embedding",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [2250, 400]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO document_chunks (id, document_id, chunk_index, content, embedding, token_count, chunk_metadata, created_at, updated_at) VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, '{}', NOW(), NOW())",
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "1",
+              "value": "={{ $json.document_id }}"
+            },
+            {
+              "name": "2",
+              "value": "={{ $json.chunk_index }}"
+            },
+            {
+              "name": "3",
+              "value": "={{ $json.chunk_content }}"
+            },
+            {
+              "name": "4",
+              "value": "=[{{ $json.embedding.join(',') }}]"
+            },
+            {
+              "name": "5",
+              "value": "={{ $json.token_count }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "insert-chunk-to-db",
+      "name": "Insert Chunk to DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [2450, 400],
+      "credentials": {
+        "postgres": {
+          "id": "norake-postgres",
+          "name": "NoRake PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "id": "aggregate-chunks",
+      "name": "Aggregate Chunks",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [2650, 400]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "count-chunks",
+              "name": "chunks_count",
+              "value": "={{ $input.all().length }}",
+              "type": "number"
+            },
+            {
+              "id": "keep-document-id",
+              "name": "document_id",
+              "value": "={{ $('Extract Document Data').item.json.document_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "calculate-stats",
+      "name": "Calculate Stats",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [2850, 400]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.BACKEND_URL }}/api/v1/documents/{{ $json.document_id }}",
+        "method": "PATCH",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "indexed"
+            },
+            {
+              "name": "chunks_count",
+              "value": "={{ $json.chunks_count }}"
+            },
+            {
+              "name": "indexed_at",
+              "value": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "update-status-indexed",
+      "name": "Update Status: INDEXED",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [3050, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"document_id\": $json.document_id, \"chunks_count\": $json.chunks_count, \"status\": \"indexed\" } }}",
+        "options": {}
+      },
+      "id": "respond-to-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [3250, 400]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Document Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Document Data": {
+      "main": [
+        [
+          {
+            "node": "Update Status: INDEXING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status: INDEXING": {
+      "main": [
+        [
+          {
+            "node": "Set Chunk Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Chunk Config": {
+      "main": [
+        [
+          {
+            "node": "Check if Needs Splitting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Needs Splitting": {
+      "main": [
+        [
+          {
+            "node": "Split into Chunks",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Single Chunk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split into Chunks": {
+      "main": [
+        [
+          {
+            "node": "Merge Chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Single Chunk": {
+      "main": [
+        [
+          {
+            "node": "Merge Chunks",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Chunks": {
+      "main": [
+        [
+          {
+            "node": "Split Out Chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Chunks": {
+      "main": [
+        [
+          {
+            "node": "Add Chunk Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Chunk Metadata": {
+      "main": [
+        [
+          {
+            "node": "OpenRouter: Generate Embeddings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter: Generate Embeddings": {
+      "main": [
+        [
+          {
+            "node": "Extract Embedding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Embedding": {
+      "main": [
+        [
+          {
+            "node": "Insert Chunk to DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Chunk to DB": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Chunks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Chunks": {
+      "main": [
+        [
+          {
+            "node": "Calculate Stats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Stats": {
+      "main": [
+        [
+          {
+            "node": "Update Status: INDEXED",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status: INDEXED": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-11T04:30:00.000Z",
+  "versionId": "1"
+}
