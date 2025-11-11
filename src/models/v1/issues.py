@@ -130,7 +130,11 @@ class IssueModel(BaseModel):
         index=True,
     )
     visibility: Mapped[IssueVisibility] = mapped_column(
-        Enum(IssueVisibility, name="issue_visibility"),
+        Enum(
+            IssueVisibility,
+            name="issue_visibility",
+            values_callable=lambda x: [e.value for e in x],
+        ),
         nullable=False,
         default=IssueVisibility.PUBLIC,
         server_default="public",
