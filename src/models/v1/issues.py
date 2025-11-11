@@ -52,9 +52,11 @@ class IssueModel(BaseModel):
         status (IssueStatus): Текущий статус проблемы (RED/GREEN).
         solution (Optional[str]): Текст решения проблемы (заполняется при закрытии).
         author_id (UUID): Foreign Key на users.id (автор проблемы).
+        workspace_id (UUID): Foreign Key на workspaces.id (рабочее пространство).
         resolved_at (Optional[datetime]): Дата и время решения проблемы.
 
         author (UserModel): Relationship к пользователю-автору.
+        workspace (WorkspaceModel): Relationship к рабочему пространству.
 
     Properties:
         is_resolved (bool): Проверяет, решена ли проблема (status == GREEN).
@@ -73,7 +75,8 @@ class IssueModel(BaseModel):
         ...     description="При запуске станка возникает ошибка E401",
         ...     category="hardware",
         ...     status=IssueStatus.RED,
-        ...     author_id=user_id
+        ...     author_id=user_id,
+        ...     workspace_id=workspace_id
         ... )
         >>> issue.is_resolved
         False
@@ -100,6 +103,9 @@ class IssueModel(BaseModel):
     solution: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     author_id: Mapped[UUID] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    workspace_id: Mapped[UUID] = mapped_column(
+        ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False, index=True
     )
     resolved_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True

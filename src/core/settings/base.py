@@ -628,6 +628,13 @@ class Settings(BaseSettings):
     OPENROUTER_TIMEOUT: int = 30
     OPENROUTER_MAX_RETRIES: int = 3
 
+    # Настройки n8n Integration
+    N8N_BASE_URL: str = "http://localhost:5678"
+    N8N_API_KEY: Optional[SecretStr] = None
+    N8N_WEBHOOK_TIMEOUT: int = 30
+    N8N_WEBHOOK_RETRY_ATTEMPTS: int = 2
+    N8N_WEBHOOK_RETRY_DELAY: float = 1.0
+
     # Настройки CORS
     ALLOW_ORIGINS: List[str] = [
         "https://norake.ru",
