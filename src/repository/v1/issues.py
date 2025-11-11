@@ -326,14 +326,14 @@ class IssueRepository(BaseRepository[IssueModel]):
         Example:
             >>> # Публичный поиск (anonymous)
             >>> public_issues = await repo.get_filtered(public_only=True, search="error")
-            
+
             >>> # Workspace member search
             >>> ws_issues = await repo.get_filtered(
             ...     workspace_id=workspace_id,
             ...     current_user_id=user_id,
             ...     status=IssueStatus.RED
             ... )
-            
+
             >>> # Admin search
             >>> all_issues = await repo.get_filtered(is_admin=True)
         """

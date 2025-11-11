@@ -13,7 +13,7 @@
     5. Redis кэширование (300s TTL)
 
 Обработка исключений: автоматическая обработка через глобальный exception handler.
-Роутеры преобразуют результаты SearchService в SearchResponseSchema.
+Роутеры передают параметры в SearchService с visibility context.
 """
 
 from fastapi import status, Body
@@ -34,14 +34,14 @@ class SearchPublicRouter(BaseRouter):
     Предоставляет HTTP API для быстрого доступа к решениям:
 
     Public Endpoints (без аутентификации):
-        POST /search/public - Поиск по публичным Issues
+        POST /search/public - Поиск по публичным Issues (visibility=public)
 
     Архитектурные особенности:
         - Поиск ТОЛЬКО по публичным Issues (visibility=public)
-        - Без RAG (Knowledge Base может содержать приватные документы)
+        - Без AI/RAG по умолчанию (use_ai=false для безопасности)
         - Ограниченные фильтры (статус, категория)
         - Быстрый доступ к коллективной памяти решений
-        - Redis кэширование результатов
+        - Redis кэширование с изоляцией публичных результатов
     """
 
     def __init__(self):
@@ -58,39 +58,40 @@ class SearchPublicRouter(BaseRouter):
             response_model=SearchResponseSchema,
             status_code=status.HTTP_200_OK,
             description="""
-            ## 🔍 Публичный поиск решений проблем
+            ## 🔍 Публичный поиск по решениям проблем
 
-            Быстрый поиск по коллективной памяти решений БЕЗ регистрации.
-            Ищет только среди публичных Issues (visibility=public).
+            Быстрый поиск по коллективной памяти решений **без аутентификации**.
+            Возвращает только публичные Issues (visibility=public).
 
             ### 🌐 Публичный доступ (без токена)
 
             ### Request Body (SearchRequestSchema):
             * **query** *(required)*: Поисковый запрос (1-500 символов)
-            * **pattern**: Паттерн поиска (match/phrase/fuzzy)
+            * **use_ai**: Использовать AI (по умолчанию false для публичных запросов)
+            * **pattern**: Паттерн поиска (match/phrase/fuzzy, по умолчанию match)
             * **limit**: Макс. результатов (1-100, по умолчанию 20)
-            * **min_score**: Минимальный score (0.0-1.0)
-            * **filters**: Фильтры:
-              - **categories**: Список категорий (hardware/software/process и т.д.)
-              - **statuses**: Список статусов (red/green)
+            * **min_score**: Минимальный score (0.0-1.0, по умолчанию 0.0)
+            * **filters**: Фильтры (categories, statuses)
 
-            ⚠️ **Ограничения**:
-            - Только публичные Issues (приватные воркспейсов недоступны)
-            - Без RAG/AI поиска (использует только БД)
-            - workspace_id, kb_id, author_id, date_range игнорируются
+            **Note**: workspace_id, kb_id, filters.author_id игнорируются в публичном API.
 
             ### Response (SearchResponseSchema):
             * **success**: Успешность запроса
             * **data**: Объект с результатами:
-              - **results**: Список SearchResultDetailSchema
+              - **results**: Список SearchResultDetailSchema (только PUBLIC)
               - **stats**: Статистика (total, источники, query_time)
+
+            ### Redis кэширование:
+            * **TTL**: 300 секунд (5 минут)
+            * **Key**: MD5 хэш от query + filters + public_only=true
+            * **Изоляция**: Публичные и приватные результаты кэшируются отдельно
 
             ### Примеры использования:
 
-            **1. Поиск решения:**
+            **1. Простой поиск проблемы:**
             ```json
             {
-              "query": "проблема с подключением к базе данных",
+              "query": "ошибка подключения к базе данных",
               "limit": 10
             }
             ```
@@ -98,27 +99,28 @@ class SearchPublicRouter(BaseRouter):
             **2. Поиск с фильтрами:**
             ```json
             {
-              "query": "ошибка деплоя",
+              "query": "ошибка авторизации",
               "filters": {
-                "categories": ["software"],
+                "categories": ["software", "security"],
                 "statuses": ["green"]
               },
-              "limit": 20,
-              "min_score": 0.7
+              "limit": 20
             }
             ```
 
-            **3. Точный поиск фразы:**
+            **3. Поиск по категории:**
             ```json
             {
-              "query": "connection timeout",
-              "pattern": "phrase",
-              "limit": 15
+              "query": "станок не запускается",
+              "filters": {
+                "categories": ["hardware", "maintenance"]
+              },
+              "pattern": "phrase"
             }
             ```
 
             ### Returns:
-            * **SearchResponseSchema**: Результаты поиска с метаданными
+            * **SearchResponseSchema**: Публичные результаты с метриками
 
             ### Errors:
             * **400**: Невалидный запрос (query < 1 char)
@@ -128,53 +130,54 @@ class SearchPublicRouter(BaseRouter):
         )
         async def search_public(
             search_service: SearchServiceDep = None,
-            request: SearchRequestSchema = Body(..., description="Параметры поиска"),
+            request: SearchRequestSchema = Body(..., description="Параметры публичного поиска"),
         ) -> SearchResponseSchema:
             """
-            Выполняет публичный поиск по Issues.
+            Публичный поиск по Issues (только visibility=public).
 
             Args:
                 search_service: Сервис гибридного поиска (DI)
-                request: Параметры поиска (query, filters)
+                request: Параметры поиска (query, filters, pattern)
 
             Returns:
-                SearchResponseSchema: Результаты поиска (только публичные Issues)
+                SearchResponseSchema: Результаты поиска (только публичные)
 
             Raises:
                 ValueError: Невалидный запрос (автоматически → 400)
                 SearchTimeoutError: Timeout поиска (автоматически → 408)
                 SearchError: Ошибка поиска (автоматически → 500)
             """
-            # Публичный поиск: только БД, без AI/RAG, без workspace_id
-            result = await search_service.search_with_ai(
+            # Публичный поиск: use_ai=false, public_only=true, no user context
+            return await search_service.search_with_ai(
                 query=request.query,
-                workspace_id=None,  # Публичный поиск - без привязки к воркспейсу
-                use_ai=False,  # Без RAG/MCP (может содержать приватные данные)
+                workspace_id=None,  # Игнорируем workspace_id в публичном API
+                use_ai=False,  # Без AI для безопасности (RAG может содержать приватные данные)
                 kb_id=None,
                 pattern=request.pattern,
                 limit=request.limit,
                 min_score=request.min_score,
                 filters=request.filters,
+                current_user_id=None,
+                is_admin=False,
+                public_only=True,  # КРИТИЧНО: только публичные Issues
             )
-
-            return result
 
 
 class SearchProtectedRouter(ProtectedRouter):
     """
-    Защищённый роутер для полного поиска.
+    Защищённый роутер для гибридного поиска.
 
-    Предоставляет HTTP API для расширенного поиска с AI:
+    Предоставляет HTTP API для полного поиска с AI-интеграцией:
 
     Protected Endpoints (требуется токен):
-        POST /search - Полный поиск (DB + RAG + MCP)
+        POST /search - Гибридный поиск (DB + RAG + MCP) с visibility правилами
 
     Архитектурные особенности:
         - Требует аутентификацию (CurrentUserDep)
-        - Доступ ко ВСЕМ Issues (публичные + приватные воркспейса)
-        - Полный AI-поиск (RAG через pgvector + MCP через n8n)
-        - Все фильтры доступны (workspace_id, author, даты)
-        - Redis кэширование результатов
+        - Применяет visibility rules (PUBLIC + WORKSPACE + PRIVATE)
+        - Полный AI-поиск (RAG + MCP) если use_ai=true
+        - Admin override (админ видит всё)
+        - Кэш изолирован по user_id/workspace_id
     """
 
     def __init__(self):
@@ -184,50 +187,40 @@ class SearchProtectedRouter(ProtectedRouter):
     def configure(self):
         """Настройка защищённых endpoint'ов роутера."""
 
-        # ==================== FULL SEARCH ====================
+        # ==================== PROTECTED SEARCH ====================
 
         @self.router.post(
             path="",
             response_model=SearchResponseSchema,
             status_code=status.HTTP_200_OK,
             description="""
-            ## 🔍 Полный поиск с AI-интеграцией
+            ## 🔍 Гибридный поиск с AI-интеграцией
 
-            Расширенный поиск с доступом к приватным данным и AI.
-            Комбинирует три источника:
-            1. **DB Search** - все Issues (публичные + приватные) - priority 1.0
-            2. **RAG Search** - семантический поиск через pgvector - priority 0.8
-            3. **MCP Search** - поиск через n8n smart-search webhook - priority 0.6
+            Полный поиск с visibility правилами и AI (RAG + MCP).
 
             ### 🔒 Требуется аутентификация
 
+            ### Visibility правила:
+            * **PUBLIC**: Видны всем (включая anonymous)
+            * **WORKSPACE**: Видны только участникам воркспейса + админам
+            * **PRIVATE**: Видны только автору + админам
+            * **Admin override**: Админ видит все Issues
+
             ### Request Body (SearchRequestSchema):
             * **query** *(required)*: Поисковый запрос (1-500 символов)
-            * **workspace_id**: UUID воркспейса (доступ к приватным Issues)
+            * **workspace_id**: UUID воркспейса (для WORKSPACE visibility)
             * **use_ai**: Использовать AI (RAG + MCP), по умолчанию true
             * **kb_id**: UUID Knowledge Base для RAG поиска
             * **pattern**: Паттерн поиска (match/phrase/fuzzy)
             * **limit**: Макс. результатов (1-100, по умолчанию 20)
             * **min_score**: Минимальный score (0.0-1.0)
-            * **filters**: Полные фильтры:
-              - **categories**: Список категорий
-              - **statuses**: Список статусов
-              - **author_id**: UUID автора
-              - **date_from/date_to**: Временной диапазон
+            * **filters**: Фильтры (categories, statuses, author_id, date_range)
 
             ### Response (SearchResponseSchema):
             * **success**: Успешность запроса
             * **data**: Объект с результатами:
-              - **results**: Список SearchResultDetailSchema
+              - **results**: Список SearchResultDetailSchema (с учётом visibility)
               - **stats**: Статистика (total, источники, query_time)
-
-            ### SearchResultDetailSchema:
-            * **id**: UUID результата
-            * **title**: Заголовок
-            * **content**: Контент (excerpt)
-            * **source**: Источник (database/rag/mcp_n8n)
-            * **score**: Релевантность (0.0-1.0)
-            * **metadata**: Дополнительные данные (category, author, timestamps)
 
             ### Примеры использования:
 
@@ -235,25 +228,13 @@ class SearchProtectedRouter(ProtectedRouter):
             ```json
             {
               "query": "проблема с подключением к базе данных",
+              "workspace_id": "123e4567-e89b-12d3-a456-426614174000",
               "use_ai": true,
               "limit": 10
             }
             ```
 
-            **2. Поиск в воркспейсе:**
-            ```json
-            {
-              "query": "ошибка авторизации",
-              "workspace_id": "123e4567-e89b-12d3-a456-426614174000",
-              "filters": {
-                "categories": ["software", "security"],
-                "statuses": ["red"]
-              },
-              "limit": 20
-            }
-            ```
-
-            **3. RAG-поиск по Knowledge Base:**
+            **2. RAG-поиск по Knowledge Base:**
             ```json
             {
               "query": "как настроить OAuth2",
@@ -263,8 +244,21 @@ class SearchProtectedRouter(ProtectedRouter):
             }
             ```
 
+            **3. Поиск с фильтрами:**
+            ```json
+            {
+              "query": "ошибка авторизации",
+              "workspace_id": "123e4567-e89b-12d3-a456-426614174000",
+              "filters": {
+                "categories": ["software"],
+                "statuses": ["red"],
+                "date_from": "2024-01-01T00:00:00Z"
+              }
+            }
+            ```
+
             ### Returns:
-            * **SearchResponseSchema**: Взвешенные результаты с метаданными
+            * **SearchResponseSchema**: Результаты с visibility фильтрацией
 
             ### Errors:
             * **400**: Невалидный запрос
@@ -273,29 +267,33 @@ class SearchProtectedRouter(ProtectedRouter):
             * **500**: Внутренняя ошибка сервера
             """,
         )
-        async def search_full(
+        async def search_protected(
             current_user: CurrentUserDep = None,
             search_service: SearchServiceDep = None,
             request: SearchRequestSchema = Body(..., description="Параметры поиска"),
         ) -> SearchResponseSchema:
             """
-            Выполняет полный поиск с AI-интеграцией.
+            Гибридный поиск с visibility правилами и AI.
 
             Args:
                 current_user: Текущий пользователь из JWT токена
                 search_service: Сервис гибридного поиска (DI)
-                request: Параметры поиска (query, filters, AI settings)
+                request: Параметры поиска (query, workspace_id, use_ai, filters)
 
             Returns:
-                SearchResponseSchema: Результаты поиска с взвешенным ранжированием
+                SearchResponseSchema: Результаты поиска с visibility фильтрацией
 
             Raises:
                 ValueError: Невалидный запрос (автоматически → 400)
                 SearchTimeoutError: Timeout поиска (автоматически → 408)
                 SearchError: Ошибка поиска (автоматически → 500)
             """
-            # Выполняем полный гибридный поиск (DB + RAG + MCP)
-            result = await search_service.search_with_ai(
+            # TODO: Проверить роль админа через current_user.role == 'admin'
+            # Blocked: требуется UserModel с полем role
+            is_admin = False  # Placeholder до реализации role system
+
+            # Полный поиск с visibility правилами
+            return await search_service.search_with_ai(
                 query=request.query,
                 workspace_id=request.workspace_id,
                 use_ai=request.use_ai,
@@ -304,6 +302,7 @@ class SearchProtectedRouter(ProtectedRouter):
                 limit=request.limit,
                 min_score=request.min_score,
                 filters=request.filters,
+                current_user_id=current_user.id,
+                is_admin=is_admin,
+                public_only=False,
             )
-
-            return result

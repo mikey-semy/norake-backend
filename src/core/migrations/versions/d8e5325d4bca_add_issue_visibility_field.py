@@ -28,7 +28,7 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """
     Upgrade schema.
-    
+
     Добавляет enum тип issue_visibility и столбец visibility в таблицу issues.
     Все существующие записи получают значение 'public' по умолчанию.
     """
@@ -39,7 +39,7 @@ def upgrade() -> None:
         create_type=True
     )
     issue_visibility_enum.create(op.get_bind(), checkfirst=True)
-    
+
     # Добавляем столбец visibility с default='public'
     op.add_column(
         'issues',
@@ -50,7 +50,7 @@ def upgrade() -> None:
             server_default='public',
         )
     )
-    
+
     # Создаём индекс для быстрой фильтрации по visibility
     op.create_index(
         'ix_issues_visibility',
@@ -58,7 +58,7 @@ def upgrade() -> None:
         ['visibility'],
         unique=False
     )
-    
+
     # Backfill: обновляем все NULL значения на 'public' (на всякий случай)
     op.execute("UPDATE issues SET visibility = 'public' WHERE visibility IS NULL")
 
@@ -66,14 +66,14 @@ def upgrade() -> None:
 def downgrade() -> None:
     """
     Downgrade schema.
-    
+
     Удаляет столбец visibility и enum тип issue_visibility.
     """
     # Удаляем индекс
     op.drop_index('ix_issues_visibility', table_name='issues')
-    
+
     # Удаляем столбец
     op.drop_column('issues', 'visibility')
-    
+
     # Удаляем enum тип
     sa.Enum(name='issue_visibility').drop(op.get_bind(), checkfirst=True)

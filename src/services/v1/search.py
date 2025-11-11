@@ -18,7 +18,7 @@ import hashlib
 import json
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 from uuid import UUID
 
 import httpx
@@ -33,7 +33,7 @@ from src.schemas.v1.search.base import (
     SearchSourceEnum,
     SearchStatsSchema,
 )
-from src.schemas.v1.search.requests import SearchFiltersRequestSchema, SearchRequestSchema
+from src.schemas.v1.search.requests import SearchFiltersRequestSchema
 from src.schemas.v1.search.responses import SearchResultDetailSchema, SearchResponseSchema
 from src.services.base import BaseService
 from src.services.v1.rag_search import RAGSearchService
@@ -62,12 +62,14 @@ class SearchService(BaseService):
 
     Example:
         >>> service = SearchService(session=session, redis=redis, rag_service=rag)
-        >>> results = await service.search_with_ai(
-        ...     request=SearchRequestSchema(
-        ...         query="ошибка E401",
-        ...         use_ai=True,
-        ...         kb_id=kb_uuid
-        ...     )
+        >>> response = await service.search_with_ai(
+        ...     query="ошибка E401",
+        ...     workspace_id=workspace_uuid,
+        ...     use_ai=True,
+        ...     kb_id=kb_uuid,
+        ...     current_user_id=user_uuid,
+        ...     is_admin=False,
+        ...     public_only=False,
         ... )
     """
 

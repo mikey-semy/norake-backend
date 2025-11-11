@@ -17,7 +17,7 @@
     ...     description="Проблема с оборудованием",
     ...     category="hardware"
     ... )
-    
+
     >>> # Решение проблемы
     >>> resolve_data = IssueResolveRequestSchema(
     ...     solution="Заменён датчик положения"
