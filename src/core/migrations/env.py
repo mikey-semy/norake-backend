@@ -14,7 +14,9 @@ from src.models import BaseModel
 config = context.config
 
 section = config.config_ini_section
-config.set_section_option(section, "sqlalchemy.url", str(settings.database_url))
+# Используем alembic_database_url вместо database_url для корректной работы с ConfigParser
+# (ConfigParser не умеет обрабатывать % в значениях, думая что это interpolation)
+config.set_section_option(section, "sqlalchemy.url", settings.alembic_database_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
