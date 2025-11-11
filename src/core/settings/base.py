@@ -384,21 +384,6 @@ class Settings(BaseSettings):
         return str(self.database_dsn)
 
     @property
-    def alembic_database_url(self) -> str:
-        """
-        Строка подключения для Alembic с экранированными процентами.
-
-        ConfigParser использует %(variable)s синтаксис для интерполяции.
-        Если URL содержит %, нужно экранировать его как %%.
-        URL-кодирование превращает спецсимволы в % (! → %21, @ → %40).
-
-        Returns:
-            str: URL с %% вместо % для корректной работы ConfigParser.
-        """
-        url = str(self.database_dsn)
-        return url.replace("%", "%%")
-
-    @property
     def engine_params(self) -> Dict[str, Any]:
         """
         Параметры для создания SQLAlchemy engine.
