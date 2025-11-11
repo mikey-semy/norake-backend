@@ -13,10 +13,9 @@ from src.models import BaseModel
 # access to the values within the .ini file in use.
 config = context.config
 
-# НЕ используем config.set_section_option() т.к. ConfigParser ломается на % в пароле!
-# Вместо этого передаём database_url напрямую в context.configure()
-# section = config.config_ini_section
-# config.set_section_option(section, "sqlalchemy.url", settings.database_url)
+# Устанавливаем database_url из settings в конфигурацию Alembic
+section = config.config_ini_section
+config.set_section_option(section, "sqlalchemy.url", str(settings.database_url))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -47,8 +46,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    # Используем database_url напрямую из settings, обходя ConfigParser
-    url = settings.database_url
+    url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -72,17 +70,9 @@ async def run_async_migrations() -> None:
     and associate a connection with the context.
 
     """
-    # Создаём конфигурацию engine напрямую из settings, обходя ConfigParser
-    configuration = {
-        "sqlalchemy.url": settings.database_url,
-        **config.get_section(config.config_ini_section, {}),
-    }
-    # Удаляем sqlalchemy.url из section если есть (чтобы не конфликтовал)
-    configuration.pop("sqlalchemy.url", None)
-    configuration["sqlalchemy.url"] = settings.database_url
 
     connectable = async_engine_from_config(
-        configuration,
+        config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
