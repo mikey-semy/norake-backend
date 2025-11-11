@@ -384,25 +384,6 @@ class Settings(BaseSettings):
         return str(self.database_dsn)
 
     @property
-    def alembic_database_url(self) -> str:
-        """
-        Строка подключения для Alembic (без URL-encoding для ConfigParser).
-        
-        ConfigParser не умеет обрабатывать % в значениях (думает что это interpolation).
-        Поэтому возвращаем raw URL с экранированными спецсимволами через quote_plus.
-
-        Returns:
-            str: Raw строка подключения для alembic.ini.
-        """
-        from urllib.parse import quote_plus
-        
-        password = quote_plus(self.POSTGRES_PASSWORD.get_secret_value())
-        return (
-            f"postgresql+asyncpg://{self.POSTGRES_USER}:{password}"
-            f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DATABASE}"
-        )
-
-    @property
     def engine_params(self) -> Dict[str, Any]:
         """
         Параметры для создания SQLAlchemy engine.
