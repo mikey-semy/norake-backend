@@ -81,7 +81,6 @@ def create_error_response(
             "status_code": status_code,
             "timestamp": timestamp,
             "request_id": request_id,
-            "error": extra,
         }
 
         # Добавляем дополнительные поля из extra, если они есть
@@ -92,7 +91,7 @@ def create_error_response(
         # Вложенная структура для стандартного формата API
         content = {
             "success": False,
-            "message": None,
+            "message": detail,  # Используем detail как message для единообразия
             "data": None,
             "error": {
                 "detail": detail,
@@ -100,7 +99,7 @@ def create_error_response(
                 "status_code": status_code,
                 "timestamp": timestamp,
                 "request_id": request_id,
-                "extra": extra,
+                **(extra or {}),  # Распаковываем extra напрямую в error объект
             },
         }
 
