@@ -151,7 +151,7 @@ class RAGSearchService:
         # Используем значения из settings если не переданы
         limit = limit or settings.RAG_SEARCH_LIMIT
         min_similarity = min_similarity or settings.RAG_MIN_SIMILARITY
-        
+
         # Делегируем поиск в репозиторий (DB access только через repository)
         rows = await self.chunk_repository.vector_search(
             embedding=embedding,
@@ -219,7 +219,7 @@ class RAGSearchService:
         """
         # Используем значение из settings если не передано
         top_k = top_k or settings.RAG_RERANK_TOP_K
-        
+
         # TODO: Интегрировать reranking модель если необходимо
         # Пока просто возвращаем топ-K без изменений
         return results[:top_k]
