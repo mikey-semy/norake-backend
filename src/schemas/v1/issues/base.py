@@ -56,6 +56,31 @@ class IssueStatusSchema(CommonBaseSchema):
     )
 
 
+class IssueVisibilitySchema(CommonBaseSchema):
+    """
+    Схема для видимости проблемы.
+
+    Attributes:
+        visibility: Видимость проблемы (public/workspace/private).
+
+    Values:
+        - public: Доступна всем без аутентификации (коллективная память).
+        - workspace: Видна только участникам воркспейса и админам.
+        - private: Видна только автору и админам.
+
+    Example:
+        >>> visibility = IssueVisibilitySchema(visibility="public")
+        >>> visibility.visibility
+        'public'
+    """
+
+    visibility: str = Field(
+        default="public",
+        description="Видимость проблемы (public/workspace/private)",
+        examples=["public", "workspace", "private"],
+    )
+
+
 class IssueAuthorSchema(CommonBaseSchema):
     """
     Схема для отображения автора проблемы.
@@ -92,6 +117,7 @@ class IssueBaseSchema(CommonBaseSchema):
         description: Подробное описание проблемы.
         category: Категория проблемы (hardware/software/process).
         status: Статус проблемы (red/green).
+        visibility: Видимость проблемы (public/workspace/private).
 
     Note:
         Не содержит полей solution, author_id, resolved_at - они
@@ -102,7 +128,8 @@ class IssueBaseSchema(CommonBaseSchema):
         ...     title="Ошибка E401 на станке",
         ...     description="При запуске возникает ошибка",
         ...     category="hardware",
-        ...     status="red"
+        ...     status="red",
+        ...     visibility="public"
         ... )
     """
 
@@ -124,4 +151,9 @@ class IssueBaseSchema(CommonBaseSchema):
         default="red",
         description="Статус проблемы (red - не решена, green - решена)",
         examples=["red", "green"],
+    )
+    visibility: str = Field(
+        default="public",
+        description="Видимость проблемы (public - всем, workspace - воркспейс, private - автор)",
+        examples=["public", "workspace", "private"],
     )

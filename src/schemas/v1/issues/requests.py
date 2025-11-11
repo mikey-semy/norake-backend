@@ -34,8 +34,9 @@ See Also:
 from typing import Optional
 from uuid import UUID
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
+from src.core.settings import settings
 from src.schemas.base import BaseRequestSchema
 
 
@@ -48,6 +49,7 @@ class IssueCreateRequestSchema(BaseRequestSchema):
         description: Подробное описание (обязательно).
         category: Категория проблемы (hardware/software/process/documentation/
             safety/quality/maintenance/training/other).
+        visibility: Видимость проблемы (public/workspace/private, по умолчанию public).
         template_id: UUID шаблона (опционально).
 
     Note:
@@ -63,6 +65,7 @@ class IssueCreateRequestSchema(BaseRequestSchema):
             "title": "Ошибка E401 на станке №3",
             "description": "При запуске станка возникает ошибка E401",
             "category": "hardware",
+            "visibility": "workspace",
             "workspace_id": "123e4567-e89b-12d3-a456-426614174000"
         }
     """
@@ -84,10 +87,39 @@ class IssueCreateRequestSchema(BaseRequestSchema):
         "safety, quality, maintenance, training, other)",
         examples=["hardware", "software", "process", "documentation", "safety"],
     )
+    visibility: str = Field(
+        default="public",
+        description="Видимость проблемы (public/workspace/private)",
+        examples=["public", "workspace", "private"],
+    )
     workspace_id: UUID = Field(
         description="UUID рабочего пространства",
         examples=["123e4567-e89b-12d3-a456-426614174000"],
     )
+
+    @field_validator("visibility")
+    @classmethod
+    def validate_visibility(cls, value: str) -> str:
+        """
+        Валидирует значение visibility.
+
+        Args:
+            value: Значение видимости для проверки.
+
+        Returns:
+            str: Валидированное значение (lowercase).
+
+        Raises:
+            ValueError: Если visibility не в списке разрешённых значений.
+        """
+        allowed = {"public", "workspace", "private"}
+        value_lower = value.lower()
+        if value_lower not in allowed:
+            raise ValueError(
+                f"Недопустимое значение visibility: {value}. "
+                f"Разрешённые значения: {', '.join(allowed)}"
+            )
+        return value_lower
 
 
 class IssueUpdateRequestSchema(BaseRequestSchema):
@@ -100,6 +132,7 @@ class IssueUpdateRequestSchema(BaseRequestSchema):
         title: Новый заголовок проблемы.
         description: Новое описание проблемы.
         category: Новая категория проблемы.
+        visibility: Новая видимость проблемы (public/workspace/private).
 
     Note:
         Изменение статуса на 'green' выполняется через IssueResolveRequestSchema.
@@ -108,7 +141,8 @@ class IssueUpdateRequestSchema(BaseRequestSchema):
         PATCH /api/v1/issues/{issue_id}
         {
             "title": "Ошибка E401 - обновлённое описание",
-            "category": "software"
+            "category": "software",
+            "visibility": "workspace"
         }
     """
 
@@ -126,6 +160,37 @@ class IssueUpdateRequestSchema(BaseRequestSchema):
         max_length=50,
         description="Новая категория проблемы",
     )
+    visibility: Optional[str] = Field(
+        None,
+        description="Новая видимость проблемы (public/workspace/private)",
+        examples=["public", "workspace", "private"],
+    )
+
+    @field_validator("visibility")
+    @classmethod
+    def validate_visibility(cls, value: Optional[str]) -> Optional[str]:
+        """
+        Валидирует значение visibility.
+
+        Args:
+            value: Значение видимости для проверки (может быть None).
+
+        Returns:
+            Optional[str]: Валидированное значение (lowercase) или None.
+
+        Raises:
+            ValueError: Если visibility не в списке разрешённых значений.
+        """
+        if value is None:
+            return value
+        allowed = {"public", "workspace", "private"}
+        value_lower = value.lower()
+        if value_lower not in allowed:
+            raise ValueError(
+                f"Недопустимое значение visibility: {value}. "
+                f"Разрешённые значения: {', '.join(allowed)}"
+            )
+        return value_lower
 
 
 class IssueResolveRequestSchema(BaseRequestSchema):
