@@ -2,6 +2,7 @@
 Pydantic схемы для выходных данных (responses) комментариев к проблемам.
 
 Содержит:
+    UserBriefSchema - краткая информация о пользователе.
     CommentDetailSchema - полная схема комментария для детального просмотра.
     CommentListItemSchema - упрощенная схема для списков комментариев.
     CommentResponseSchema - обертка для единичного ответа API.
@@ -12,11 +13,36 @@ from datetime import datetime
 from typing import List
 from uuid import UUID
 
-from pydantic import Field
+from pydantic import BaseModel, ConfigDict, Field
 
-from ..users.responses import UserDetailSchema
 from ...base import BaseResponseSchema
 from .base import CommentBaseSchema
+
+
+class UserBriefSchema(BaseModel):
+    """
+    Краткая информация о пользователе.
+
+    Используется для отображения автора комментария без избыточной информации.
+
+    Attributes:
+        id (UUID): Уникальный идентификатор пользователя.
+        username (str): Имя пользователя.
+        email (str): Email адрес пользователя.
+
+    Example:
+        >>> author = UserBriefSchema(
+        ...     id=uuid4(),
+        ...     username="john_doe",
+        ...     email="john@example.com"
+        ... )
+    """
+
+    id: UUID = Field(..., description="UUID пользователя")
+    username: str = Field(..., description="Имя пользователя")
+    email: str = Field(..., description="Email пользователя")
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CommentDetailSchema(CommentBaseSchema):
@@ -26,7 +52,7 @@ class CommentDetailSchema(CommentBaseSchema):
     Attributes:
         id (UUID): Уникальный идентификатор комментария.
         issue_id (UUID): ID проблемы, к которой относится комментарий.
-        author (UserDetailSchema): Информация об авторе комментария.
+        author (UserBriefSchema): Информация об авторе комментария.
         content (str): Текстовое содержимое комментария.
         is_solution (bool): Флаг, отмечающий комментарий как решение.
         created_at (datetime): Дата и время создания комментария.
@@ -36,7 +62,7 @@ class CommentDetailSchema(CommentBaseSchema):
         >>> comment = CommentDetailSchema(
         ...     id=uuid4(),
         ...     issue_id=uuid4(),
-        ...     author=UserDetailSchema(...),
+        ...     author=UserBriefSchema(...),
         ...     content="Решение найдено",
         ...     is_solution=True,
         ...     created_at=datetime.now(),
@@ -46,7 +72,7 @@ class CommentDetailSchema(CommentBaseSchema):
 
     id: UUID = Field(..., description="Уникальный идентификатор комментария")
     issue_id: UUID = Field(..., description="ID проблемы")
-    author: UserDetailSchema = Field(..., description="Автор комментария")
+    author: UserBriefSchema = Field(..., description="Автор комментария")
     created_at: datetime = Field(..., description="Дата создания")
     updated_at: datetime = Field(..., description="Дата последнего обновления")
 
