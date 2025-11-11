@@ -20,6 +20,7 @@ dependencies = [
   "uvicorn>=0.35.0", # ASGI сервер для запуска FastAPI
   "starlette>=0.48.0",
   "redis>=6.4.0", # Redis клиент для кэширования
+  "pgvector>=0.3.6", # PostgreSQL vector extension для AI embeddings
 ]
 description = ""
 name = "norake-backend"
