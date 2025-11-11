@@ -18,6 +18,7 @@ from .issues import (IssueNotFoundError, IssueAlreadyResolvedError,
 from .templates import (TemplateNotFoundError, TemplatePermissionDeniedError,
                         TemplateValidationError, TemplateInactiveError)
 from .openrouter import (OpenRouterError, OpenRouterConfigError)
+from .knowledge_bases import (KnowledgeBaseNotFoundError, DocumentNotFoundError)
 
 __all__ = [
     # Base
@@ -79,4 +80,8 @@ __all__ = [
     # OpenRouter
     "OpenRouterError",
     "OpenRouterConfigError",
+
+    # Knowledge Bases
+    "KnowledgeBaseNotFoundError",
+    "DocumentNotFoundError",
 ]
