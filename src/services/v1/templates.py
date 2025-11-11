@@ -13,34 +13,19 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.exceptions import (
+from src.core.exceptions.templates import (
     TemplateNotFoundError,
     TemplatePermissionDeniedError,
     TemplateValidationError,
 )
+from src.core.settings import settings
 from src.models.v1.templates import TemplateModel, TemplateVisibility
 from src.repository.v1.templates import TemplateRepository
-from src.schemas.v1.templates.requests import (
+from src.schemas.v1.templates import (
     TemplateCreateRequestSchema,
     TemplateUpdateRequestSchema,
     TemplateQueryRequestSchema,
 )
-
-# TODO: Вынести в общую конфигурацию или БД - дублируется с IssueService и TemplateBaseSchema
-# Планируется: CategoryModel в БД + admin API для управления категориями
-# Разрешённые категории шаблонов (синхронизировано с IssueModel)
-# Соответствует категориям в n8n workflow auto-categorize-issues.json
-ALLOWED_CATEGORIES = [
-    "hardware",
-    "software",
-    "process",
-    "documentation",
-    "safety",
-    "quality",
-    "maintenance",
-    "training",
-    "other",
-]
 
 # Валидация типов полей в JSONB
 ALLOWED_FIELD_TYPES = ["text", "number", "select", "multiselect", "date"]
@@ -438,10 +423,10 @@ class TemplateService:
         Raises:
             TemplateValidationError: Если category не из списка разрешённых.
         """
-        if category not in ALLOWED_CATEGORIES:
+        if category not in settings.ISSUE_CATEGORIES:
             raise TemplateValidationError(
                 field="category",
-                reason=f"Категория должна быть одной из: {', '.join(ALLOWED_CATEGORIES)}",
+                reason=f"Категория должна быть одной из: {', '.join(settings.ISSUE_CATEGORIES)}",
             )
 
     def _validate_fields(self, fields: dict) -> None:

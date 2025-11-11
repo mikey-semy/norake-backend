@@ -635,6 +635,48 @@ class Settings(BaseSettings):
     N8N_WEBHOOK_RETRY_ATTEMPTS: int = 2
     N8N_WEBHOOK_RETRY_DELAY: float = 1.0
 
+    # Настройки поиска (NORAK-40)
+    # Приоритеты для ранжирования источников поиска
+    SEARCH_PRIORITY_DB: float = 1.0
+    SEARCH_PRIORITY_RAG: float = 0.8
+    SEARCH_PRIORITY_MCP: float = 0.6
+
+    # TTL для Redis кеша результатов поиска (в секундах)
+    SEARCH_CACHE_TTL: int = 300
+
+    # URL webhook для n8n smart search helper (опционально)
+    N8N_SMART_SEARCH_WEBHOOK: Optional[str] = None
+
+    # Настройки DB поиска
+    # Максимальное количество результатов из БД
+    DB_SEARCH_LIMIT: int = 50
+    # Score эвристика для DB поиска (на основе местоположения совпадения)
+    DB_SEARCH_SCORE_TITLE: float = 1.0  # Совпадение в заголовке
+    DB_SEARCH_SCORE_DESCRIPTION: float = 0.8  # Совпадение в описании
+    DB_SEARCH_SCORE_OTHER: float = 0.6  # Совпадение в других полях
+
+    # Настройки RAG поиска
+    # Дефолтное количество результатов из векторного поиска
+    RAG_SEARCH_LIMIT: int = 5
+    # Минимальный порог cosine similarity (0-1)
+    RAG_MIN_SIMILARITY: float = 0.7
+    # Количество результатов для reranking
+    RAG_RERANK_TOP_K: int = 3
+
+    # Категории Issue и Template (синхронизированы с n8n workflow)
+    # TODO: Переделать в CategoryModel в БД + admin API для управления
+    ISSUE_CATEGORIES: List[str] = [
+        "hardware",
+        "software",
+        "process",
+        "documentation",
+        "safety",
+        "quality",
+        "maintenance",
+        "training",
+        "other",
+    ]
+
     # Настройки CORS
     ALLOW_ORIGINS: List[str] = [
         "https://norake.ru",
