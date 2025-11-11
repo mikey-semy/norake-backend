@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..base import BaseModel
 
 if TYPE_CHECKING:
+    from .issue_comments import IssueCommentModel
     from .issues import IssueModel
     from .roles import UserRoleModel
     from .templates import TemplateModel
@@ -131,6 +132,14 @@ class UserModel(BaseModel):
         "WorkspaceMemberModel",
         foreign_keys="[WorkspaceMemberModel.user_id]",
         back_populates="user",
+        passive_deletes=True,
+        cascade="all, delete-orphan",
+    )
+
+    issue_comments: Mapped[List["IssueCommentModel"]] = relationship(
+        "IssueCommentModel",
+        foreign_keys="[IssueCommentModel.author_id]",
+        back_populates="author",
         passive_deletes=True,
         cascade="all, delete-orphan",
     )

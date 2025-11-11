@@ -15,6 +15,7 @@ from .users import (UserNotFoundError, UserExistsError, UserCreationError,
 from .register import (UserAlreadyExistsError, RoleAssignmentError)
 from .issues import (IssueNotFoundError, IssueAlreadyResolvedError,
                      IssuePermissionDeniedError, IssueValidationError)
+from .issue_comments import (CommentNotFoundError, CommentAccessDeniedError)
 from .templates import (TemplateNotFoundError, TemplatePermissionDeniedError,
                         TemplateValidationError, TemplateInactiveError)
 from .openrouter import (OpenRouterError, OpenRouterConfigError)
@@ -71,6 +72,10 @@ __all__ = [
     "IssueAlreadyResolvedError",
     "IssuePermissionDeniedError",
     "IssueValidationError",
+
+    # Issue Comments
+    "CommentNotFoundError",
+    "CommentAccessDeniedError",
 
     # Templates
     "TemplateNotFoundError",

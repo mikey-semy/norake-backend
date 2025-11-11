@@ -17,6 +17,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..base import BaseModel
 
 if TYPE_CHECKING:
+    from .issue_comments import IssueCommentModel
     from .users import UserModel
 
 
@@ -151,6 +152,13 @@ class IssueModel(BaseModel):
         "UserModel",
         back_populates="issues",
         lazy="joined",
+    )
+
+    comments: Mapped[list["IssueCommentModel"]] = relationship(
+        "IssueCommentModel",
+        back_populates="issue",
+        lazy="selectin",
+        cascade="all, delete-orphan",
     )
 
     @property
