@@ -1,0 +1,168 @@
+{
+  "template_name": "Запрос помощи: Программирование",
+  "category": "software",
+  "visibility": "PUBLIC",
+  "fields": [
+    {
+      "field_name": "goal",
+      "field_type": "text",
+      "label": "Цель / Что нужно достичь",
+      "placeholder": "Опишите конечную цель, а не просто 'не работает'",
+      "description": "Четко сформулируйте, что вы хотите реализовать. Цель важнее кода.",
+      "validation_rules": {
+        "required": true,
+        "min_length": 20,
+        "max_length": 500
+      },
+      "display_order": 1,
+      "examples": [
+        "Нужно интегрировать OAuth2 авторизацию через Google в FastAPI",
+        "Необходимо оптимизировать SQL-запрос, который выполняется >5 секунд",
+        "Требуется настроить CI/CD pipeline для автоматического деплоя на production"
+      ]
+    },
+    {
+      "field_name": "current_behavior",
+      "field_type": "text",
+      "label": "Проблема / Что происходит сейчас",
+      "placeholder": "Опишите текущее поведение системы",
+      "description": "Четкое описание того, что происходит в данный момент. Избегайте расплывчатых формулировок.",
+      "validation_rules": {
+        "required": true,
+        "min_length": 30,
+        "max_length": 1000
+      },
+      "display_order": 2,
+      "examples": [
+        "При попытке логина через Google возвращается HTTP 401 Unauthorized",
+        "Запрос к базе данных возвращает пустой результат, хотя данные точно есть",
+        "Docker контейнер падает с ошибкой 'connection refused' через 30 секунд после запуска"
+      ]
+    },
+    {
+      "field_name": "code_example",
+      "field_type": "text",
+      "label": "Минимальный воспроизводимый пример (MRE)",
+      "placeholder": "Вставьте минимальный код для воспроизведения проблемы",
+      "description": "Код должен быть максимально упрощен. Уберите всё лишнее. Без секретов и паролей. Желательно 10-50 строк.",
+      "validation_rules": {
+        "required": true,
+        "min_length": 50,
+        "max_length": 5000
+      },
+      "display_order": 3,
+      "examples": [
+        "```python\nfrom fastapi import FastAPI\napp = FastAPI()\n\n@app.get(\"/test\")\ndef test():\n    return {\"error\": \"not working\"}  # Всегда возвращает ошибку\n```"
+      ]
+    },
+    {
+      "field_name": "error_message",
+      "field_type": "text",
+      "label": "Полная ошибка / Traceback",
+      "placeholder": "Вставьте полный текст ошибки (не скриншот!)",
+      "description": "Точный текст ошибки, traceback, логи. Предпочтительно текст, а не скриншот. Включите весь stack trace.",
+      "validation_rules": {
+        "required": false,
+        "min_length": 10,
+        "max_length": 3000
+      },
+      "display_order": 4,
+      "examples": [
+        "Traceback (most recent call last):\n  File \"main.py\", line 12, in login\n    return {\"token\": token}\nfastapi.exceptions.HTTPException: 401 Unauthorized\n  Detail: Not authenticated"
+      ]
+    },
+    {
+      "field_name": "environment",
+      "field_type": "text",
+      "label": "Окружение (язык, версии, ОС)",
+      "placeholder": "Python 3.11.5, FastAPI 0.104.1, Ubuntu 22.04",
+      "description": "Версии языка, фреймворков, библиотек, операционной системы. Это критически важно для диагностики.",
+      "validation_rules": {
+        "required": true,
+        "min_length": 20,
+        "max_length": 1000
+      },
+      "display_order": 5,
+      "examples": [
+        "Python 3.11.5\nFastAPI 0.104.1\nhttpx 0.25.0\nsqlalchemy 2.0.23\nUbuntu 22.04 LTS",
+        "Node.js 18.17.0\nExpress 4.18.2\nPostgreSQL 15.3\nDocker 24.0.5\nmacOS Ventura 13.5"
+      ],
+      "hints": [
+        "Для Python: python --version && pip freeze | grep -E '(fastapi|django|flask)'",
+        "Для Node.js: node --version && npm list --depth=0",
+        "Для системы: uname -a (Linux/macOS) или systeminfo (Windows)"
+      ]
+    },
+    {
+      "field_name": "attempts",
+      "field_type": "text",
+      "label": "Что уже пробовали",
+      "placeholder": "Перечислите попытки решения проблемы",
+      "description": "Покажите, что вы уже пытались сделать. Это избавит от повторных советов и покажет вашу вовлеченность.",
+      "validation_rules": {
+        "required": true,
+        "min_length": 30,
+        "max_length": 2000
+      },
+      "display_order": 6,
+      "examples": [
+        "1. Читал документацию: https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/\n2. Пробовал изменить authorizationUrl на /authorize (не помогло)\n3. Stack Overflow: https://stackoverflow.com/q/12345678 (не подошло из-за другой версии)\n4. Добавил debug-логирование: токен приходит пустым"
+      ]
+    },
+    {
+      "field_name": "expected_behavior",
+      "field_type": "text",
+      "label": "Ожидаемое поведение",
+      "placeholder": "Что должно происходить в идеале?",
+      "description": "Опишите, как должна работать система в правильном случае.",
+      "validation_rules": {
+        "required": false,
+        "min_length": 10,
+        "max_length": 500
+      },
+      "display_order": 7,
+      "examples": [
+        "После успешной авторизации в Google должен вернуться access_token и пользователь должен быть залогинен",
+        "SQL-запрос должен выполняться менее 1 секунды и возвращать 10 результатов"
+      ]
+    },
+    {
+      "field_name": "additional_context",
+      "field_type": "text",
+      "label": "Дополнительный контекст",
+      "placeholder": "Любая другая полезная информация",
+      "description": "Опционально: когда появилась проблема, на каком окружении работает/не работает, специфические настройки и т.д.",
+      "validation_rules": {
+        "required": false,
+        "min_length": 0,
+        "max_length": 1000
+      },
+      "display_order": 8,
+      "examples": [
+        "Проблема появилась после обновления FastAPI с 0.100.0 до 0.104.1",
+        "На локальной машине работает, на prod-сервере - нет",
+        "При использовании Postman возвращается 200 OK, в браузере - 401"
+      ]
+    },
+    {
+      "field_name": "checklist",
+      "field_type": "multiselect",
+      "label": "Чек-лист перед отправкой",
+      "description": "Убедитесь, что выполнили все пункты перед созданием Issue",
+      "validation_rules": {
+        "required": true,
+        "min_selected": 5
+      },
+      "display_order": 9,
+      "options": [
+        "Попытался решить сам (документация, Google, Stack Overflow)",
+        "Проблема воспроизводится стабильно (не случайная ошибка)",
+        "Код минимизирован (убрал всё лишнее)",
+        "Ошибка полная (весь traceback, не обрезанный)",
+        "Окружение указано (язык, версии, ОС)",
+        "Попытки решения описаны (что пробовал)",
+        "Формулировка вежливая (без 'Срочно!' и агрессии)"
+      ]
+    }
+  ]
+}
