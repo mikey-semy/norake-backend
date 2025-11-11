@@ -13,6 +13,7 @@ from .users import UsersRouter
 from .issues import IssuePublicRouter, IssueProtectedRouter
 from .templates import TemplateProtectedRouter
 from .workspaces import WorkspaceProtectedRouter
+from .n8n_workflows import N8nWorkflowProtectedRouter
 
 
 class APIv1(BaseRouter):
@@ -33,3 +34,4 @@ class APIv1(BaseRouter):
         self.router.include_router(IssueProtectedRouter().get_router())
         self.router.include_router(TemplateProtectedRouter().get_router())
         self.router.include_router(WorkspaceProtectedRouter().get_router())
+        self.router.include_router(N8nWorkflowProtectedRouter().get_router())
