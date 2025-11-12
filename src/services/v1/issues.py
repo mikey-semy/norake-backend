@@ -236,13 +236,9 @@ class IssueService(BaseService):
         """
         try:
             from src.repository.v1.n8n_workflows import N8nWorkflowRepository
-            from src.models.v1.n8n_workflows import N8nWorkflowModel
             from src.core.integrations.n8n import n8n_webhook_client
 
-            workflow_repo = N8nWorkflowRepository(
-                session=self.session,
-                model=N8nWorkflowModel,
-            )
+            workflow_repo = N8nWorkflowRepository(self.session)
 
             # Ищем активный workflow AUTO_CATEGORIZE для workspace Issue
             workflows = await workflow_repo.filter_by(

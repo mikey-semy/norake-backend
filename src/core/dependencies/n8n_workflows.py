@@ -20,7 +20,7 @@ async def get_n8n_workflow_repository(
     Returns:
         N8nWorkflowRepository: Repository для workflows.
     """
-    return N8nWorkflowRepository(session=session)
+    return N8nWorkflowRepository(session)
 
 
 async def get_n8n_workflow_service(
