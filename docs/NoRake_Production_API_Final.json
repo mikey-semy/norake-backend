@@ -1,0 +1,923 @@
+{
+  "info": {
+    "name": "NoRake Production API - Complete Test Suite",
+    "description": "Complete collection of 37 endpoints for NoRake Backend production testing at api.norake.ru\n\nFeatures:\n- Auto-authentication with admin credentials\n- Test scripts for all endpoints\n- Full CRUD coverage\n- Search scenarios (DB, RAG, MCP)\n\nSections:\n- Main & Health\n- Authentication & Registration\n- Protected Routes\n- Users, Issues, Comments\n- Templates & Workspaces\n- N8n Workflows\n- Search (Public, DB, RAG, MCP, Combined)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const accessToken = pm.collectionVariables.get('access_token');",
+          "const refreshToken = pm.collectionVariables.get('refresh_token');",
+          "",
+          "if (!accessToken && refreshToken) {",
+          "    console.log('[Auto-Refresh] Attempting token refresh...');",
+          "    ",
+          "    pm.sendRequest({",
+          "        url: pm.collectionVariables.get('base_url') + '/api/v1/auth/refresh',",
+          "        method: 'POST',",
+          "        header: { 'Content-Type': 'application/json' },",
+          "        body: {",
+          "            mode: 'raw',",
+          "            raw: JSON.stringify({ refresh_token: refreshToken })",
+          "        }",
+          "    }, (err, res) => {",
+          "        if (err) {",
+          "            console.error('[ERROR] Token refresh failed:', err);",
+          "        } else if (res.code === 200) {",
+          "            const data = res.json().data;",
+          "            pm.collectionVariables.set('access_token', data.access_token);",
+          "            pm.collectionVariables.set('refresh_token', data.refresh_token);",
+          "            console.log('[SUCCESS] Token refreshed');",
+          "        }",
+          "    });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Main",
+      "item": [
+        {
+          "name": "Root",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Root endpoint - verify server is running"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Status code is 200\", function () {",
+                "    pm.response.to.have.status(200);",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "health"]
+            },
+            "description": "Full health check: PostgreSQL, Redis, RabbitMQ"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Health check successful\", function () {",
+                "    pm.response.to.have.status(200);",
+                "    const json = pm.response.json();",
+                "    pm.expect(json.success).to.be.true;",
+                "    pm.expect(json.data.app).to.eql('ok');",
+                "    pm.expect(json.data.db).to.eql('ok');",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Liveness Check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/health/live",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "health", "live"]
+            },
+            "description": "Kubernetes liveness probe"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Liveness OK\", function () {",
+                "    pm.response.to.have.status(200);",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login Admin",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Admin login successful\", function () {",
+                "    pm.response.to.have.status(200);",
+                "    const json = pm.response.json();",
+                "    pm.collectionVariables.set('access_token', json.access_token);",
+                "    pm.collectionVariables.set('refresh_token', json.refresh_token);",
+                "    console.log('[SUCCESS] Admin tokens saved');",
+                "});"
+              ]
+            }
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/x-www-form-urlencoded"}],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "username", "value": "admin"},
+                {"key": "password", "value": "{{admin_password}}"}
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Admin login (OAuth2 Password Flow)"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Token refreshed\", function () {",
+                "    pm.response.to.have.status(200);",
+                "    const json = pm.response.json();",
+                "    pm.collectionVariables.set('access_token', json.access_token);",
+                "    pm.collectionVariables.set('refresh_token', json.refresh_token);",
+                "});"
+              ]
+            }
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refresh_token\": \"{{refresh_token}}\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Current user retrieved\", function () {",
+                "    pm.response.to.have.status(200);",
+                "    const json = pm.response.json();",
+                "    pm.collectionVariables.set('current_user_id', json.data.id);",
+                "    pm.collectionVariables.set('current_user_role', json.data.role);",
+                "});"
+              ]
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Registration",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"testuser_{{$timestamp}}\", \"email\": \"test{{$timestamp}}@example.com\", \"password\": \"SecurePass123!\", \"full_name\": \"Test User\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "register"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Protected Routes",
+      "item": [
+        {
+          "name": "Test Protected",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/protected/test",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "protected", "test"]
+            }
+          }
+        },
+        {
+          "name": "Admin Only",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/protected/admin-only",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "protected", "admin-only"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"full_name\": \"Updated Admin\", \"bio\": \"Production test admin\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Get User By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/{{current_user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "{{current_user_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Issues",
+      "item": [
+        {
+          "name": "List Issues",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Issues retrieved\", function () {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    if (data.length > 0) pm.collectionVariables.set('issue_id', data[0].id);",
+                "});"
+              ]
+            }
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues"]
+            }
+          }
+        },
+        {
+          "name": "Create Issue",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Issue created\", function () {",
+                "    pm.response.to.have.status(201);",
+                "    const data = pm.response.json().data;",
+                "    pm.collectionVariables.set('issue_id', data.id);",
+                "});"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\": \"Production Test Issue\", \"description\": \"Testing API from Postman collection\", \"visibility\": \"public\", \"category\": \"software\", \"workspace_id\": \"{{workspace_id}}\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues"]
+            }
+          }
+        },
+        {
+          "name": "Get Issue",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues/{{issue_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues", "{{issue_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Get History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues/history",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues", "history"]
+            }
+          }
+        },
+        {
+          "name": "Resolve Issue",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues/{{issue_id}}/resolve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues", "{{issue_id}}", "resolve"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Issue Comments",
+      "item": [
+        {
+          "name": "Get Comments",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues/{{issue_id}}/comments",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues", "{{issue_id}}", "comments"]
+            }
+          }
+        },
+        {
+          "name": "Create Comment",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Comment created\", function () {",
+                "    pm.response.to.have.status(201);",
+                "    const data = pm.response.json().data;",
+                "    pm.collectionVariables.set('comment_id', data.id);",
+                "});"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"content\": \"Test comment from Postman production testing\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues/{{issue_id}}/comments",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues", "{{issue_id}}", "comments"]
+            }
+          }
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues/{{issue_id}}/comments/{{comment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues", "{{issue_id}}", "comments", "{{comment_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Templates",
+      "item": [
+        {
+          "name": "List Templates",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Templates retrieved\", function () {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    if (data.length > 0) pm.collectionVariables.set('template_id', data[0].id);",
+                "});"
+              ]
+            }
+          }],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/templates",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "templates"]
+            }
+          }
+        },
+        {
+          "name": "Create Template",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Template created\", function () {",
+                "    pm.response.to.have.status(201);",
+                "    const data = pm.response.json().data;",
+                "    pm.collectionVariables.set('template_id', data.id);",
+                "});"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\": \"Test Template\", \"description\": \"Production testing template\", \"category\": \"hardware\", \"visibility\": \"public\", \"steps\": [\"Check equipment\", \"Document issue\", \"Report\"]}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/templates",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "templates"]
+            }
+          }
+        },
+        {
+          "name": "Get Template",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/templates/{{template_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "templates", "{{template_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Template",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"description\": \"Updated template description\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/templates/{{template_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "templates", "{{template_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Template",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/templates/{{template_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "templates", "{{template_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Activate Template",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/templates/{{template_id}}/activate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "templates", "{{template_id}}", "activate"]
+            }
+          }
+        },
+        {
+          "name": "Deactivate Template",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/templates/{{template_id}}/deactivate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "templates", "{{template_id}}", "deactivate"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Workspaces",
+      "item": [
+        {
+          "name": "Create Workspace",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Workspace created\", function () {",
+                "    pm.response.to.have.status(201);",
+                "    const data = pm.response.json().data;",
+                "    pm.collectionVariables.set('workspace_id', data.id);",
+                "});"
+              ]
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Test Workspace\", \"description\": \"Production testing workspace\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/workspaces",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workspaces"]
+            }
+          }
+        },
+        {
+          "name": "List My Workspaces",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/workspaces/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workspaces", "me"]
+            }
+          }
+        },
+        {
+          "name": "Get Workspace",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/workspaces/{{workspace_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workspaces", "{{workspace_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Workspace",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"description\": \"Updated workspace description\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/workspaces/{{workspace_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workspaces", "{{workspace_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Add Member",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"user_id\": \"{{current_user_id}}\", \"role\": \"member\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/workspaces/{{workspace_id}}/members",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workspaces", "{{workspace_id}}", "members"]
+            }
+          }
+        },
+        {
+          "name": "Remove Member",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/workspaces/{{workspace_id}}/members/{{current_user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workspaces", "{{workspace_id}}", "members", "{{current_user_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "N8n Workflows",
+      "item": [
+        {
+          "name": "Create Workflow",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Test Workflow\", \"description\": \"Testing n8n integration\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/workflows/{{workspace_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workflows", "{{workspace_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Workflows",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/workflows/{{workspace_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workflows", "{{workspace_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {
+          "name": "Search Public",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\": \"equipment\", \"limit\": 10}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/search/public",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "search", "public"]
+            }
+          }
+        },
+        {
+          "name": "Search DB",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\": \"test\", \"sources\": [\"db\"], \"limit\": 20}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/search",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "search"]
+            }
+          }
+        },
+        {
+          "name": "Search RAG",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\": \"maintenance procedure\", \"sources\": [\"rag\"], \"limit\": 5}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/search",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "search"]
+            }
+          }
+        },
+        {
+          "name": "Search MCP",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\": \"safety protocols\", \"sources\": [\"mcp\"], \"limit\": 10}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/search",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "search"]
+            }
+          }
+        },
+        {
+          "name": "Search Combined",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\": \"software bug\", \"sources\": [\"db\", \"rag\"], \"limit\": 15}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/search",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "search"]
+            }
+          }
+        },
+        {
+          "name": "Search Filtered",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\": \"problem\", \"sources\": [\"db\"], \"filters\": {\"category\": \"hardware\"}, \"limit\": 10}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/search",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "search"]
+            }
+          }
+        },
+        {
+          "name": "Search Empty Result",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"query\": \"xyznonexistent123\", \"sources\": [\"db\", \"rag\", \"mcp\"], \"limit\": 10}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/search",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "search"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://api.norake.ru",
+      "type": "string"
+    },
+    {
+      "key": "admin_password",
+      "value": "Nvxk7mjqjg9!",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "current_user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "current_user_role",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "workspace_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "issue_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "comment_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "template_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

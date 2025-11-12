@@ -67,7 +67,7 @@ class RegisterService(BaseService):
         """
         super().__init__(session)
         self.token_service = token_service
-        self.user_repository = UserRepository(session, UserModel)
+        self.user_repository = UserRepository(session)
         self.password_manager = PasswordManager()
 
     async def register_user(

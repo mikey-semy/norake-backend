@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "NoRake Production API - Complete Tests",
-    "description": "Полная коллекция для тестирования production API NoRake Backend (~37 endpoints)",
+    "name": "NoRake Production API Complete Testing",
+    "description": "Complete collection for production API testing at api.norake.ru - 37 endpoints with full coverage",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -17,7 +17,7 @@
     },
     {
       "key": "admin_password",
-      "value": "NoRake2025!Secure",
+      "value": "Nvxk7mjqjg9!",
       "type": "string"
     },
     {

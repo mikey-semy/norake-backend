@@ -56,7 +56,7 @@ class AdminInitService(BaseService):
             session (AsyncSession): Асинхронная сессия БД
         """
         super().__init__(session=session)
-        self.repository = UserRepository(session=session, model=UserModel)
+        self.repository = UserRepository(session)
         self.password_manager = PasswordManager()
 
     async def create_default_admin_if_not_exists(self) -> None:

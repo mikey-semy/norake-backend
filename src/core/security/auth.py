@@ -151,7 +151,7 @@ class AuthenticationManager:
                     raise TokenInvalidError()
 
                 # Получаем пользователя из БД с eager loading ролей
-                repository = UserRepository(session, UserModel)
+                repository = UserRepository(session)
                 user_model = await repository.get_user_by_identifier(user_email)
 
                 if not user_model:
