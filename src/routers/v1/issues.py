@@ -379,6 +379,7 @@ class IssueProtectedRouter(ProtectedRouter):
             # Создаём проблему через сервис (возвращает domain object)
             issue = await issue_service.create_issue(
                 author_id=current_user.id,
+                workspace_id=data.workspace_id,
                 title=data.title,
                 description=data.description,
                 category=data.category,
