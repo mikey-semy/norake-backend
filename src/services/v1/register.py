@@ -227,7 +227,7 @@ class RegisterService(BaseService):
                     detail=str(e),
                 ) from e
             else:
-                raise UserCreationError(reason=str(e), detail=str(e)) from e
+                raise UserCreationError(detail=str(e)) from e
 
     async def _generate_tokens(self, user: UserModel) -> Dict[str, str]:
         """
