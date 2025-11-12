@@ -8,16 +8,10 @@ from src.repository.base import BaseRepository
 
 
 class N8nWorkflowRepository(BaseRepository[N8nWorkflowModel]):
-    """Repository для работы с n8n workflows.
+    """Репозиторий для работы с n8n workflow."""
 
-    Предоставляет методы для CRUD операций с n8n workflows
-    и получения workflows по workspace.
-
-    Attributes:
-        model_class: SQLAlchemy модель N8nWorkflowModel.
-    """
-
-    model_class = N8nWorkflowModel
+    def __init__(self, session):
+        super().__init__(session, N8nWorkflowModel)
 
     async def get_by_workspace(
         self,

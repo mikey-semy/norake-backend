@@ -23,6 +23,9 @@ class UserRepository(BaseRepository[UserModel]):
     идентификаторам (email, phone, username) в зависимости от настроек.
     """
 
+    def __init__(self, session):
+        super().__init__(session, UserModel)
+
     async def get_user_by_identifier(self, identifier: str) -> Optional[UserModel]:
         """
         Получение пользователя по email, телефону или имени.

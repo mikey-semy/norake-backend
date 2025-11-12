@@ -45,7 +45,8 @@ class WorkspaceRepository(BaseRepository[WorkspaceModel]):
         >>> user_workspaces = await repo.get_user_workspaces(user_id)
     """
 
-    model_class = WorkspaceModel
+    def __init__(self, session):
+        super().__init__(session, WorkspaceModel)
 
     async def get_by_slug(self, slug: str) -> Optional[WorkspaceModel]:
         """
@@ -183,7 +184,8 @@ class WorkspaceMemberRepository(BaseRepository[WorkspaceMemberModel]):
         >>> role = await repo.get_user_role(workspace_id, user_id)
     """
 
-    model_class = WorkspaceMemberModel
+    def __init__(self, session):
+        super().__init__(session, WorkspaceMemberModel)
 
     async def get_workspace_members(
         self,
