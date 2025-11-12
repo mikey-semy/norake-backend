@@ -1,0 +1,1379 @@
+{
+  "info": {
+    "name": "NoRake Backend API - Complete Test Scenarios",
+    "_postman_id": "norake-test-scenarios-v1",
+    "description": "**Comprehensive test collection for NoRake Backend**\n\n✅ **Complete API Coverage**\n✅ **Flow-based Testing Scenarios**\n✅ **Automated Validation**\n✅ **Authorization Checks**\n\n**Test Scenarios:**\n- User Journey (Registration → Login → Operations)\n- Admin Workflow (User Management → Issue Resolution)\n- Public Access Tests (No Auth Required)\n- Search System (DB + RAG + MCP Integration)\n- Error Handling & Edge Cases\n\n**Base URL:** `{{base_url}}`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-refresh token if expired",
+          "const accessToken = pm.collectionVariables.get('access_token');",
+          "const refreshToken = pm.collectionVariables.get('refresh_token');",
+          "",
+          "if (!accessToken && refreshToken) {",
+          "    console.log('🔄 Access token missing, attempting refresh...');",
+          "    ",
+          "    pm.sendRequest({",
+          "        url: pm.collectionVariables.get('base_url') + '/api/v1/auth/refresh',",
+          "        method: 'POST',",
+          "        header: {",
+          "            'Content-Type': 'application/json'",
+          "        },",
+          "        body: {",
+          "            mode: 'raw',",
+          "            raw: JSON.stringify({ refresh_token: refreshToken })",
+          "        }",
+          "    }, (err, res) => {",
+          "        if (err) {",
+          "            console.error('❌ Token refresh failed:', err);",
+          "        } else if (res.code === 200) {",
+          "            const data = res.json().data;",
+          "            pm.collectionVariables.set('access_token', data.access_token);",
+          "            pm.collectionVariables.set('refresh_token', data.refresh_token);",
+          "            console.log('✅ Token refreshed successfully');",
+          "        }",
+          "    });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Scenario 1 - Public Access",
+      "description": "Testing all public endpoints without authentication",
+      "item": [
+        {
+          "name": "Root",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Root endpoint accessible\", () => {",
+                "    pm.response.to.have.status(200);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "health"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Health check returns healthy status\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const json = pm.response.json();",
+                "    pm.expect(json.status).to.eql('healthy');",
+                "    pm.expect(json).to.have.property('checks');",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "List Public Issues",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Public issues list accessible\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data).to.be.an('array');",
+                "    console.log('✅ Public issues:', data.length);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "List Public Templates",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/templates",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "templates"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Public templates list accessible\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data).to.be.an('array');",
+                "    console.log('✅ Public templates:', data.length);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Public Search",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"equipment\",\n  \"limit\": 10\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/search/public",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "search", "public"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Public search works without auth\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data).to.have.property('results');",
+                "    pm.expect(data.results).to.be.an('array');",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Scenario 2 - User Registration Flow",
+      "description": "Complete user registration and initial setup",
+      "item": [
+        {
+          "name": "Register New User",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser_{{$timestamp}}\",\n  \"email\": \"testuser{{$timestamp}}@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"full_name\": \"Test User {{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "register"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"User registered successfully\", () => {",
+                "    pm.response.to.have.status(201);",
+                "    const data = pm.response.json().data;",
+                "    pm.collectionVariables.set('test_user_access_token', data.access_token);",
+                "    pm.collectionVariables.set('test_user_refresh_token', data.refresh_token);",
+                "    pm.collectionVariables.set('test_user_id', data.user.id);",
+                "    console.log('✅ New user ID:', data.user.id);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Get Current User Info",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{test_user_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"User info retrieved\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data.role).to.eql('user');",
+                "    console.log('✅ User role:', data.role);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{test_user_access_token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Updated Test User\",\n  \"bio\": \"Testing profile update from Postman\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "profile"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Profile updated\", () => {",
+                "    pm.response.to.have.status(200);",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Scenario 3 - Admin Authentication",
+      "description": "Admin login and elevated access verification",
+      "item": [
+        {
+          "name": "Admin Login",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/x-www-form-urlencoded"}],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "username", "value": "admin"},
+                {"key": "password", "value": "admin"}
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Admin login successful\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.collectionVariables.set('access_token', data.access_token);",
+                "    pm.collectionVariables.set('refresh_token', data.refresh_token);",
+                "    console.log('✅ Admin authenticated');",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Verify Admin Access",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/protected/admin-only",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "protected", "admin-only"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Admin access granted\", () => {",
+                "    pm.response.to.have.status(200);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Get Current Admin Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Admin role confirmed\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data.role).to.eql('admin');",
+                "    pm.collectionVariables.set('admin_user_id', data.id);",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Scenario 4 - Workspace Management",
+      "description": "Create and manage workspaces with members",
+      "item": [
+        {
+          "name": "Create Workspace",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Workspace {{$timestamp}}\",\n  \"description\": \"Workspace for comprehensive API testing\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/workspaces",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workspaces"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Workspace created\", () => {",
+                "    pm.response.to.have.status(201);",
+                "    const data = pm.response.json().data;",
+                "    pm.collectionVariables.set('workspace_id', data.id);",
+                "    console.log('✅ Workspace ID:', data.id);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "List My Workspaces",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/workspaces/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workspaces", "me"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Workspaces list retrieved\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data).to.be.an('array');",
+                "    pm.expect(data.length).to.be.greaterThan(0);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Get Workspace Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/workspaces/{{workspace_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workspaces", "{{workspace_id}}"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Workspace details retrieved\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data.id).to.eql(pm.collectionVariables.get('workspace_id'));",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Update Workspace",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated workspace description - API test completed\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/workspaces/{{workspace_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workspaces", "{{workspace_id}}"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Workspace updated\", () => {",
+                "    pm.response.to.have.status(200);",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Scenario 5 - Issue Lifecycle",
+      "description": "Complete issue management flow: create → comment → resolve",
+      "item": [
+        {
+          "name": "Create Issue",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Hardware Failure - Server Room AC Unit\",\n  \"description\": \"Air conditioning unit in server room is failing to maintain temperature. Critical equipment at risk.\",\n  \"workspace_id\": \"{{workspace_id}}\",\n  \"visibility\": \"public\",\n  \"category\": \"hardware\",\n  \"priority\": \"high\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Issue created successfully\", () => {",
+                "    pm.response.to.have.status(201);",
+                "    const data = pm.response.json().data;",
+                "    pm.collectionVariables.set('issue_id', data.id);",
+                "    pm.expect(data.status).to.eql('open');",
+                "    console.log('✅ Issue ID:', data.id);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Get Issue Details",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues/{{issue_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues", "{{issue_id}}"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Issue details retrieved\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data.title).to.include('Hardware Failure');",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Add Comment to Issue",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Maintenance team has been notified. Technician dispatched to assess the situation. ETA: 30 minutes.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues/{{issue_id}}/comments",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues", "{{issue_id}}", "comments"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Comment added\", () => {",
+                "    pm.response.to.have.status(201);",
+                "    const data = pm.response.json().data;",
+                "    pm.collectionVariables.set('comment_id', data.id);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Get Issue Comments",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues/{{issue_id}}/comments",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues", "{{issue_id}}", "comments"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Comments list retrieved\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data).to.be.an('array');",
+                "    pm.expect(data.length).to.be.greaterThan(0);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Resolve Issue",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues/{{issue_id}}/resolve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues", "{{issue_id}}", "resolve"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Issue resolved\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data.status).to.eql('resolved');",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Get Issue History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues/history",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues", "history"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"History retrieved\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data).to.be.an('array');",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Scenario 6 - Template Management",
+      "description": "Create, use, and manage templates",
+      "item": [
+        {
+          "name": "Create Template",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Server Maintenance Checklist\",\n  \"description\": \"Standard procedure for routine server maintenance\",\n  \"category\": \"hardware\",\n  \"visibility\": \"public\",\n  \"steps\": [\n    \"Check server temperature sensors\",\n    \"Verify backup systems are operational\",\n    \"Update system logs and monitoring\",\n    \"Test fail-over mechanisms\",\n    \"Document any anomalies\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/templates",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "templates"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Template created\", () => {",
+                "    pm.response.to.have.status(201);",
+                "    const data = pm.response.json().data;",
+                "    pm.collectionVariables.set('template_id', data.id);",
+                "    pm.expect(data.is_active).to.be.true;",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Get Template",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/templates/{{template_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "templates", "{{template_id}}"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Template retrieved\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data.steps).to.be.an('array');",
+                "    pm.expect(data.steps.length).to.be.greaterThan(0);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Update Template",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated maintenance procedure with enhanced safety checks\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/templates/{{template_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "templates", "{{template_id}}"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Template updated\", () => {",
+                "    pm.response.to.have.status(200);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "List All Templates",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/templates",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "templates"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Templates list includes created template\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    const found = data.find(t => t.id === pm.collectionVariables.get('template_id'));",
+                "    pm.expect(found).to.not.be.undefined;",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Scenario 7 - Search System",
+      "description": "Comprehensive search testing across all sources",
+      "item": [
+        {
+          "name": "Search - DB Only",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"hardware\",\n  \"sources\": [\"db\"],\n  \"limit\": 20\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/search",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "search"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"DB search returns results\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data.results).to.be.an('array');",
+                "    console.log('✅ DB results:', data.results.length);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Search - RAG Only",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"maintenance procedure equipment\",\n  \"sources\": [\"rag\"],\n  \"limit\": 10\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/search",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "search"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"RAG search executed\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data.results).to.be.an('array');",
+                "    console.log('✅ RAG results:', data.results.length);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Search - MCP Only",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"safety protocols\",\n  \"sources\": [\"mcp\"],\n  \"limit\": 10\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/search",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "search"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"MCP search executed\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data.results).to.be.an('array');",
+                "    console.log('✅ MCP results:', data.results.length);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Search - Combined (All Sources)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"server failure\",\n  \"sources\": [\"db\", \"rag\", \"mcp\"],\n  \"limit\": 30\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/search",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "search"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Combined search works\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data.results).to.be.an('array');",
+                "    ",
+                "    // Verify mixed sources",
+                "    const sources = [...new Set(data.results.map(r => r.source))];",
+                "    console.log('✅ Sources in results:', sources);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Search - With Filters",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"problem\",\n  \"sources\": [\"db\"],\n  \"filters\": {\n    \"category\": \"hardware\",\n    \"status\": \"open\"\n  },\n  \"limit\": 15\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/search",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "search"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Filtered search works\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    ",
+                "    // Verify all results match filters",
+                "    data.results.forEach(result => {",
+                "        if (result.category) pm.expect(result.category).to.eql('hardware');",
+                "    });",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Search - Empty Query Handling",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"xyznonexistentquery123456789\",\n  \"sources\": [\"db\", \"rag\", \"mcp\"],\n  \"limit\": 10\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/search",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "search"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Empty result handled gracefully\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data.results).to.be.an('array').that.is.empty;",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Scenario 8 - N8n Workflows",
+      "description": "Test n8n workflow integration",
+      "item": [
+        {
+          "name": "Create Workflow",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Workflow {{$timestamp}}\",\n  \"description\": \"Automated workflow for testing n8n integration\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/workflows/{{workspace_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workflows", "{{workspace_id}}"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Workflow created\", () => {",
+                "    pm.response.to.have.status(201);",
+                "    const data = pm.response.json().data;",
+                "    pm.collectionVariables.set('workflow_id', data.id);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Get Workflows",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/workflows/{{workspace_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "workflows", "{{workspace_id}}"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Workflows list retrieved\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.expect(data).to.be.an('array');",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Scenario 9 - Authorization Checks",
+      "description": "Verify proper authorization and access control",
+      "item": [
+        {
+          "name": "Unauthorized Access - No Token",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "profile"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Protected route requires authentication\", () => {",
+                "    pm.response.to.have.status(401);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "User Access - Admin Only Endpoint",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{test_user_access_token}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/protected/admin-only",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "protected", "admin-only"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Non-admin gets 403 Forbidden\", () => {",
+                "    pm.response.to.have.status(403);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Admin Can Deactivate Template",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/templates/{{template_id}}/deactivate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "templates", "{{template_id}}", "deactivate"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Admin can deactivate template\", () => {",
+                "    pm.response.to.have.status(200);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Admin Can Reactivate Template",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/templates/{{template_id}}/activate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "templates", "{{template_id}}", "activate"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Admin can activate template\", () => {",
+                "    pm.response.to.have.status(200);",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Scenario 10 - Token Management",
+      "description": "Test token refresh and logout functionality",
+      "item": [
+        {
+          "name": "Refresh Access Token",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Token refreshed successfully\", () => {",
+                "    pm.response.to.have.status(200);",
+                "    const data = pm.response.json().data;",
+                "    pm.collectionVariables.set('access_token', data.access_token);",
+                "    pm.collectionVariables.set('refresh_token', data.refresh_token);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Verify New Token Works",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"New token is valid\", () => {",
+                "    pm.response.to.have.status(200);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Logout successful\", () => {",
+                "    pm.response.to.have.status(200);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Verify Token Invalidated",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Token is invalidated after logout\", () => {",
+                "    pm.response.to.have.status(401);",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Scenario 11 - Error Handling",
+      "description": "Test error responses and edge cases",
+      "item": [
+        {
+          "name": "Invalid Login Credentials",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/x-www-form-urlencoded"}],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "username", "value": "nonexistent"},
+                {"key": "password", "value": "wrongpassword"}
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Invalid credentials rejected\", () => {",
+                "    pm.response.to.have.status(401);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Get Non-existent Issue",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues/00000000-0000-0000-0000-000000000000",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues", "00000000-0000-0000-0000-000000000000"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Non-existent issue returns 404\", () => {",
+                "    pm.response.to.have.status(404);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Create Issue - Missing Required Fields",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Incomplete Issue\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Missing required fields rejected\", () => {",
+                "    pm.response.to.have.status(422);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Invalid UUID Format",
+          "request": {
+            "auth": {"type": "noauth"},
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues/not-a-valid-uuid",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues", "not-a-valid-uuid"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Invalid UUID format rejected\", () => {",
+                "    pm.response.to.have.status(422);",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "Scenario 12 - Cleanup",
+      "description": "Clean up test data (optional)",
+      "item": [
+        {
+          "name": "Delete Test Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/issues/{{issue_id}}/comments/{{comment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "issues", "{{issue_id}}", "comments", "{{comment_id}}"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Comment deleted\", () => {",
+                "    pm.response.to.have.status(200);",
+                "});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Delete Test Template",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/templates/{{template_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "templates", "{{template_id}}"]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test(\"Template deleted\", () => {",
+                "    pm.response.to.have.status(204);",
+                "});"
+              ]
+            }
+          }]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {"key": "base_url", "value": "http://localhost:8000", "type": "string"},
+    {"key": "access_token", "value": "", "type": "string"},
+    {"key": "refresh_token", "value": "", "type": "string"},
+    {"key": "test_user_access_token", "value": "", "type": "string"},
+    {"key": "test_user_refresh_token", "value": "", "type": "string"},
+    {"key": "test_user_id", "value": "", "type": "string"},
+    {"key": "admin_user_id", "value": "", "type": "string"},
+    {"key": "workspace_id", "value": "", "type": "string"},
+    {"key": "issue_id", "value": "", "type": "string"},
+    {"key": "comment_id", "value": "", "type": "string"},
+    {"key": "template_id", "value": "", "type": "string"},
+    {"key": "workflow_id", "value": "", "type": "string"}
+  ]
+}

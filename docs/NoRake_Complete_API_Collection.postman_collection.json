@@ -55,7 +55,7 @@
   ],
   "item": [
     {
-      "name": "🏠 Main",
+      "name": "Main",
       "item": [
         {
           "name": "Root",
@@ -88,7 +88,7 @@
       ]
     },
     {
-      "name": "❤️ Health",
+      "name": "Health",
       "item": [
         {
           "name": "Health Check",
@@ -151,7 +151,7 @@
       ]
     },
     {
-      "name": "🔐 Authentication",
+      "name": "Authentication",
       "item": [
         {
           "name": "Login (Admin)",
@@ -356,7 +356,7 @@
       ]
     },
     {
-      "name": "📝 Registration",
+      "name": "Registration",
       "item": [
         {
           "name": "Register User",
@@ -402,7 +402,7 @@
       ]
     },
     {
-      "name": "🔒 Protected Routes",
+      "name": "Protected Routes",
       "item": [
         {
           "name": "Test Protected (User)",
@@ -467,7 +467,7 @@
       ]
     },
     {
-      "name": "👤 Users",
+      "name": "Users",
       "item": [
         {
           "name": "Get Profile",
@@ -559,7 +559,7 @@
       ]
     },
     {
-      "name": "📋 Issues",
+      "name": "Issues",
       "item": [
         {
           "name": "List Issues (Public)",
@@ -712,7 +712,7 @@
       ]
     },
     {
-      "name": "💬 Issue Comments",
+      "name": "Issue Comments",
       "item": [
         {
           "name": "Get Issue Comments",
@@ -809,7 +809,7 @@
       ]
     },
     {
-      "name": "📄 Templates",
+      "name": "Templates",
       "item": [
         {
           "name": "List Templates",
@@ -1020,7 +1020,7 @@
       ]
     },
     {
-      "name": "🏢 Workspaces",
+      "name": "Workspaces",
       "item": [
         {
           "name": "Create Workspace",
@@ -1207,7 +1207,7 @@
       ]
     },
     {
-      "name": "⚡ N8n Workflows",
+      "name": "N8n Workflows",
       "item": [
         {
           "name": "Create Workflow",
@@ -1271,7 +1271,7 @@
       ]
     },
     {
-      "name": "🔍 Search",
+      "name": "Search",
       "item": [
         {
           "name": "Search Public (No Auth)",

@@ -18,7 +18,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, ClassVar, Optional
 
-from pydantic import PostgresDsn, RedisDsn, AmqpDsn, SecretStr, field_validator
+from pydantic import PostgresDsn, RedisDsn, AmqpDsn, SecretStr, EmailStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -612,6 +612,45 @@ class Settings(BaseSettings):
         if isinstance(v, str):
             return [t.strip() for t in v.split(",")]
         return v
+
+    # Дефолтный админ (обязательный)
+    # Создаётся автоматически при первом запуске, если не существует
+    DEFAULT_ADMIN_USERNAME: str = "admin"
+    DEFAULT_ADMIN_EMAIL: EmailStr = "admin@norake.ru"
+    DEFAULT_ADMIN_PASSWORD: SecretStr
+
+    # Дополнительные админы (опционально)
+    # Формат: username:email:password,username2:email2:password2
+    # Пример: ADMINS=mike:mike@norake.ru:SecurePass123,anna:anna@norake.ru:AnotherPass456
+    ADMINS: Optional[str] = None
+
+    @property
+    def additional_admins(self) -> List[Dict[str, str]]:
+        """
+        Парсинг дополнительных админов из ENV переменной ADMINS.
+
+        Returns:
+            List[Dict]: Список словарей с данными админов
+                [{"username": "mike", "email": "mike@norake.ru", "password": "Pass123"}, ...]
+        """
+        if not self.ADMINS:
+            return []
+
+        admins = []
+        for admin_str in self.ADMINS.split(","):
+            parts = admin_str.strip().split(":")
+            if len(parts) == 3:
+                admins.append({
+                    "username": parts[0].strip(),
+                    "email": parts[1].strip(),
+                    "password": parts[2].strip(),
+                })
+            else:
+                logger.warning(
+                    "⚠️ Неверный формат админа: '%s'. Ожидается 'username:email:password'",
+                    admin_str
+                )
+        return admins
 
     # Настройки доступа в docs/redoc
     DOCS_ACCESS: bool = True
