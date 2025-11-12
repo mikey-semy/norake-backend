@@ -19,10 +19,6 @@
     • Хеширование пароля через PasswordManager
     • Безопасное логирование (пароли не логируются)
 
-📊 ИСПОЛЬЗУЕМЫЕ МОДЕЛИ:
-    • UserModel - модель пользователя/админа в БД
-    • UserCreateSchema - схема для создания пользователя
-
 ⚡ АВТОМАТИЧЕСКИЙ ЗАПУСК:
     Вызывается при старте приложения через lifespan manager
     Если админ с таким username уже есть - пропускается
@@ -36,7 +32,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.security import PasswordManager
 from src.repository.v1.users import UserRepository
-from src.models.v1.users import UserModel
 from src.models.v1.roles import RoleCode
 from src.services.base import BaseService
 
