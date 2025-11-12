@@ -1,0 +1,1402 @@
+{
+  "info": {
+    "name": "NoRake Production API - Complete Tests",
+    "description": "Полная коллекция для тестирования production API NoRake Backend (~37 endpoints)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://api.norake.ru/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "admin_email",
+      "value": "admin@norake.ru",
+      "type": "string"
+    },
+    {
+      "key": "admin_password",
+      "value": "NoRake2025!Secure",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "test_user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "test_workspace_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "test_issue_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "test_comment_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "test_template_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "🏥 Health Checks",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Проверка состояния всех сервисов (app + db)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has success=true', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.eql(true);",
+                  "});",
+                  "",
+                  "pm.test('DB is healthy', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.db).to.eql('ok');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Liveness Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/live",
+              "host": ["{{base_url}}"],
+              "path": ["health", "live"]
+            },
+            "description": "Быстрая проверка жизнеспособности приложения"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('App is alive', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.app).to.eql('ok');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "{{admin_email}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{admin_password}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Вход администратора в систему"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains access_token', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('access_token');",
+                  "    pm.expect(jsonData).to.have.property('refresh_token');",
+                  "    pm.collectionVariables.set('access_token', jsonData.access_token);",
+                  "    pm.collectionVariables.set('refresh_token', jsonData.refresh_token);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "refresh-token",
+                "value": "{{refresh_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            },
+            "description": "Обновление access токена через refresh токен"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('New tokens received', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', jsonData.access_token);",
+                  "    pm.collectionVariables.set('refresh_token', jsonData.refresh_token);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "me"]
+            },
+            "description": "Получение информации о текущем пользователе"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('User data present', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('id');",
+                  "    pm.expect(jsonData.data).to.have.property('email');",
+                  "    pm.collectionVariables.set('test_user_id', jsonData.data.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/logout?clear_cookies=true",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"],
+              "query": [
+                {
+                  "key": "clear_cookies",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Выход из системы с очисткой токенов"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📝 Registration",
+      "item": [
+        {
+          "name": "Register New User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser@example.com\",\n  \"password\": \"SecurePassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/register",
+              "host": ["{{base_url}}"],
+              "path": ["register"]
+            },
+            "description": "Регистрация нового пользователя"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('User created with tokens', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('id');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "👤 Users",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/profile",
+              "host": ["{{base_url}}"],
+              "path": ["users", "profile"]
+            },
+            "description": "Получение профиля текущего пользователя"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User by ID (Admin Only)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{test_user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{test_user_id}}"]
+            },
+            "description": "Получение пользователя по ID (только админы)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 or 403', function () {",
+                  "    pm.expect([200, 403]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"updated_username\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/profile",
+              "host": ["{{base_url}}"],
+              "path": ["users", "profile"]
+            },
+            "description": "Обновление своего профиля (в разработке)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔧 Workspaces",
+      "item": [
+        {
+          "name": "Create Workspace",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Workspace\",\n  \"description\": \"Workspace for testing\",\n  \"visibility\": \"private\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/workspaces",
+              "host": ["{{base_url}}"],
+              "path": ["workspaces"]
+            },
+            "description": "Создание нового workspace"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Workspace created', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('id');",
+                  "    pm.collectionVariables.set('test_workspace_id', jsonData.data.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List My Workspaces",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/workspaces/me",
+              "host": ["{{base_url}}"],
+              "path": ["workspaces", "me"]
+            },
+            "description": "Список моих workspaces"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Workspaces array present', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Workspace by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/workspaces/{{test_workspace_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["workspaces", "{{test_workspace_id}}"]
+            },
+            "description": "Получение workspace по ID"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Workspace",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Workspace Name\",\n  \"visibility\": \"public\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/workspaces/{{test_workspace_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["workspaces", "{{test_workspace_id}}"]
+            },
+            "description": "Обновление workspace (только owner/admin)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Member to Workspace",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"{{test_user_id}}\",\n  \"role\": \"member\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/workspaces/{{test_workspace_id}}/members",
+              "host": ["{{base_url}}"],
+              "path": ["workspaces", "{{test_workspace_id}}", "members"]
+            },
+            "description": "Добавление участника в workspace"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove Member from Workspace",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/workspaces/{{test_workspace_id}}/members/{{test_user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["workspaces", "{{test_workspace_id}}", "members", "{{test_user_id}}"]
+            },
+            "description": "Удаление участника из workspace"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 204', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🚨 Issues - Public",
+      "item": [
+        {
+          "name": "List Public Issues",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/issues?limit=20&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["issues"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "key": "status",
+                  "value": "red",
+                  "disabled": true
+                },
+                {
+                  "key": "category",
+                  "value": "software",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Публичный список проблем с фильтрацией"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Issues array present', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "    if (jsonData.data.length > 0) {",
+                  "        pm.collectionVariables.set('test_issue_id', jsonData.data[0].id);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Issue by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/issues/{{test_issue_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["issues", "{{test_issue_id}}"]
+            },
+            "description": "Получение деталей проблемы"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 or 404', function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Issues History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/issues/history?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["issues", "history"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "История последних решённых проблем"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🚨 Issues - Protected",
+      "item": [
+        {
+          "name": "Create Issue",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test Issue from Postman\",\n  \"description\": \"This is a test issue created via API\",\n  \"category\": \"software\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/issues",
+              "host": ["{{base_url}}"],
+              "path": ["issues"]
+            },
+            "description": "Создание новой проблемы"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Issue created', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('id');",
+                  "    pm.collectionVariables.set('test_issue_id', jsonData.data.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resolve Issue",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"solution\": \"Problem resolved by restarting the service\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/issues/{{test_issue_id}}/resolve",
+              "host": ["{{base_url}}"],
+              "path": ["issues", "{{test_issue_id}}", "resolve"]
+            },
+            "description": "Решение проблемы (только автор)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 or 404', function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "💬 Comments - Public",
+      "item": [
+        {
+          "name": "List Issue Comments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/issues/{{test_issue_id}}/comments",
+              "host": ["{{base_url}}"],
+              "path": ["issues", "{{test_issue_id}}", "comments"]
+            },
+            "description": "Список комментариев проблемы"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 or 404', function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('Comments array present', function () {",
+                  "        const jsonData = pm.response.json();",
+                  "        pm.expect(jsonData.data).to.be.an('array');",
+                  "        if (jsonData.data.length > 0) {",
+                  "            pm.collectionVariables.set('test_comment_id', jsonData.data[0].id);",
+                  "        }",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "💬 Comments - Protected",
+      "item": [
+        {
+          "name": "Create Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"This is a test comment\",\n  \"is_solution\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/issues/{{test_issue_id}}/comments",
+              "host": ["{{base_url}}"],
+              "path": ["issues", "{{test_issue_id}}", "comments"]
+            },
+            "description": "Создание комментария к проблеме"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201 or 404', function () {",
+                  "    pm.expect([201, 404]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    pm.test('Comment created', function () {",
+                  "        const jsonData = pm.response.json();",
+                  "        pm.collectionVariables.set('test_comment_id', jsonData.data.id);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/issues/{{test_issue_id}}/comments/{{test_comment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["issues", "{{test_issue_id}}", "comments", "{{test_comment_id}}"]
+            },
+            "description": "Удаление комментария (только автор или admin)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 204 or 404', function () {",
+                  "    pm.expect([204, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📋 Templates",
+      "item": [
+        {
+          "name": "List Templates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/templates?is_active=true",
+              "host": ["{{base_url}}"],
+              "path": ["templates"],
+              "query": [
+                {
+                  "key": "is_active",
+                  "value": "true"
+                },
+                {
+                  "key": "category",
+                  "value": "software",
+                  "disabled": true
+                },
+                {
+                  "key": "visibility",
+                  "value": "public",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Список шаблонов с фильтрами"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Templates array present', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "    if (jsonData.data.length > 0) {",
+                  "        pm.collectionVariables.set('test_template_id', jsonData.data[0].id);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Template by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/templates/{{test_template_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["templates", "{{test_template_id}}"]
+            },
+            "description": "Получение шаблона по ID"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 or 404', function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Template",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test Template\",\n  \"description\": \"Template for testing\",\n  \"category\": \"software\",\n  \"visibility\": \"public\",\n  \"fields\": {\n    \"problem_type\": \"text\",\n    \"steps\": \"array\",\n    \"solution\": \"text\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/templates",
+              "host": ["{{base_url}}"],
+              "path": ["templates"]
+            },
+            "description": "Создание нового шаблона"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Template created', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('test_template_id', jsonData.data.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Template",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Template Title\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/templates/{{test_template_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["templates", "{{test_template_id}}"]
+            },
+            "description": "Обновление шаблона (только владелец)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 or 404', function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Activate Template",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/templates/{{test_template_id}}/activate",
+              "host": ["{{base_url}}"],
+              "path": ["templates", "{{test_template_id}}", "activate"]
+            },
+            "description": "Активация шаблона"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 or 404', function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Deactivate Template",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/templates/{{test_template_id}}/deactivate",
+              "host": ["{{base_url}}"],
+              "path": ["templates", "{{test_template_id}}", "deactivate"]
+            },
+            "description": "Деактивация шаблона"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 or 404', function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Template",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/templates/{{test_template_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["templates", "{{test_template_id}}"]
+            },
+            "description": "Удаление шаблона (soft delete)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 or 404', function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔍 Search",
+      "item": [
+        {
+          "name": "Search Public",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"database connection error\",\n  \"limit\": 10,\n  \"pattern\": \"match\",\n  \"filters\": {\n    \"categories\": [\"software\"],\n    \"statuses\": [\"green\"]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/search/public",
+              "host": ["{{base_url}}"],
+              "path": ["search", "public"]
+            },
+            "description": "Публичный поиск по решениям"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Search results present', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('results');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search with AI (Protected)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"how to fix authentication error\",\n  \"workspace_id\": \"{{test_workspace_id}}\",\n  \"use_ai\": true,\n  \"limit\": 10,\n  \"pattern\": \"match\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/search",
+              "host": ["{{base_url}}"],
+              "path": ["search"]
+            },
+            "description": "Гибридный поиск с AI (DB + RAG + MCP)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('AI search results present', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('results');",
+                  "    pm.expect(jsonData.data).to.have.property('stats');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔄 N8n Workflows",
+      "item": [
+        {
+          "name": "Create Workflow",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workflow_name\": \"Test Workflow\",\n  \"workflow_type\": \"automation\",\n  \"webhook_url\": \"https://n8n.example.com/webhook/test\",\n  \"trigger_config\": {\n    \"event\": \"issue_created\",\n    \"conditions\": {}\n  },\n  \"n8n_workflow_id\": \"wf_12345\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/workflows/{{test_workspace_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["workflows", "{{test_workspace_id}}"]
+            },
+            "description": "Создание n8n workflow для workspace"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 201 or 404', function () {",
+                  "    pm.expect([201, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Workspace Workflows",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/workflows/{{test_workspace_id}}?is_active=true",
+              "host": ["{{base_url}}"],
+              "path": ["workflows", "{{test_workspace_id}}"],
+              "query": [
+                {
+                  "key": "is_active",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Список workflows workspace"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 or 404', function () {",
+                  "    pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔒 Protected Test",
+      "item": [
+        {
+          "name": "Test Protected Endpoint",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/protected/test",
+              "host": ["{{base_url}}"],
+              "path": ["protected", "test"]
+            },
+            "description": "Тестовый защищённый endpoint"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Admin Only Endpoint",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/protected/admin-only",
+              "host": ["{{base_url}}"],
+              "path": ["protected", "admin-only"]
+            },
+            "description": "Endpoint только для администраторов"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status code is 200 or 403', function () {",
+                  "    pm.expect([200, 403]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

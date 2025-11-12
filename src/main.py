@@ -2,9 +2,12 @@
 
 from fastapi import FastAPI
 
-import src.core.lifespan.database
-import src.core.lifespan.cache
-# import src.core.lifespan.messaging
+
+import src.core.lifespan.admin_init_handler  # noqa: F401
+import src.core.lifespan.database   # noqa: F401
+import src.core.lifespan.cache   # noqa: F401
+# import src.core.lifespan.messaging   # noqa: F401
+
 from src.core.exceptions import register_exception_handlers
 from src.core.logging import setup_logging
 from src.core.middlewares import setup_middlewares

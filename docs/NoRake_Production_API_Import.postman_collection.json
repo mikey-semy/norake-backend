@@ -1,0 +1,403 @@
+{
+  "info": {
+    "name": "NoRake Production API Tests",
+    "description": "🚀 **Production API Testing for api.norake.ru**\n\n## Quick Start\n1. Run \"1. Admin Login\" to get access token\n2. Token auto-saves to collection variables\n3. Run remaining requests in sequence\n\n## Coverage\n✅ Authentication & Authorization\n✅ Public endpoints (no auth)\n✅ Workspace management\n✅ Issue tracking\n✅ Comments system\n✅ Template management\n✅ Multi-source search (DB + RAG + MCP)\n\n## Variables\n- `base_url`: https://api.norake.ru\n- `admin_username`: admin\n- `admin_password`: admin123\n- Auto-saved: `access_token`, `workspace_id`, `issue_id`, etc.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {"key": "base_url", "value": "https://api.norake.ru", "type": "string"},
+    {"key": "admin_username", "value": "admin", "type": "string"},
+    {"key": "admin_password", "value": "admin123", "type": "string"},
+    {"key": "access_token", "value": "", "type": "string"},
+    {"key": "refresh_token", "value": "", "type": "string"},
+    {"key": "workspace_id", "value": "", "type": "string"},
+    {"key": "issue_id", "value": "", "type": "string"},
+    {"key": "comment_id", "value": "", "type": "string"},
+    {"key": "template_id", "value": "", "type": "string"}
+  ],
+  "item": [
+    {
+      "name": "1️⃣ Admin Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Admin login successful', () => {",
+              "    pm.response.to.have.status(200);",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.success).to.be.true;",
+              "    ",
+              "    const data = json.data;",
+              "    pm.collectionVariables.set('access_token', data.access_token);",
+              "    pm.collectionVariables.set('refresh_token', data.refresh_token);",
+              "    ",
+              "    console.log('🔑 Access token saved:', data.access_token.substring(0, 20) + '...');",
+              "    console.log('🔄 Refresh token saved');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {"key": "username", "value": "{{admin_username}}", "type": "text"},
+            {"key": "password", "value": "{{admin_password}}", "type": "text"}
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "auth", "login"]
+        }
+      }
+    },
+    {
+      "name": "Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Health check passed', () => {",
+              "    pm.response.to.have.status(200);",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.success).to.be.true;",
+              "    ",
+              "    const data = json.data;",
+              "    pm.expect(data.app).to.eql('ok');",
+              "    pm.expect(data.db).to.eql('ok');",
+              "    ",
+              "    console.log('💚 App status:', data.app);",
+              "    console.log('💾 Database status:', data.db);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/health",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "health"]
+        }
+      }
+    },
+    {
+      "name": "2️⃣ List Public Issues",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Public issues retrieved', () => {",
+              "    pm.response.to.have.status(200);",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.success).to.be.true;",
+              "    ",
+              "    const data = json.data;",
+              "    pm.expect(data).to.be.an('array');",
+              "    ",
+              "    console.log('📋 Total public issues:', data.length);",
+              "    if (data.length > 0) {",
+              "        console.log('📝 First issue:', data[0].title);",
+              "    }",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/public/issues",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "public", "issues"]
+        }
+      }
+    },
+    {
+      "name": "3️⃣ List Public Templates",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Public templates retrieved', () => {",
+              "    pm.response.to.have.status(200);",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.success).to.be.true;",
+              "    ",
+              "    const data = json.data;",
+              "    pm.expect(data).to.be.an('array');",
+              "    ",
+              "    console.log('📄 Total public templates:', data.length);",
+              "    if (data.length > 0) {",
+              "        console.log('📝 First template:', data[0].name);",
+              "    }",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/public/templates",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "public", "templates"]
+        }
+      }
+    },
+    {
+      "name": "4️⃣ Create Workspace",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Workspace created', () => {",
+              "    pm.response.to.have.status(201);",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.success).to.be.true;",
+              "    ",
+              "    const data = json.data;",
+              "    pm.collectionVariables.set('workspace_id', data.id);",
+              "    ",
+              "    console.log('🏢 Workspace ID:', data.id);",
+              "    console.log('📛 Workspace name:', data.name);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Test Workspace {{$timestamp}}\",\n  \"description\": \"Created via Postman MCP production test\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/workspaces",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "workspaces"]
+        }
+      }
+    },
+    {
+      "name": "5️⃣ Create Issue",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Issue created', () => {",
+              "    pm.response.to.have.status(201);",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.success).to.be.true;",
+              "    ",
+              "    const data = json.data;",
+              "    pm.collectionVariables.set('issue_id', data.id);",
+              "    pm.expect(data.status).to.eql('open');",
+              "    ",
+              "    console.log('📋 Issue ID:', data.id);",
+              "    console.log('📝 Issue title:', data.title);",
+              "    console.log('🔴 Status:', data.status);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Production Test Issue {{$timestamp}}\",\n  \"description\": \"Testing issue creation from Postman MCP\",\n  \"status\": \"open\",\n  \"priority\": \"medium\",\n  \"category\": \"equipment\",\n  \"visibility\": \"public\",\n  \"workspace_id\": \"{{workspace_id}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/issues",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "issues"]
+        }
+      }
+    },
+    {
+      "name": "6️⃣ Add Issue Comment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Comment added', () => {",
+              "    pm.response.to.have.status(201);",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.success).to.be.true;",
+              "    ",
+              "    const data = json.data;",
+              "    pm.collectionVariables.set('comment_id', data.id);",
+              "    ",
+              "    console.log('💬 Comment ID:', data.id);",
+              "    console.log('📝 Content:', data.content);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"content\": \"Test comment from Postman MCP\",\n  \"parent_id\": null\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/issues/{{issue_id}}/comments",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "issues", "{{issue_id}}", "comments"]
+        }
+      }
+    },
+    {
+      "name": "7️⃣ Create Template",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Template created', () => {",
+              "    pm.response.to.have.status(201);",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.success).to.be.true;",
+              "    ",
+              "    const data = json.data;",
+              "    pm.collectionVariables.set('template_id', data.id);",
+              "    pm.expect(data.is_active).to.be.true;",
+              "    ",
+              "    console.log('📄 Template ID:', data.id);",
+              "    console.log('📝 Template name:', data.name);",
+              "    console.log('✅ Active:', data.is_active);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Test Template {{$timestamp}}\",\n  \"description\": \"Production test template\",\n  \"category\": \"equipment\",\n  \"fields\": [\n    {\"name\": \"serial_number\", \"type\": \"string\", \"required\": true},\n    {\"name\": \"model\", \"type\": \"string\", \"required\": false}\n  ],\n  \"is_active\": true,\n  \"visibility\": \"public\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/templates",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "templates"]
+        }
+      }
+    },
+    {
+      "name": "8️⃣ Search All Sources",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Search executed', () => {",
+              "    pm.response.to.have.status(200);",
+              "    const json = pm.response.json();",
+              "    pm.expect(json.success).to.be.true;",
+              "    ",
+              "    const data = json.data;",
+              "    pm.expect(data).to.have.property('results');",
+              "    ",
+              "    console.log('🔍 Total results:', data.results.length);",
+              "    console.log('📊 Sources used:', Object.keys(data.results_by_source || {}));",
+              "    ",
+              "    if (data.results_by_source) {",
+              "        Object.entries(data.results_by_source).forEach(([source, results]) => {",
+              "            console.log(`  - ${source}: ${results.length} results`);",
+              "        });",
+              "    }",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"query\": \"equipment\",\n  \"sources\": [\"db\", \"rag\", \"mcp\"],\n  \"limit\": 10\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/search",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "search"]
+        }
+      }
+    }
+  ]
+}

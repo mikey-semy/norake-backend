@@ -13,6 +13,7 @@ from src.models import BaseModel
 # access to the values within the .ini file in use.
 config = context.config
 
+# Устанавливаем database_url из settings в конфигурацию Alembic
 section = config.config_ini_section
 config.set_section_option(section, "sqlalchemy.url", str(settings.database_url))
 

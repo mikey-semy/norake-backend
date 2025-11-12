@@ -9,6 +9,7 @@ dependencies = [
   "fastapi>=0.116.1", # Фреймворк для API
   "faststream[rabbit]>=0.4.6", # RabbitMQ интеграция
   "greenlet>=3.1.1", # Зависимость для SQLAlchemy
+  "httpx>=0.27.0", # HTTP клиент для AI integrations
   "itsdangerous>=2.1.0", # Cryptographically signed session cookies
   "passlib[argon2]>=1.7.4", # Хеширование паролей через Argon2
   "pydantic[email]>=2.11.7", # Валидация и типизация данных
