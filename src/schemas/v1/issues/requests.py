@@ -36,7 +36,6 @@ from uuid import UUID
 
 from pydantic import Field, field_validator
 
-from src.core.settings import settings
 from src.schemas.base import BaseRequestSchema
 
 
@@ -95,6 +94,22 @@ class IssueCreateRequestSchema(BaseRequestSchema):
     workspace_id: UUID = Field(
         description="UUID рабочего пространства",
         examples=["123e4567-e89b-12d3-a456-426614174000"],
+    )
+    template_id: Optional[UUID] = Field(
+        None,
+        description="UUID шаблона (опционально). Если указан, можно передать custom_fields.",
+        examples=["123e4567-e89b-12d3-a456-426614174001"],
+    )
+    custom_fields: Optional[dict] = Field(
+        None,
+        description="Динамические поля из шаблона (JSONB). Структура зависит от template.fields.",
+        examples=[
+            {
+                "equipment_model": "KUKA KR 500-3",
+                "error_code": "E401",
+                "location": "Цех 1"
+            }
+        ],
     )
 
     @field_validator("visibility")
@@ -164,6 +179,18 @@ class IssueUpdateRequestSchema(BaseRequestSchema):
         None,
         description="Новая видимость проблемы (public/workspace/private)",
         examples=["public", "workspace", "private"],
+    )
+    custom_fields: Optional[dict] = Field(
+        None,
+        description="Обновлённые динамические поля из шаблона (JSONB). "
+                    "Если Issue привязан к template, поля будут валидированы.",
+        examples=[
+            {
+                "equipment_model": "KUKA KR 600-3",
+                "error_code": "E402",
+                "location": "Цех 2"
+            }
+        ],
     )
 
     @field_validator("visibility")

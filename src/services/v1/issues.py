@@ -14,6 +14,8 @@ Example:
 """
 
 import logging
+import re
+from datetime import date, time
 from typing import Dict, List, Optional
 from uuid import UUID
 
@@ -24,10 +26,12 @@ from src.core.exceptions import (
     IssueNotFoundError,
     IssuePermissionDeniedError,
     IssueValidationError,
+    TemplateNotFoundError,
 )
 from src.core.settings import settings
 from src.models.v1.issues import IssueModel, IssueStatus
 from src.repository.v1.issues import IssueRepository
+from src.repository.v1.templates import TemplateRepository
 from src.services.base import BaseService
 
 
@@ -121,6 +125,155 @@ class IssueService(BaseService):
                 f"Категория должна быть одной из: {', '.join(settings.ISSUE_CATEGORIES)}",
             )
 
+    async def _validate_custom_fields(
+        self, template_id: UUID, custom_fields: dict
+    ) -> None:
+        """
+        Валидирует custom_fields по schema из Template.
+
+        Загружает Template и проверяет соответствие переданных custom_fields
+        схеме fields из Template. Проверяет: обязательные поля, типы данных,
+        форматы (pattern), опции (select/radio).
+
+        Args:
+            template_id: UUID шаблона для валидации.
+            custom_fields: Словарь с пользовательскими данными для проверки.
+
+        Raises:
+            TemplateNotFoundError: Если шаблон не найден.
+            IssueValidationError: Если custom_fields не соответствуют схеме.
+
+        Example:
+            >>> await service._validate_custom_fields(
+            ...     template_id=template_uuid,
+            ...     custom_fields={"equipment_model": "KUKA KR 500-3"}
+            ... )
+
+        Note:
+            Поддерживаемые типы полей: text, textarea, number, select, radio,
+            checkbox, date, time. Required поля должны быть обязательно заполнены.
+        """
+        # Загрузка template
+        template_repo = TemplateRepository(self.session)
+        template = await template_repo.get_item_by_id(template_id)
+
+        if not template:
+            raise TemplateNotFoundError(template_id)
+
+        # Извлечение схемы полей
+        fields_schema = template.fields.get("fields", [])
+        if not fields_schema:
+            self.logger.warning(
+                "Template %s не содержит fields schema, валидация пропущена",
+                template_id,
+            )
+            return
+
+        # Проверка обязательных полей
+        for field_def in fields_schema:
+            field_name = field_def.get("name")
+            is_required = field_def.get("required", False)
+
+            if is_required and field_name not in custom_fields:
+                raise IssueValidationError(
+                    "custom_fields",
+                    f"Обязательное поле '{field_name}' отсутствует",
+                )
+
+        # Проверка типов и форматов
+        for field_name, field_value in custom_fields.items():
+            # Найти определение поля в schema
+            field_def = next(
+                (f for f in fields_schema if f.get("name") == field_name), None
+            )
+
+            if not field_def:
+                # Если поле не определено в schema, игнорируем (soft validation)
+                self.logger.debug(
+                    "Поле '%s' не найдено в schema template %s, пропускаем",
+                    field_name,
+                    template_id,
+                )
+                continue
+
+            field_type = field_def.get("type", "text")
+
+            # Валидация по типу
+            if field_type == "number":
+                if not isinstance(field_value, (int, float)):
+                    raise IssueValidationError(
+                        "custom_fields",
+                        f"Поле '{field_name}' должно быть числом",
+                    )
+
+            elif field_type in ("select", "radio"):
+                options = field_def.get("options", [])
+                if options and field_value not in options:
+                    raise IssueValidationError(
+                        "custom_fields",
+                        f"Поле '{field_name}' должно быть одним из: {', '.join(options)}",
+                    )
+
+            elif field_type == "checkbox":
+                if not isinstance(field_value, bool):
+                    raise IssueValidationError(
+                        "custom_fields",
+                        f"Поле '{field_name}' должно быть boolean",
+                    )
+
+            elif field_type == "date":
+                # Проверка формата даты (YYYY-MM-DD)
+                if not isinstance(field_value, str):
+                    raise IssueValidationError(
+                        "custom_fields",
+                        f"Поле '{field_name}' должно быть строкой в формате YYYY-MM-DD",
+                    )
+                try:
+                    date.fromisoformat(field_value)
+                except ValueError:
+                    raise IssueValidationError(
+                        "custom_fields",
+                        f"Поле '{field_name}' имеет невалидный формат даты (ожидается YYYY-MM-DD)",
+                    )
+
+            elif field_type == "time":
+                # Проверка формата времени (HH:MM)
+                if not isinstance(field_value, str):
+                    raise IssueValidationError(
+                        "custom_fields",
+                        f"Поле '{field_name}' должно быть строкой в формате HH:MM",
+                    )
+                try:
+                    time.fromisoformat(field_value)
+                except ValueError:
+                    raise IssueValidationError(
+                        "custom_fields",
+                        f"Поле '{field_name}' имеет невалидный формат времени (ожидается HH:MM)",
+                    )
+
+            elif field_type in ("text", "textarea"):
+                if not isinstance(field_value, str):
+                    raise IssueValidationError(
+                        "custom_fields",
+                        f"Поле '{field_name}' должно быть строкой",
+                    )
+
+                # Проверка pattern если указан
+                pattern = field_def.get("pattern")
+                if pattern:
+                    if not re.match(pattern, field_value):
+                        help_text = field_def.get(
+                            "help_text", f"Формат: {pattern}"
+                        )
+                        raise IssueValidationError(
+                            "custom_fields",
+                            f"Поле '{field_name}' не соответствует формату. {help_text}",
+                        )
+
+        self.logger.debug(
+            "Валидация custom_fields успешна для template %s", template_id
+        )
+
     async def _check_permission(
         self, issue: IssueModel, user_id: UUID, action: str
     ) -> None:
@@ -149,12 +302,14 @@ class IssueService(BaseService):
         description: str,
         category: str,
         template_id: Optional[UUID] = None,
+        custom_fields: Optional[dict] = None,
     ) -> IssueModel:
         """
         Создать новую проблему.
 
         Статус автоматически устанавливается в RED.
         Если указан template_id, увеличивает счётчик использований шаблона.
+        Если переданы custom_fields, валидирует их по schema из Template.
 
         Args:
             author_id: UUID автора проблемы.
@@ -164,12 +319,14 @@ class IssueService(BaseService):
             category: Категория (hardware/software/process/documentation/safety/
                 quality/maintenance/training/other).
             template_id: UUID шаблона (опционально).
+            custom_fields: Динамические поля из шаблона (опционально).
 
         Returns:
             IssueModel: Созданная проблема.
 
         Raises:
             IssueValidationError: При невалидных данных.
+            TemplateNotFoundError: Если template_id не найден.
 
         Example:
             >>> issue = await service.create_issue(
@@ -178,12 +335,17 @@ class IssueService(BaseService):
             ...     title="Ошибка E401",
             ...     description="Проблема с оборудованием",
             ...     category="hardware",
-            ...     template_id=template_uuid  # опционально
+            ...     template_id=template_uuid,
+            ...     custom_fields={"equipment_model": "KUKA KR 500-3"}
             ... )
         """
         # Валидация
         self._validate_title(title)
         self._validate_category(category)
+
+        # Валидация custom_fields по schema template
+        if template_id and custom_fields:
+            await self._validate_custom_fields(template_id, custom_fields)
 
         # Создание
         issue_data = {
@@ -195,12 +357,17 @@ class IssueService(BaseService):
             "workspace_id": workspace_id,
         }
 
+        # Добавить template_id и custom_fields если переданы
+        if template_id:
+            issue_data["template_id"] = template_id
+        if custom_fields:
+            issue_data["custom_fields"] = custom_fields
+
         issue = await self.repository.create_item(issue_data)
 
         # Увеличить usage_count шаблона если указан
         if template_id:
             try:
-                from src.repository.v1.templates import TemplateRepository
                 template_repo = TemplateRepository(self.session)
                 await template_repo.increment_usage_count(template_id)
                 self.logger.info(
@@ -216,9 +383,7 @@ class IssueService(BaseService):
                     str(e),
                 )
 
-        self.logger.info(
-            "Создана проблема %s пользователем %s", issue.id, author_id
-        )
+        self.logger.info("Создана проблема %s пользователем %s", issue.id, author_id)
 
         # Вызов n8n webhook для авто-категоризации (опционально)
         await self._trigger_autocategorize_webhook(issue)
@@ -305,11 +470,13 @@ class IssueService(BaseService):
         title: Optional[str] = None,
         description: Optional[str] = None,
         category: Optional[str] = None,
+        custom_fields: Optional[dict] = None,
     ) -> IssueModel:
         """
         Обновить существующую проблему.
 
         Только автор (или admin) может обновлять проблему.
+        Если Issue привязан к template и переданы custom_fields, валидирует их по schema.
 
         Args:
             issue_id: UUID проблемы.
@@ -317,6 +484,7 @@ class IssueService(BaseService):
             title: Новый заголовок (опционально).
             description: Новое описание (опционально).
             category: Новая категория (опционально).
+            custom_fields: Обновлённые динамические поля (опционально).
 
         Returns:
             IssueModel: Обновлённая проблема.
@@ -325,12 +493,14 @@ class IssueService(BaseService):
             IssueNotFoundError: Если проблема не найдена.
             IssuePermissionDeniedError: Если нет прав.
             IssueValidationError: При невалидных данных.
+            TemplateNotFoundError: Если template_id Issue не найден.
 
         Example:
             >>> updated = await service.update_issue(
             ...     issue_id=issue_id,
             ...     user_id=user_id,
-            ...     title="Новый заголовок"
+            ...     title="Новый заголовок",
+            ...     custom_fields={"equipment_model": "KUKA KR 600-3"}
             ... )
         """
         # Проверка существования и прав
@@ -347,6 +517,13 @@ class IssueService(BaseService):
         if category is not None:
             self._validate_category(category)
             update_data["category"] = category
+
+        # Валидация и обновление custom_fields
+        if custom_fields is not None:
+            # Если Issue привязан к template, валидируем custom_fields
+            if issue.template_id:
+                await self._validate_custom_fields(issue.template_id, custom_fields)
+            update_data["custom_fields"] = custom_fields
 
         if not update_data:
             return issue  # Нечего обновлять
