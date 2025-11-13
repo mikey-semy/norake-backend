@@ -25,7 +25,7 @@
             "env": {
                 "PLANE_API_KEY": "YOUR_PLANE_API_KEY",
                 "PLANE_API_HOST_URL": "https://plane.equiply.ru/",
-                "PLANE_WORKSPACE_SLUG": "norake"
+                "PLANE_WORKSPACE_SLUG": "projects"
             }
         },
         "tavily": {
