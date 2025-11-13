@@ -312,6 +312,46 @@ class WorkspaceMemberRepository(BaseRepository[WorkspaceMemberModel]):
         user_role = await self.get_user_role(workspace_id, user_id)
         return user_role == role
 
+    async def update_member_role(
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        new_role: WorkspaceMemberRole,
+    ) -> Optional[WorkspaceMemberModel]:
+        """
+        Обновить роль участника в workspace.
+
+        Args:
+            workspace_id: UUID workspace
+            user_id: UUID пользователя
+            new_role: Новая роль участника
+
+        Returns:
+            Optional[WorkspaceMemberModel]: Обновлённая запись участника или None
+
+        Raises:
+            ValueError: Если попытка изменить роль owner
+
+        Example:
+            >>> member = await repo.update_member_role(
+            ...     workspace_id, user_id, WorkspaceMemberRole.ADMIN
+            ... )
+            >>> assert member.role == WorkspaceMemberRole.ADMIN
+        """
+        member = await self.get_member(workspace_id, user_id)
+        if not member:
+            return None
+
+        # Используем update_item из BaseRepository
+        updated = await self.update_item(
+            member.id,
+            {"role": new_role},
+        )
+
+        # Загружаем связанный user
+        await self.session.refresh(updated, ["user"])
+        return updated
+
     async def remove_member(
         self,
         workspace_id: UUID,

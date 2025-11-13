@@ -15,6 +15,7 @@ from src.schemas.v1.workspaces.requests import (
     WorkspaceUpdateSchema,
 )
 from src.schemas.v1.workspaces.responses import (
+    MemberListResponseSchema,
     MemberResponseSchema,
     UserBriefSchema,
     WorkspaceDetailSchema,
@@ -41,4 +42,5 @@ __all__ = [
     "WorkspaceResponseSchema",
     "WorkspaceListResponseSchema",
     "MemberResponseSchema",
+    "MemberListResponseSchema",
 ]

@@ -18,7 +18,9 @@ from src.core.security import CurrentUserDep
 from src.routers.base import ProtectedRouter
 from src.schemas.v1.workspaces import (
     MemberAddSchema,
+    MemberListResponseSchema,
     MemberResponseSchema,
+    MemberUpdateSchema,
     WorkspaceCreateSchema,
     WorkspaceDetailSchema,
     WorkspaceListItemSchema,
@@ -39,9 +41,12 @@ class WorkspaceProtectedRouter(ProtectedRouter):
         GET /workspaces/me - Список моих workspace
         GET /workspaces/{id} - Детали workspace
         PATCH /workspaces/{id} - Обновить workspace
+        PUT /workspaces/{id} - Обновить workspace (alias для PATCH)
+        DELETE /workspaces/{id} - Удалить workspace
         POST /workspaces/{id}/members - Добавить участника
-        DELETE /workspaces/{id}/members/{user_id} - Удалить участника
         GET /workspaces/{id}/members - Список участников
+        PATCH /workspaces/{id}/members/{user_id} - Изменить роль участника
+        DELETE /workspaces/{id}/members/{user_id} - Удалить участника
 
     Архитектурные особенности:
         - Все endpoints требуют JWT аутентификации
@@ -359,6 +364,139 @@ class WorkspaceProtectedRouter(ProtectedRouter):
                 message="Участник добавлен в workspace",
             )
 
+        # ==================== GET MEMBERS ====================
+
+        @self.router.get(
+            path="/{workspace_id}/members",
+            response_model=MemberListResponseSchema,
+            status_code=status.HTTP_200_OK,
+            description="""
+            ## 👥 Получить список участников Workspace
+
+            Возвращает всех участников workspace с их ролями.
+
+            ### 🔒 Требуется JWT токен
+            ### ✅ Проверка доступа:
+            - PUBLIC workspace: доступно всем
+            - PRIVATE workspace: только участникам
+
+            ### Path параметры:
+            * **workspace_id**: UUID workspace
+
+            ### Returns:
+            * **MemberListResponseSchema**: Список участников workspace
+
+            ### Примеры использования:
+            ```bash
+            curl -X GET /api/v1/workspaces/<uuid>/members \\
+              -H "Authorization: Bearer <token>"
+            ```
+            """,
+        )
+        async def get_members(
+            workspace_id: UUID,
+            workspace_service: WorkspaceServiceDep = None,
+            current_user: CurrentUserDep = None,
+        ):
+            """
+            Получить список участников workspace.
+
+            Проверяет доступ к workspace.
+            """
+            from src.schemas.v1.workspaces import MemberListResponseSchema
+
+            members = await workspace_service.get_workspace_members(
+                workspace_id=workspace_id,
+                user_id=current_user.id,
+            )
+
+            # Преобразование domain objects → schemas
+            from src.schemas.v1.workspaces import WorkspaceMemberDetailSchema
+
+            schemas = [
+                WorkspaceMemberDetailSchema.model_validate(m) for m in members
+            ]
+
+            return MemberListResponseSchema(
+                success=True,
+                data=schemas,
+                total=len(schemas),
+            )
+
+        # ==================== UPDATE MEMBER ROLE ====================
+
+        @self.router.patch(
+            path="/{workspace_id}/members/{user_id}",
+            response_model=MemberResponseSchema,
+            status_code=status.HTTP_200_OK,
+            description="""
+            ## ✏️ Изменить роль участника Workspace
+
+            Изменяет роль участника (admin/member).
+            Нельзя изменить роль OWNER или назначить роль OWNER.
+
+            ### 🔒 Требуется JWT токен
+            ### ⚠️ Требуется роль: OWNER или ADMIN
+
+            ### Path параметры:
+            * **workspace_id**: UUID workspace
+            * **user_id**: UUID участника, чью роль меняем
+
+            ### Request Body:
+            * **role**: Новая роль (admin/member)
+
+            ### Returns:
+            * **MemberResponseSchema**: Обновлённый участник
+
+            ### Примеры использования:
+            ```bash
+            curl -X PATCH /api/v1/workspaces/<workspace-uuid>/members/<user-uuid> \\
+              -H "Authorization: Bearer <token>" \\
+              -H "Content-Type: application/json" \\
+              -d '{
+                "role": "member"
+              }'
+            ```
+            """,
+        )
+        async def update_member_role(
+            workspace_id: UUID,
+            user_id: UUID,
+            data: MemberUpdateSchema,
+            workspace_service: WorkspaceServiceDep = None,
+            current_user: CurrentUserDep = None,
+        ) -> MemberResponseSchema:
+            """
+            Изменить роль участника workspace.
+
+            Только OWNER или ADMIN могут изменять роли.
+            """
+            from src.models.v1.workspaces import WorkspaceMemberRole
+
+            # Конвертация строки в enum
+            role_map = {
+                "admin": WorkspaceMemberRole.ADMIN,
+                "member": WorkspaceMemberRole.MEMBER,
+            }
+            new_role = role_map.get(data.role)
+
+            member = await workspace_service.update_member_role(
+                workspace_id=workspace_id,
+                requester_id=current_user.id,
+                member_user_id=user_id,
+                new_role=new_role,
+            )
+
+            # Преобразование domain object → schema
+            from src.schemas.v1.workspaces import WorkspaceMemberDetailSchema
+
+            schema = WorkspaceMemberDetailSchema.model_validate(member)
+            return MemberResponseSchema(
+                success=True,
+                data=schema,
+                message="Роль участника обновлена",
+            )
+
         # ==================== REMOVE MEMBER ====================
 
         @self.router.delete(
@@ -405,3 +543,111 @@ class WorkspaceProtectedRouter(ProtectedRouter):
             )
 
             # 204 No Content - ничего не возвращаем
+
+        # ==================== DELETE WORKSPACE ====================
+
+        @self.router.delete(
+            path="/{workspace_id}",
+            status_code=status.HTTP_204_NO_CONTENT,
+            description="""
+            ## 🗑️ Удалить Workspace
+
+            Удаляет workspace и все связанные данные.
+            Каскадно удаляются: участники, issues, KB, n8n workflows.
+
+            ### 🔒 Требуется JWT токен
+            ### ⚠️ Требуется роль: OWNER
+
+            ### Path параметры:
+            * **workspace_id**: UUID workspace
+
+            ### Returns:
+            * **204 No Content**: Workspace успешно удалён
+
+            ### Примеры использования:
+            ```bash
+            curl -X DELETE /api/v1/workspaces/<uuid> \\
+              -H "Authorization: Bearer <token>"
+            ```
+            """,
+        )
+        async def delete_workspace(
+            workspace_id: UUID,
+            workspace_service: WorkspaceServiceDep = None,
+            current_user: CurrentUserDep = None,
+        ) -> None:
+            """
+            Удалить workspace.
+
+            Только OWNER может удалить workspace.
+            """
+            await workspace_service.delete_workspace(
+                workspace_id=workspace_id,
+                user_id=current_user.id,
+            )
+
+            # 204 No Content - ничего не возвращаем
+
+        # ==================== PUT ALIAS FOR UPDATE ====================
+
+        @self.router.put(
+            path="/{workspace_id}",
+            response_model=WorkspaceResponseSchema,
+            status_code=status.HTTP_200_OK,
+            description="""
+            ## ✏️ Обновить Workspace (PUT alias)
+
+            Идентичен PATCH endpoint - частичное обновление workspace.
+            Добавлен для совместимости с фронтендом.
+
+            ### 🔒 Требуется JWT токен
+            ### ⚠️ Требуется роль: OWNER или ADMIN
+
+            ### Path параметры:
+            * **workspace_id**: UUID workspace
+
+            ### Request Body (все опционально):
+            * **name**: Новое название workspace
+            * **description**: Новое описание
+            * **visibility**: Новая видимость (public/private)
+            * **settings**: Обновлённые настройки
+
+            ### Returns:
+            * **WorkspaceResponseSchema**: Обновлённый workspace
+
+            ### Примеры использования:
+            ```bash
+            curl -X PUT /api/v1/workspaces/<uuid> \\
+              -H "Authorization: Bearer <token>" \\
+              -H "Content-Type: application/json" \\
+              -d '{
+                "name": "New Marketing Team",
+                "visibility": "public"
+              }'
+            ```
+            """,
+        )
+        async def update_workspace_put(
+            workspace_id: UUID,
+            data: WorkspaceUpdateSchema,
+            workspace_service: WorkspaceServiceDep = None,
+            current_user: CurrentUserDep = None,
+        ) -> WorkspaceResponseSchema:
+            """
+            Обновить workspace (PUT alias для PATCH).
+
+            Реализация идентична PATCH endpoint.
+            """
+            workspace = await workspace_service.update_workspace(
+                workspace_id=workspace_id,
+                user_id=current_user.id,
+                data=data,
+            )
+
+            # Преобразование domain object → schema
+            schema = WorkspaceDetailSchema.model_validate(workspace)
+            return WorkspaceResponseSchema(
+                success=True,
+                data=schema,
+                message="Workspace обновлён успешно",
+            )

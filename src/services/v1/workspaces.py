@@ -120,7 +120,7 @@ class WorkspaceService:
         user = await self.user_repo.get_item_by_id(user_id)
         if not user:
             logger.warning("Попытка создать workspace от несуществующего пользователя: %s", user_id)
-            raise UserNotFoundError(user_id=user_id)
+            raise UserNotFoundError(field="id", value=str(user_id))
 
         # Генерация уникального slug
         slug = await self._generate_unique_slug(data.name)
@@ -338,11 +338,11 @@ class WorkspaceService:
         # Проверка прав (OWNER или ADMIN)
         await self._check_admin_permission(workspace_id, requester_id)
 
-        # Проверка существования добавляемого пользователя
+        # Проверка существования пользователя
         user = await self.user_repo.get_item_by_id(data.user_id)
         if not user:
             logger.warning("Пользователь %s не найден", data.user_id)
-            raise UserNotFoundError(user_id=data.user_id)
+            raise UserNotFoundError(field="id", value=str(data.user_id))
 
         # Проверка что пользователь ещё не участник
         existing = await self.member_repo.get_member(workspace_id, data.user_id)
@@ -452,6 +452,210 @@ class WorkspaceService:
             workspace_id,
         )
         return removed
+
+    async def get_workspace_members(
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+    ) -> List[WorkspaceMemberModel]:
+        """
+        Получить список участников workspace.
+
+        Требуется доступ к workspace (PUBLIC или membership).
+
+        Args:
+            workspace_id: UUID workspace
+            user_id: UUID пользователя, запрашивающего список
+
+        Returns:
+            List[WorkspaceMemberModel]: Список участников
+
+        Raises:
+            WorkspaceNotFoundError: Если workspace не найден
+            WorkspaceAccessDeniedError: Если нет доступа к workspace
+
+        Example:
+            >>> members = await service.get_workspace_members(
+            ...     workspace_id=workspace_id,
+            ...     user_id=current_user.id
+            ... )
+        """
+        # Проверка workspace
+        workspace = await self.workspace_repo.get_item_by_id(workspace_id)
+        if not workspace:
+            logger.warning("Workspace %s не найден", workspace_id)
+            raise WorkspaceNotFoundError(workspace_id=workspace_id)
+
+        # Проверка доступа
+        await self._check_access(workspace, user_id)
+
+        # Получение участников
+        members = await self.member_repo.get_workspace_members(workspace_id)
+        logger.info(
+            "Получены %d участников workspace %s",
+            len(members),
+            workspace_id,
+        )
+        return members
+
+    async def update_member_role(
+        self,
+        workspace_id: UUID,
+        requester_id: UUID,
+        member_user_id: UUID,
+        new_role: WorkspaceMemberRole,
+    ) -> WorkspaceMemberModel:
+        """
+        Изменить роль участника workspace.
+
+        Только OWNER или ADMIN могут изменять роли.
+        Нельзя изменить роль OWNER.
+        Нельзя назначить роль OWNER (только передача владения отдельным методом).
+
+        Args:
+            workspace_id: UUID workspace
+            requester_id: UUID пользователя, изменяющего роль
+            member_user_id: UUID участника, чью роль меняем
+            new_role: Новая роль (ADMIN или MEMBER)
+
+        Returns:
+            WorkspaceMemberModel: Обновлённый участник
+
+        Raises:
+            WorkspaceNotFoundError: Если workspace не найден
+            WorkspacePermissionDeniedError: Если нет прав
+            WorkspaceMemberNotFoundError: Если участник не найден
+            WorkspaceOwnerConflictError: Если пытаются изменить роль OWNER или назначить OWNER
+
+        Example:
+            >>> member = await service.update_member_role(
+            ...     workspace_id=workspace_id,
+            ...     requester_id=current_user.id,
+            ...     member_user_id=user_id,
+            ...     new_role=WorkspaceMemberRole.MEMBER
+            ... )
+        """
+        # Проверка workspace
+        workspace = await self.workspace_repo.get_item_by_id(workspace_id)
+        if not workspace:
+            logger.warning("Workspace %s не найден", workspace_id)
+            raise WorkspaceNotFoundError(workspace_id=workspace_id)
+
+        # Проверка прав (OWNER или ADMIN)
+        await self._check_admin_permission(workspace_id, requester_id)
+
+        # Проверка существования участника
+        member = await self.member_repo.get_member(workspace_id, member_user_id)
+        if not member:
+            logger.warning(
+                "Участник %s не найден в workspace %s",
+                member_user_id,
+                workspace_id,
+            )
+            raise WorkspaceMemberNotFoundError(
+                workspace_id=workspace_id,
+                user_id=member_user_id,
+            )
+
+        # Нельзя изменить роль OWNER
+        if member.role == WorkspaceMemberRole.OWNER:
+            logger.warning(
+                "Попытка изменить роль OWNER в workspace %s",
+                workspace_id,
+            )
+            raise WorkspaceOwnerConflictError(workspace_id=workspace_id)
+
+        # Нельзя назначить роль OWNER
+        if new_role == WorkspaceMemberRole.OWNER:
+            logger.warning(
+                "Попытка назначить роль OWNER в workspace %s",
+                workspace_id,
+            )
+            raise WorkspaceOwnerConflictError(workspace_id=workspace_id)
+
+        # Обновление роли через repository
+        updated_member = await self.member_repo.update_member_role(
+            workspace_id,
+            member_user_id,
+            new_role,
+        )
+
+        if not updated_member:
+            logger.error(
+                "Не удалось обновить роль участника %s в workspace %s",
+                member_user_id,
+                workspace_id,
+            )
+            raise WorkspaceMemberNotFoundError(
+                workspace_id=workspace_id,
+                user_id=member_user_id,
+            )
+
+        logger.info(
+            "Изменена роль участника %s в workspace %s на %s",
+            member_user_id,
+            workspace_id,
+            new_role.value,
+        )
+        return updated_member
+
+    async def delete_workspace(
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+    ) -> bool:
+        """
+        Удалить workspace.
+
+        Только OWNER может удалить workspace.
+        Удаляются все связанные данные (members, issues, KB и т.д.) каскадно.
+
+        Args:
+            workspace_id: UUID workspace
+            user_id: UUID пользователя, удаляющего workspace
+
+        Returns:
+            bool: True если workspace удалён
+
+        Raises:
+            WorkspaceNotFoundError: Если workspace не найден
+            WorkspacePermissionDeniedError: Если пользователь не OWNER
+
+        Example:
+            >>> deleted = await service.delete_workspace(
+            ...     workspace_id=workspace_id,
+            ...     user_id=current_user.id
+            ... )
+        """
+        # Проверка workspace
+        workspace = await self.workspace_repo.get_item_by_id(workspace_id)
+        if not workspace:
+            logger.warning("Workspace %s не найден", workspace_id)
+            raise WorkspaceNotFoundError(workspace_id=workspace_id)
+
+        # Проверка прав (только OWNER)
+        role = await self.member_repo.get_user_role(workspace_id, user_id)
+        if role != WorkspaceMemberRole.OWNER:
+            logger.warning(
+                "Пользователь %s не является OWNER workspace %s (роль: %s)",
+                user_id,
+                workspace_id,
+                role,
+            )
+            raise WorkspacePermissionDeniedError(
+                workspace_id=workspace_id,
+                user_id=user_id,
+                required_role="owner",
+            )
+
+        # Удаление workspace (каскадное удаление members через FK)
+        await self.workspace_repo.delete_item(workspace_id)
+        logger.info(
+            "Удалён workspace %s пользователем %s",
+            workspace_id,
+            user_id,
+        )
+        return True
 
     async def _generate_unique_slug(self, name: str, max_attempts: int = 10) -> str:
         """
