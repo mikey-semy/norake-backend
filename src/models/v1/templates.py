@@ -38,6 +38,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.models.base import BaseModel
 
 if TYPE_CHECKING:
+    from src.models.v1.issues import IssueModel
     from src.models.v1.users import UserModel
 
 
@@ -210,6 +211,13 @@ class TemplateModel(BaseModel):
         "UserModel",
         foreign_keys=[author_id],
         back_populates="templates",
+    )
+
+    issues: Mapped[list["IssueModel"]] = relationship(
+        "IssueModel",
+        back_populates="template",
+        lazy="selectin",
+        cascade="save-update, merge",
     )
 
     def __repr__(self) -> str:
