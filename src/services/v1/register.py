@@ -67,7 +67,7 @@ class RegisterService(BaseService):
         """
         super().__init__(session)
         self.token_service = token_service
-        self.user_repository = UserRepository(session, UserModel)
+        self.user_repository = UserRepository(session)
         self.password_manager = PasswordManager()
 
     async def register_user(
@@ -227,7 +227,7 @@ class RegisterService(BaseService):
                     detail=str(e),
                 ) from e
             else:
-                raise UserCreationError(reason=str(e), detail=str(e)) from e
+                raise UserCreationError(detail=str(e)) from e
 
     async def _generate_tokens(self, user: UserModel) -> Dict[str, str]:
         """

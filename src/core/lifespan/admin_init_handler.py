@@ -35,6 +35,9 @@ async def initialize_default_admin(app: FastAPI):  # noqa: ARG001
         # Пытаемся создать дефолтного админа
         await admin_init_service.create_default_admin_if_not_exists()
 
+        # ВАЖНО: Фиксируем изменения в БД
+        await db_manager.commit()
+
     finally:
         # Закрываем сессию
         await db_manager.close()

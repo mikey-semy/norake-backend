@@ -144,6 +144,7 @@ class IssueService(BaseService):
     async def create_issue(
         self,
         author_id: UUID,
+        workspace_id: UUID,
         title: str,
         description: str,
         category: str,
@@ -157,6 +158,7 @@ class IssueService(BaseService):
 
         Args:
             author_id: UUID автора проблемы.
+            workspace_id: UUID рабочего пространства.
             title: Заголовок проблемы.
             description: Подробное описание.
             category: Категория (hardware/software/process/documentation/safety/
@@ -172,6 +174,7 @@ class IssueService(BaseService):
         Example:
             >>> issue = await service.create_issue(
             ...     author_id=user_id,
+            ...     workspace_id=workspace_id,
             ...     title="Ошибка E401",
             ...     description="Проблема с оборудованием",
             ...     category="hardware",
@@ -189,6 +192,7 @@ class IssueService(BaseService):
             "category": category,
             "status": IssueStatus.RED,  # Всегда RED при создании
             "author_id": author_id,
+            "workspace_id": workspace_id,
         }
 
         issue = await self.repository.create_item(issue_data)
@@ -232,13 +236,9 @@ class IssueService(BaseService):
         """
         try:
             from src.repository.v1.n8n_workflows import N8nWorkflowRepository
-            from src.models.v1.n8n_workflows import N8nWorkflowModel
             from src.core.integrations.n8n import n8n_webhook_client
 
-            workflow_repo = N8nWorkflowRepository(
-                session=self.session,
-                model=N8nWorkflowModel,
-            )
+            workflow_repo = N8nWorkflowRepository(self.session)
 
             # Ищем активный workflow AUTO_CATEGORIZE для workspace Issue
             workflows = await workflow_repo.filter_by(

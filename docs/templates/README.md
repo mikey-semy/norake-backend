@@ -2,32 +2,157 @@
 
 Этот каталог содержит готовые шаблоны для структурированного создания Issues.
 
-## � Навигация по документации
+## 📚 Навигация по документации
+
+### Документация шаблонов
 
 - **[QUICKSTART.md](QUICKSTART.md)** - Быстрый старт (5 минут)
 - **[WORKFLOW.md](WORKFLOW.md)** - Визуальная диаграмма workflow с метриками
+
+### Developer Template (Программисты)
+
 - **[developer-issue-template.md](developer-issue-template.md)** - Полное руководство с примерами
 - **[developer-issue-template.json](developer-issue-template.json)** - JSON для API
-- **[create_developer_template.sql](create_developer_template.sql)** - SQL скрипт для PostgreSQL
-- **[create_developer_template.py](create_developer_template.py)** - Python автоматизация
 
-## �📋 Доступные шаблоны
+### Drive Engineer Template (Приводчики)
 
-### 1. Developer Issue Template (Запрос помощи: Программирование)
+- **[drive-engineer-template.md](drive-engineer-template.md)** - Руководство для ошибок ПЧ
+- **[drive-engineer-template.json](drive-engineer-template.json)** - JSON для API
+
+### Скрипты автоматизации
+
+- **[create_templates.sql](create_templates.sql)** - SQL скрипт для PostgreSQL (оба шаблона)
+- **[create_templates.py](create_templates.py)** - Python автоматизация (оба шаблона)
+- **[create_developer_template.py](create_developer_template.py)** - Python (только Developer)
+- **[create_developer_template.sql](create_developer_template.sql)** - SQL (только Developer)
+
+## 📋 Доступные шаблоны
+
+### 1. Developer Issue Template (Запрос помощи: Программирование) 💻
 
 **Назначение**: Помочь программистам правильно структурировать запрос помощи для получения быстрого и точного ответа.
 
 **Категория**: `software`
 
-**Поля**: 9 (goal, current_behavior, code_example, error_message, environment, attempts, expected_behavior, additional_context, checklist)
+**Иконка**: 💻
+
+**Поля**: 9 (goal, current_behavior, code_example, error_message, environment, attempts, expected_behavior, additional_context, solution)
 
 **Принцип**: Статусная система RED/GREEN - проблемы остаются в истории с решениями для всех.
 
 ---
 
-## 🚀 Способы создания шаблона
+### 2. Drive Engineer Template (Ошибка преобразователя частоты) ⚡
 
-### Способ 1: Через API (рекомендуется)
+**Назначение**: Структурировать информацию об ошибках преобразователей частоты (ПЧ) для быстрой диагностики и решения.
+
+**Категория**: `hardware`
+
+**Иконка**: ⚡
+
+**Поля**: 16 (equipment_name, drive_info, error_code, error_description, occurrence_moment, parameters_at_error, actions_taken, related_parameters, equipment_state, connection_config, operating_conditions, error_history, solution, preventive_measures, criticality, downtime)
+
+**Принцип**: Статусная система RED/YELLOW/GREEN с детальной диагностикой и превентивными мерами.
+
+**Поддержка производителей**: Siemens SINAMICS, ABB ACS, Danfoss VLT, Schneider Altivar
+
+---
+
+## 🚀 Способы создания шаблонов
+
+### ⭐ Способ 1: Через систему фикстур (РЕКОМЕНДУЕТСЯ)
+
+Шаблоны автоматически загружаются из `fixtures_data/templates.json` при инициализации проекта.
+
+**Первичная загрузка** (после `uv run bootstrap`):
+
+```bash
+# Загрузка фикстур выполняется автоматически при инициализации
+# Или вручную:
+uv run load-fixtures
+```
+
+**Обновление шаблонов**:
+
+1. Отредактируйте `fixtures_data/templates.json`
+2. Загрузите изменения:
+   ```bash
+   uv run load-fixtures  # Без перезаписи существующих
+   # ИЛИ
+   uv run load-fixtures --force  # С перезаписью
+   ```
+
+**Экспорт текущих шаблонов из БД**:
+
+```bash
+uv run export-fixtures
+# → Создаст fixtures_export/templates_YYYYMMDD_HHMMSS.json
+```
+
+**Подробности**: См. [FIXTURES_GUIDE.md](../FIXTURES_GUIDE.md)
+
+---
+
+### Способ 2: Через Python скрипт (для обоих шаблонов)
+
+```bash
+# Установка зависимостей
+pip install httpx rich
+
+# Создание обоих шаблонов одной командой
+python create_templates.py \
+  --workspace-id YOUR_WORKSPACE_UUID \
+  --username admin \
+  --password your_password
+
+# Для создания только Developer Template
+python create_developer_template.py \
+  --workspace-id YOUR_WORKSPACE_UUID \
+  --username admin \
+  --password your_password
+```
+
+**Вывод**:
+
+```
+🔐 Логин в http://localhost:8000...
+✅ Авторизация успешна
+
+📦 Загрузка и создание шаблонов...
+📄 Загрузка шаблона из developer-issue-template.json...
+   ✓ Запрос помощи: Программирование
+   📂 Категория: software
+   📊 Полей: 9
+
+🚀 Создание шаблона: Запрос помощи: Программирование
+✅ Шаблон создан успешно!
+   🆔 ID: abc12345...
+   📈 Использований: 0
+
+📄 Загрузка шаблона из drive-engineer-template.json...
+   ✓ Ошибка преобразователя частоты
+   📂 Категория: hardware
+   📊 Полей: 16
+
+🚀 Создание шаблона: Ошибка преобразователя частоты
+✅ Шаблон создан успешно!
+   🆔 ID: def67890...
+   📈 Использований: 0
+
+✨ Созданные шаблоны
+┌──────────────────────────────────┬──────────┬───────┬────────────┐
+│ Название                         │ Категория│ Полей │ ID         │
+├──────────────────────────────────┼──────────┼───────┼────────────┤
+│ Запрос помощи: Программирование │ software │   9   │ abc12345...│
+│ Ошибка преобразователя частоты  │ hardware │  16   │ def67890...│
+└──────────────────────────────────┴──────────┴───────┴────────────┘
+
+🎉 Все шаблоны успешно созданы!
+```
+
+---
+
+### Способ 2: Через API напрямую
 
 ```bash
 # 1. Залогиньтесь и получите токен
@@ -38,14 +163,21 @@ curl -X POST http://localhost:8000/api/v1/auth/login \
 # Сохраните access_token из ответа
 export TOKEN="your_access_token_here"
 
-# 2. Создайте шаблон
+# 2. Создайте Developer Template
 curl -X POST http://localhost:8000/api/v1/templates/{workspace_id} \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d @developer-issue-template.json
+
+# 3. Создайте Drive Engineer Template
+curl -X POST http://localhost:8000/api/v1/templates/{workspace_id} \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d @drive-engineer-template.json
 ```
 
 **Ответ**:
+
 ```json
 {
   "success": true,
@@ -78,6 +210,7 @@ psql -U postgres -d norake_dev -f create_developer_template.sql
 ```
 
 **Проверка**:
+
 ```sql
 SELECT id, template_name, category, usage_count
 FROM templates
@@ -119,7 +252,7 @@ print(response.json())
 
 ### 1. Создание Issue с шаблоном
 
-```bash
+````bash
 POST /api/v1/issues
 Authorization: Bearer YOUR_TOKEN
 
@@ -149,7 +282,7 @@ Authorization: Bearer YOUR_TOKEN
     ]
   }
 }
-```
+````
 
 ---
 
@@ -204,7 +337,7 @@ Authorization: Bearer YOUR_TOKEN
 
 ```sql
 -- Топ-5 самых используемых шаблонов
-SELECT 
+SELECT
     template_name,
     usage_count,
     category
@@ -214,7 +347,7 @@ ORDER BY usage_count DESC
 LIMIT 5;
 
 -- Среднее время решения Issue по шаблонам
-SELECT 
+SELECT
     t.template_name,
     AVG(EXTRACT(EPOCH FROM (i.resolved_at - i.created_at))/3600) as avg_hours_to_resolve,
     COUNT(i.id) as issues_count
@@ -225,7 +358,7 @@ GROUP BY t.template_name
 ORDER BY avg_hours_to_resolve ASC;
 
 -- Категории проблем (автоматически категоризированные AI)
-SELECT 
+SELECT
     category,
     COUNT(*) as count,
     ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as percentage
@@ -261,7 +394,7 @@ Authorization: Bearer YOUR_TOKEN
 
 ```sql
 UPDATE templates
-SET 
+SET
     fields = fields || '[{"field_name": "new_field", ...}]'::jsonb,
     updated_at = NOW()
 WHERE template_name = 'Запрос помощи: Программирование';
@@ -307,6 +440,7 @@ WHERE template_name = 'Запрос помощи: Программировани
 ## 📝 Changelog
 
 ### v1.0.0 (2025-11-11)
+
 - ✅ Initial Developer Issue Template
 - ✅ 9 полей (goal, current_behavior, code_example, error_message, environment, attempts, expected_behavior, additional_context, checklist)
 - ✅ Validation rules (required, min/max length, min_selected)
@@ -316,6 +450,7 @@ WHERE template_name = 'Запрос помощи: Программировани
 - ✅ SQL creation script (create_developer_template.sql)
 
 ### Planned
+
 - ⏳ Template для hardware-проблем (оборудование, датчики)
 - ⏳ Template для process-проблем (бизнес-процессы, документация)
 - ⏳ Template для safety-проблем (безопасность, инциденты)

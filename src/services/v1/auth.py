@@ -64,7 +64,7 @@ class AuthService(BaseService):
         """
         super().__init__(session)
         self.token_service = token_service
-        self.repository = UserRepository(session=session, model=UserModel)
+        self.repository = UserRepository(session)
         self.redis_manager = token_service.redis_manager
 
     # ==================== АУТЕНТИФИКАЦИЯ ====================

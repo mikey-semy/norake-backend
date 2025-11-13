@@ -1324,7 +1324,7 @@ def bootstrap():
 
         # Загружаем фикстуры
         print("📦 Загружаем фикстуры...")
-        load_fixtures(force=True)
+        asyncio.run(load_fixtures_async(force=True))
 
         print("✅ Проект полностью инициализирован!")
         return True
@@ -1353,3 +1353,73 @@ class DockerContainerConflictError(Exception):
         else:
             self.message = message or "Конфликт имен контейнеров. Удали существующий контейнер или переименуй его."
         super().__init__(self.message)
+
+
+async def load_fixtures_async(force: bool = False):
+    """
+    Асинхронная загрузка фикстур из JSON файлов.
+
+    Args:
+        force: Перезаписывать существующие записи
+    """
+    from src.core.fixtures.json_loader import JSONFixtureLoader
+    from src.core.connections.database import get_db_session
+
+    print("📦 Загрузка фикстур из JSON файлов...")
+
+    async for session in get_db_session():
+        try:
+            loader = JSONFixtureLoader(session, "fixtures_data")
+            results = await loader.load_all_fixtures(force=force)
+
+            print("✅ Фикстуры успешно загружены!")
+            for fixture_type, stats in results.items():
+                created = stats.get("created", 0)
+                updated = stats.get("updated", 0)
+                skipped = stats.get("skipped", 0)
+                print(f"📊 {fixture_type}: создано={created}, обновлено={updated}, пропущено={skipped}")
+
+        except Exception as e:
+            print(f"❌ Ошибка при загрузке фикстур: {e}")
+            raise
+        finally:
+            break
+
+
+async def export_fixtures_async():
+    """
+    Асинхронный экспорт данных в JSON фикстуры.
+    """
+    from src.core.fixtures.json_handler import FixtureJSONHandler
+    from src.core.connections.database import get_db_session
+
+    print("📤 Экспорт данных в JSON файлы...")
+
+    async for session in get_db_session():
+        try:
+            handler = FixtureJSONHandler(session, "fixtures_export")
+            files = await handler.export_to_json(include_templates=True)
+
+            print("✅ Данные успешно экспортированы!")
+            for fixture_type, filepath in files.items():
+                print(f"📄 {fixture_type}: {filepath}")
+
+        except Exception as e:
+            print(f"❌ Ошибка при экспорте: {e}")
+            raise
+        finally:
+            break
+
+
+def load_fixtures():
+    """
+    Загрузка фикстур из JSON файлов (синхронная обертка).
+    """
+    asyncio.run(load_fixtures_async(force=False))
+
+
+def export_fixtures():
+    """
+    Экспорт данных в JSON фикстуры (синхронная обертка).
+    """
+    asyncio.run(export_fixtures_async())
