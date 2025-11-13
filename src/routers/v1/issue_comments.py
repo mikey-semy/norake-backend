@@ -17,7 +17,7 @@ from src.core.dependencies.issue_comments import IssueCommentServiceDep
 from src.core.security import CurrentUserDep
 from src.routers.base import BaseRouter, ProtectedRouter
 from src.schemas.v1.issue_comments import (
-    CommentCreateSchema,
+    CommentCreateRequestSchema,
     CommentDetailSchema,
     CommentListResponseSchema,
     CommentResponseSchema,
@@ -217,7 +217,7 @@ class IssueCommentProtectedRouter(ProtectedRouter):
         )
         async def create_comment(
             issue_id: UUID,
-            request: CommentCreateSchema,
+            request: CommentCreateRequestSchema,
             current_user: CurrentUserDep = None,
             service: IssueCommentServiceDep = None,
         ) -> CommentResponseSchema:

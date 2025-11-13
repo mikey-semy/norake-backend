@@ -38,9 +38,9 @@ from src.repository.v1.workspaces import (
     WorkspaceRepository,
 )
 from src.schemas.v1.workspaces import (
-    MemberAddSchema,
-    WorkspaceCreateSchema,
-    WorkspaceUpdateSchema,
+    MemberAddRequestSchema,
+    WorkspaceCreateRequestSchema,
+    WorkspaceUpdateRequestSchema,
 )
 
 logger = logging.getLogger(__name__)
@@ -66,7 +66,7 @@ class WorkspaceService:
         >>> service = WorkspaceService(session)
         >>> workspace = await service.create_workspace(
         ...     user_id=current_user.id,
-        ...     data=WorkspaceCreateSchema(name="Marketing Team")
+        ...     data=WorkspaceCreateRequestSchema(name="Marketing Team")
         ... )
     """
 
@@ -85,7 +85,7 @@ class WorkspaceService:
     async def create_workspace(
         self,
         user_id: UUID,
-        data: WorkspaceCreateSchema,
+        data: WorkspaceCreateRequestSchema,
     ) -> WorkspaceModel:
         """
         Создать новый workspace.
@@ -109,7 +109,7 @@ class WorkspaceService:
         Example:
             >>> workspace = await service.create_workspace(
             ...     user_id=user.id,
-            ...     data=WorkspaceCreateSchema(name="Marketing Team")
+            ...     data=WorkspaceCreateRequestSchema(name="Marketing Team")
             ... )
             >>> workspace.slug
             'marketing-team'
@@ -254,7 +254,7 @@ class WorkspaceService:
         self,
         workspace_id: UUID,
         user_id: UUID,
-        data: WorkspaceUpdateSchema,
+        data: WorkspaceUpdateRequestSchema,
     ) -> WorkspaceModel:
         """
         Обновить workspace.
@@ -277,7 +277,7 @@ class WorkspaceService:
             >>> workspace = await service.update_workspace(
             ...     workspace_id=workspace_id,
             ...     user_id=current_user.id,
-            ...     data=WorkspaceUpdateSchema(name="New Name")
+            ...     data=WorkspaceUpdateRequestSchema(name="New Name")
             ... )
         """
         workspace = await self.workspace_repo.get_item_by_id(workspace_id)
@@ -299,7 +299,7 @@ class WorkspaceService:
         self,
         workspace_id: UUID,
         requester_id: UUID,
-        data: MemberAddSchema,
+        data: MemberAddRequestSchema,
     ) -> WorkspaceMemberModel:
         """
         Добавить участника в workspace.
@@ -326,7 +326,7 @@ class WorkspaceService:
             >>> member = await service.add_member(
             ...     workspace_id=workspace_id,
             ...     requester_id=current_user.id,
-            ...     data=MemberAddSchema(user_id=user_id, role="admin")
+            ...     data=MemberAddRequestSchema(user_id=user_id, role="admin")
             ... )
         """
         # Проверка workspace

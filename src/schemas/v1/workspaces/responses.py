@@ -4,26 +4,21 @@ Response-схемы для Workspace API.
 Содержит схемы для исходящих ответов (detail, list, members).
 """
 
-from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
-from pydantic import ConfigDict, Field
+from pydantic import Field
 
 from src.models.v1.workspaces import WorkspaceVisibility
-from src.schemas.base import BaseResponseSchema, BaseSchema
-from src.schemas.v1.workspaces.base import (
-    WorkspaceBaseSchema,
-    WorkspaceMemberBaseSchema,
-)
+from src.schemas.base import BaseResponseSchema, BaseSchema, CommonBaseSchema
 
 
-class UserBriefSchema(BaseSchema):
+class UserBriefSchema(CommonBaseSchema):
     """
     Краткая информация о пользователе.
 
     Используется в составе других схем.
-    Наследует id, created_at, updated_at из BaseSchema.
+    Не содержит id, created_at, updated_at - только бизнес-данные.
 
     Attributes:
         username: Имя пользователя

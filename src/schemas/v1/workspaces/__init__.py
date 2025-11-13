@@ -9,10 +9,10 @@ from src.schemas.v1.workspaces.base import (
     WorkspaceMemberBaseSchema,
 )
 from src.schemas.v1.workspaces.requests import (
-    MemberAddSchema,
-    MemberUpdateSchema,
-    WorkspaceCreateSchema,
-    WorkspaceUpdateSchema,
+    MemberAddRequestSchema,
+    MemberUpdateRequestSchema,
+    WorkspaceCreateRequestSchema,
+    WorkspaceUpdateRequestSchema,
 )
 from src.schemas.v1.workspaces.responses import (
     MemberListResponseSchema,
@@ -30,10 +30,10 @@ __all__ = [
     "WorkspaceBaseSchema",
     "WorkspaceMemberBaseSchema",
     # Requests
-    "WorkspaceCreateSchema",
-    "WorkspaceUpdateSchema",
-    "MemberAddSchema",
-    "MemberUpdateSchema",
+    "WorkspaceCreateRequestSchema",
+    "WorkspaceUpdateRequestSchema",
+    "MemberAddRequestSchema",
+    "MemberUpdateRequestSchema",
     # Responses
     "UserBriefSchema",
     "WorkspaceMemberDetailSchema",

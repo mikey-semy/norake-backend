@@ -17,16 +17,16 @@ from src.core.dependencies.workspaces import WorkspaceServiceDep
 from src.core.security import CurrentUserDep
 from src.routers.base import ProtectedRouter
 from src.schemas.v1.workspaces import (
-    MemberAddSchema,
+    MemberAddRequestSchema,
     MemberListResponseSchema,
     MemberResponseSchema,
-    MemberUpdateSchema,
-    WorkspaceCreateSchema,
+    MemberUpdateRequestSchema,
+    WorkspaceCreateRequestSchema,
     WorkspaceDetailSchema,
     WorkspaceListItemSchema,
     WorkspaceListResponseSchema,
     WorkspaceResponseSchema,
-    WorkspaceUpdateSchema,
+    WorkspaceUpdateRequestSchema,
 )
 
 
@@ -103,7 +103,7 @@ class WorkspaceProtectedRouter(ProtectedRouter):
         async def create_workspace(
             workspace_service: WorkspaceServiceDep = None,
             current_user: CurrentUserDep = None,
-            data: WorkspaceCreateSchema = ...,
+            data: WorkspaceCreateRequestSchema = ...,
         ) -> WorkspaceResponseSchema:
             """
             Создать новый workspace.
@@ -278,7 +278,7 @@ class WorkspaceProtectedRouter(ProtectedRouter):
         )
         async def update_workspace(
             workspace_id: UUID,
-            data: WorkspaceUpdateSchema,
+            data: WorkspaceUpdateRequestSchema,
             workspace_service: WorkspaceServiceDep = None,
             current_user: CurrentUserDep = None,
         ) -> WorkspaceResponseSchema:
@@ -339,7 +339,7 @@ class WorkspaceProtectedRouter(ProtectedRouter):
         )
         async def add_member(
             workspace_id: UUID,
-            data: MemberAddSchema,
+            data: MemberAddRequestSchema,
             workspace_service: WorkspaceServiceDep = None,
             current_user: CurrentUserDep = None,
         ) -> MemberResponseSchema:
@@ -462,7 +462,7 @@ class WorkspaceProtectedRouter(ProtectedRouter):
         async def update_member_role(
             workspace_id: UUID,
             user_id: UUID,
-            data: MemberUpdateSchema,
+            data: MemberUpdateRequestSchema,
             workspace_service: WorkspaceServiceDep = None,
             current_user: CurrentUserDep = None,
         ) -> MemberResponseSchema:
@@ -629,7 +629,7 @@ class WorkspaceProtectedRouter(ProtectedRouter):
         )
         async def update_workspace_put(
             workspace_id: UUID,
-            data: WorkspaceUpdateSchema,
+            data: WorkspaceUpdateRequestSchema,
             workspace_service: WorkspaceServiceDep = None,
             current_user: CurrentUserDep = None,
         ) -> WorkspaceResponseSchema:

@@ -9,94 +9,115 @@ Pydantic схемы для выходных данных (responses) комме�
     CommentListResponseSchema - обертка для списка комментариев.
 """
 
-from datetime import datetime
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
 
-from src.schemas.base import BaseResponseSchema
-from .base import CommentBaseSchema
+from src.schemas.base import BaseResponseSchema, BaseSchema, CommonBaseSchema
 
 
-class UserBriefSchema(BaseModel):
+class UserBriefSchema(CommonBaseSchema):
     """
     Краткая информация о пользователе.
 
     Используется для отображения автора комментария без избыточной информации.
+    Не содержит id, created_at, updated_at - только бизнес-данные.
 
     Attributes:
-        id (UUID): Уникальный идентификатор пользователя.
         username (str): Имя пользователя.
         email (str): Email адрес пользователя.
 
     Example:
         >>> author = UserBriefSchema(
-        ...     id=uuid4(),
         ...     username="john_doe",
         ...     email="john@example.com"
         ... )
     """
 
-    id: UUID = Field(..., description="UUID пользователя")
     username: str = Field(..., description="Имя пользователя")
     email: str = Field(..., description="Email пользователя")
 
-    model_config = ConfigDict(from_attributes=True)
 
-
-class CommentDetailSchema(CommentBaseSchema):
+class CommentDetailSchema(BaseSchema):
     """
     Детальная схема комментария с полной информацией.
 
+    Наследует id, created_at, updated_at из BaseSchema.
+
     Attributes:
-        id (UUID): Уникальный идентификатор комментария.
         issue_id (UUID): ID проблемы, к которой относится комментарий.
+        author_id (UUID): ID автора комментария.
         author (UserBriefSchema): Информация об авторе комментария.
         content (str): Текстовое содержимое комментария.
         is_solution (bool): Флаг, отмечающий комментарий как решение.
-        created_at (datetime): Дата и время создания комментария.
-        updated_at (datetime): Дата и время последнего обновления.
+        parent_id (Optional[UUID]): UUID родительского комментария для вложенности.
+        replies (List['CommentDetailSchema']): Список вложенных ответов.
 
     Example:
         >>> comment = CommentDetailSchema(
         ...     id=uuid4(),
         ...     issue_id=uuid4(),
+        ...     author_id=uuid4(),
         ...     author=UserBriefSchema(...),
         ...     content="Решение найдено",
         ...     is_solution=True,
+        ...     parent_id=None,
+        ...     replies=[],
         ...     created_at=datetime.now(),
         ...     updated_at=datetime.now()
         ... )
     """
 
-    id: UUID = Field(..., description="Уникальный идентификатор комментария")
     issue_id: UUID = Field(..., description="ID проблемы")
+    author_id: UUID = Field(..., description="ID автора комментария")
     author: UserBriefSchema = Field(..., description="Автор комментария")
-    created_at: datetime = Field(..., description="Дата создания")
-    updated_at: datetime = Field(..., description="Дата последнего обновления")
+    content: str = Field(
+        ...,
+        description="Текстовое содержимое комментария",
+    )
+    is_solution: bool = Field(
+        default=False,
+        description="Флаг, отмечающий комментарий как решение",
+    )
+    parent_id: Optional[UUID] = Field(
+        default=None,
+        description="UUID родительского комментария",
+    )
+    replies: List['CommentDetailSchema'] = Field(
+        default_factory=list,
+        description="Список вложенных ответов",
+    )
 
 
-class CommentListItemSchema(CommentBaseSchema):
+class CommentListItemSchema(BaseSchema):
     """
     Упрощенная схема комментария для списков.
 
+    Наследует id, created_at, updated_at из BaseSchema.
+
     Attributes:
-        id (UUID): Уникальный идентификатор комментария.
         issue_id (UUID): ID проблемы.
         author_id (UUID): ID автора (без вложенного объекта).
         content (str): Текстовое содержимое комментария.
         is_solution (bool): Флаг решения.
-        created_at (datetime): Дата создания.
+        parent_id (Optional[UUID]): UUID родительского комментария.
+        replies_count (int): Количество вложенных ответов.
 
     Note:
         Для списков не загружаем полный объект автора для оптимизации.
     """
 
-    id: UUID = Field(..., description="Уникальный идентификатор комментария")
     issue_id: UUID = Field(..., description="ID проблемы")
     author_id: UUID = Field(..., description="ID автора комментария")
-    created_at: datetime = Field(..., description="Дата создания")
+    content: str = Field(..., description="Текстовое содержимое комментария")
+    is_solution: bool = Field(default=False, description="Флаг решения")
+    parent_id: Optional[UUID] = Field(
+        default=None, description="UUID родительского комментария"
+    )
+    replies_count: int = Field(
+        default=0, description="Количество вложенных ответов"
+    )
 
 
 class CommentResponseSchema(BaseResponseSchema):
@@ -114,7 +135,7 @@ class CommentResponseSchema(BaseResponseSchema):
         ... )
     """
 
-    data: CommentDetailSchema | None = Field(
+    data: Optional[CommentDetailSchema] = Field(
         None, description="Данные комментария"
     )
 
@@ -134,6 +155,6 @@ class CommentListResponseSchema(BaseResponseSchema):
         ... )
     """
 
-    data: List[CommentDetailSchema] | None = Field(
+    data: Optional[List[CommentDetailSchema]] = Field(
         None, description="Список комментариев"
     )

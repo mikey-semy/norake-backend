@@ -5,16 +5,14 @@ Request-схемы для Workspace API.
 """
 
 from typing import Any, Dict, Optional
+from uuid import UUID
 
 from pydantic import Field
 
-from src.schemas.v1.workspaces.base import (
-    WorkspaceBaseSchema,
-    WorkspaceMemberBaseSchema,
-)
+from src.schemas.base import BaseRequestSchema
 
 
-class WorkspaceCreateSchema(WorkspaceBaseSchema):
+class WorkspaceCreateRequestSchema(BaseRequestSchema):
     """
     Схема для создания Workspace.
 
@@ -22,7 +20,7 @@ class WorkspaceCreateSchema(WorkspaceBaseSchema):
     Creator автоматически становится OWNER.
 
     Example:
-        >>> data = WorkspaceCreateSchema(
+        >>> data = WorkspaceCreateRequestSchema(
         ...     name="Marketing Team",
         ...     description="Our marketing workspace",
         ...     visibility="private",
@@ -30,10 +28,30 @@ class WorkspaceCreateSchema(WorkspaceBaseSchema):
         ... )
     """
 
-    pass
+    name: str = Field(
+        ...,
+        min_length=3,
+        max_length=100,
+        description="Название workspace",
+        examples=["Marketing Team"],
+    )
+    description: Optional[str] = Field(
+        None,
+        max_length=500,
+        description="Описание workspace",
+    )
+    visibility: str = Field(
+        default="private",
+        description="Видимость workspace (private/public/team)",
+        examples=["private"],
+    )
+    settings: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Настройки workspace (JSONB)",
+    )
 
 
-class WorkspaceUpdateSchema(WorkspaceBaseSchema):
+class WorkspaceUpdateRequestSchema(BaseRequestSchema):
     """
     Схема для обновления Workspace.
 
@@ -41,7 +59,7 @@ class WorkspaceUpdateSchema(WorkspaceBaseSchema):
     Slug не может быть изменён.
 
     Example:
-        >>> data = WorkspaceUpdateSchema(
+        >>> data = WorkspaceUpdateRequestSchema(
         ...     name="New Marketing Team",
         ...     description="Updated description"
         ... )
@@ -68,7 +86,7 @@ class WorkspaceUpdateSchema(WorkspaceBaseSchema):
     )
 
 
-class MemberAddSchema(WorkspaceMemberBaseSchema):
+class MemberAddRequestSchema(BaseRequestSchema):
     """
     Схема для добавления участника в Workspace.
 
@@ -76,16 +94,25 @@ class MemberAddSchema(WorkspaceMemberBaseSchema):
     Нельзя добавить второго OWNER.
 
     Example:
-        >>> data = MemberAddSchema(
+        >>> data = MemberAddRequestSchema(
         ...     user_id="uuid-here",
         ...     role="admin"
         ... )
     """
 
-    pass
+    user_id: UUID = Field(
+        ...,
+        description="UUID пользователя для добавления",
+        examples=["123e4567-e89b-12d3-a456-426614174000"],
+    )
+    role: str = Field(
+        default="member",
+        description="Роль участника (owner/admin/member)",
+        examples=["member"],
+    )
 
 
-class MemberUpdateSchema(WorkspaceMemberBaseSchema):
+class MemberUpdateRequestSchema(BaseRequestSchema):
     """
     Схема для изменения роли участника.
 
@@ -93,12 +120,13 @@ class MemberUpdateSchema(WorkspaceMemberBaseSchema):
     Нельзя изменить роль единственного OWNER.
 
     Example:
-        >>> data = MemberUpdateSchema(
+        >>> data = MemberUpdateRequestSchema(
         ...     role="member"
         ... )
     """
 
-    user_id: Optional[str] = Field(
-        None,
-        description="UUID пользователя (не изменяется)",
+    role: str = Field(
+        ...,
+        description="Новая роль участника (owner/admin/member)",
+        examples=["admin"],
     )

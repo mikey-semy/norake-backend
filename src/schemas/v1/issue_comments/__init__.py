@@ -3,12 +3,12 @@ Pydantic схемы для комментариев к проблемам.
 
 Экспортируемые схемы:
     Base: CommentBaseSchema
-    Requests: CommentCreateSchema
+    Requests: CommentCreateRequestSchema, CommentUpdateRequestSchema
     Responses: CommentDetailSchema, CommentListItemSchema, CommentResponseSchema, CommentListResponseSchema
 """
 
 from .base import CommentBaseSchema
-from .requests import CommentCreateSchema
+from .requests import CommentCreateRequestSchema, CommentUpdateRequestSchema
 from .responses import (
     CommentDetailSchema,
     CommentListItemSchema,
@@ -20,7 +20,8 @@ __all__ = [
     # Base
     "CommentBaseSchema",
     # Requests
-    "CommentCreateSchema",
+    "CommentCreateRequestSchema",
+    "CommentUpdateRequestSchema",
     # Responses
     "CommentDetailSchema",
     "CommentListItemSchema",

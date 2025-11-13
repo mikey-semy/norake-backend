@@ -5,10 +5,12 @@
     CommentBaseSchema - базовая схема с общими полями.
 """
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
+
+from src.schemas.base import CommonBaseSchema
 
 
-class CommentBaseSchema(BaseModel):
+class CommentBaseSchema(CommonBaseSchema):
     """
     Базовая схема комментария к проблеме.
 
@@ -24,16 +26,6 @@ class CommentBaseSchema(BaseModel):
         >>> comment_data.content
         'Попробуйте перезагрузить сервер'
     """
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        json_schema_extra={
-            "example": {
-                "content": "Попробуйте перезагрузить сервер и проверить логи",
-                "is_solution": False,
-            }
-        },
-    )
 
     content: str = Field(
         ...,

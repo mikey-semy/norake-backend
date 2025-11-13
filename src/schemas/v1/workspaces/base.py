@@ -4,16 +4,19 @@
 Содержит общие поля и конфигурацию для схем workspace.
 """
 
-from datetime import datetime
 from typing import Any, Dict, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import Field, field_validator
 
 from src.models.v1.workspaces import WorkspaceVisibility
+from src.schemas.base import CommonBaseSchema
+
+# Допустимые роли участников workspace
+ALLOWED_ROLES = {"owner", "admin", "member"}
 
 
-class WorkspaceBaseSchema(BaseModel):
+class WorkspaceBaseSchema(CommonBaseSchema):
     """
     Базовая схема для Workspace с общими полями.
 
@@ -54,13 +57,8 @@ class WorkspaceBaseSchema(BaseModel):
         description="Настройки workspace (JSONB)",
     )
 
-    model_config = ConfigDict(
-        from_attributes=True,
-        use_enum_values=False,
-    )
 
-
-class WorkspaceMemberBaseSchema(BaseModel):
+class WorkspaceMemberBaseSchema(CommonBaseSchema):
     """
     Базовая схема для WorkspaceMember.
 
@@ -87,23 +85,19 @@ class WorkspaceMemberBaseSchema(BaseModel):
     @field_validator("role")
     @classmethod
     def validate_role(cls, v: str) -> str:
-        """
-        Валидация роли.
+        """Валидация роли участника workspace.
 
         Args:
-            v: Значение роли
+            v: значение роли
 
         Returns:
-            str: Валидированная роль
+            валидированное значение
 
         Raises:
-            ValueError: Если роль невалидна
+            ValueError: если роль невалидна
         """
-        allowed_roles = {"owner", "admin", "member"}
-        if v.lower() not in allowed_roles:
-            raise ValueError(f"Роль должна быть одной из: {allowed_roles}")
-        return v.lower()
-
-    model_config = ConfigDict(
-        from_attributes=True,
-    )
+        if v not in ALLOWED_ROLES:
+            raise ValueError(
+                f"Роль должна быть одной из: {', '.join(ALLOWED_ROLES)}"
+            )
+        return v
