@@ -342,9 +342,116 @@ async def get_user(user_id: UUID, service: UserServiceDep = None):
 
 - **All comments/docstrings in Russian** (Google style)
 - **Russian error messages**: `raise ValueError("Пользователь не найден")`
-- **Russian logging**: `logger.info("Создан пользователь: %s", username)`
 - **Type hints mandatory** for all public methods
 - **Line length**: 88 characters (Black formatter)
+
+### Logging Standard (ОБЯЗАТЕЛЬНО)
+
+**КРИТИЧНО**: ВСЕ логи ДОЛЖНЫ использовать %-formatting, НЕ f-strings!
+
+```python
+# ✅ ПРАВИЛЬНО - %-formatting с параметрами
+logger.info("Создан пользователь: %s", username)
+logger.debug("Получено %d комментариев для проблемы %s", count, issue_id)
+logger.warning("Пользователь %s не найден в workspace %s", user_id, workspace_id)
+logger.error("Ошибка при создании проблемы %s: %s", issue_id, str(error))
+
+# ❌ НЕПРАВИЛЬНО - f-strings НЕ использовать!
+logger.info(f"Создан пользователь: {username}")  # НЕТ!
+logger.debug(f"Получено {count} комментариев")  # НЕТ!
+```
+
+**Причины использования %-formatting**:
+1. Отложенное форматирование - строка не форматируется, если уровень лога отключён
+2. Производительность - экономия ресурсов на форматировании
+3. Лучшая интеграция с системами мониторинга (структурированные логи)
+4. Стандарт Python logging module
+
+**Правила**:
+- `%s` для строк, UUID, любых объектов с `__str__`
+- `%d` для целых чисел (int)
+- `%f` для чисел с плавающей точкой (float)
+- `%r` для repr() представления (отладка)
+
+### Schema Architecture (КРИТИЧНО)
+
+**ВСЕ схемы ДОЛЖНЫ следовать строгой иерархии наследования:**
+
+```python
+# base.py - Доменные модели (БЕЗ системных полей id/timestamps)
+class WorkspaceBaseSchema(CommonBaseSchema):
+    """Базовая схема workspace БЕЗ системных полей."""
+    name: str
+    description: str | None = None
+
+# requests.py - Входные данные (БЕЗ системных полей)
+class WorkspaceCreateRequestSchema(BaseRequestSchema):
+    """Схема для создания workspace (только бизнес-поля)."""
+    name: str = Field(..., description="Название")
+    description: str | None = Field(None, description="Описание")
+
+# responses.py - Выходные данные
+class WorkspaceDetailSchema(BaseSchema):  # С системными полями!
+    """Детальная схема workspace (ВСЕ поля включая id/timestamps)."""
+    name: str
+    description: str | None
+    # id, created_at, updated_at приходят из BaseSchema
+
+class UserBriefSchema(CommonBaseSchema):  # БЕЗ системных полей!
+    """Краткая информация о пользователе (БЕЗ id/timestamps)."""
+    username: str
+    email: str
+```
+
+**Правила наследования**:
+1. `CommonBaseSchema` - базовая схема БЕЗ системных полей (id/timestamps)
+2. `BaseRequestSchema` - для входных данных (requests.py), наследует CommonBaseSchema
+3. `BaseSchema` - для detail схем (responses.py), С системными полями (id/created_at/updated_at)
+4. `BaseResponseSchema` - для обёрток (success/message/data)
+
+**Naming Convention (ОБЯЗАТЕЛЬНО)**:
+- Входные данные: `*CreateRequestSchema`, `*UpdateRequestSchema`
+- Выходные данные: `*DetailSchema`, `*ListItemSchema`, `*ResponseSchema`
+- Обёртки: `*ResponseSchema` с полями `success: bool`, `message: str`, `data: ...`
+
+**Brief vs Detail схемы**:
+- **Brief схемы** (UserBriefSchema, TagBriefSchema): Наследуют `CommonBaseSchema`, БЕЗ id/timestamps
+- **Detail схемы** (UserDetailSchema, IssueDetailSchema): Наследуют `BaseSchema`, С id/timestamps
+
+**Пример правильной структуры**:
+```python
+# base.py
+class IssueBaseSchema(CommonBaseSchema):  # БЕЗ системных полей
+    title: str
+    description: str
+
+# requests.py  
+class IssueCreateRequestSchema(BaseRequestSchema):  # БЕЗ системных полей
+    title: str = Field(..., min_length=1)
+    description: str = Field(...)
+
+# responses.py
+class UserBriefSchema(CommonBaseSchema):  # БЕЗ id/timestamps (brief!)
+    username: str
+    email: str
+
+class IssueDetailSchema(BaseSchema):  # С id/timestamps (detail!)
+    title: str
+    description: str
+    author: UserBriefSchema  # Вложенная brief схема
+    # id, created_at, updated_at из BaseSchema
+
+class IssueResponseSchema(BaseResponseSchema):  # Обёртка
+    success: bool
+    message: str
+    data: IssueDetailSchema | None
+```
+
+**❌ Частые ошибки**:
+1. Brief схемы наследуют BaseSchema вместо CommonBaseSchema
+2. Request схемы содержат id/created_at/updated_at
+3. Названия без *RequestSchema/*ResponseSchema суффиксов
+4. Отсутствие Field() с description в request схемах
 
 ## Authentication & Security
 
