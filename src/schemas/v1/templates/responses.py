@@ -37,9 +37,9 @@ See Also:
 """
 
 import uuid
-from typing import List
+from typing import Any, List
 
-from pydantic import Field
+from pydantic import ConfigDict, Field, field_validator
 
 from src.models.v1.templates import TemplateVisibility
 from src.schemas.base import BaseResponseSchema, BaseSchema
@@ -118,6 +118,8 @@ class TemplateDetailSchema(BaseSchema):
         }
     """
 
+    model_config = ConfigDict(from_attributes=True)
+
     title: str = Field(description="Название шаблона")
     description: str | None = Field(description="Описание назначения")
     category: str = Field(description="Категория шаблона")
@@ -129,6 +131,31 @@ class TemplateDetailSchema(BaseSchema):
     is_active: bool = Field(description="Активен ли шаблон")
     author: TemplateAuthorSchema = Field(description="Информация об авторе")
     author_id: uuid.UUID = Field(description="UUID автора")
+
+    @field_validator("fields", mode="before")
+    @classmethod
+    def extract_fields_from_jsonb(cls, value: Any) -> List[dict]:
+        """
+        Извлекает список полей из JSONB структуры.
+
+        В модели TemplateModel поле fields хранится как dict:
+        {"fields": [{...}, {...}]}
+
+        Этот validator извлекает внутренний список для соответствия схеме.
+
+        Args:
+            value: JSONB dict или список.
+
+        Returns:
+            Список полей.
+
+        Example:
+            >>> # Input: {"fields": [{"name": "..."}]}
+            >>> # Output: [{"name": "..."}]
+        """
+        if isinstance(value, dict) and "fields" in value:
+            return value["fields"]
+        return value
 
 
 class TemplateListItemSchema(BaseSchema):

@@ -211,6 +211,7 @@ class TemplateModel(BaseModel):
         "UserModel",
         foreign_keys=[author_id],
         back_populates="templates",
+        lazy="selectin",
     )
 
     issues: Mapped[list["IssueModel"]] = relationship(
