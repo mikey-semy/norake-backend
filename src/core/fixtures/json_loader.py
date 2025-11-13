@@ -9,9 +9,13 @@ from typing import Dict, Any, List
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
+from sqlalchemy.orm import selectinload
 
 from src.repository.v1.templates import TemplateRepository
+from src.repository.v1.users import UserRepository
 from src.models.v1.templates import TemplateModel
+from src.models.v1.users import UserModel
+from src.models.v1.roles import UserRoleModel, RoleCode
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +38,7 @@ class JSONFixtureLoader:
         self.session = session
         self.fixtures_dir = Path(fixtures_dir)
         self.template_repository = TemplateRepository(session)
+        self.user_repository = UserRepository(session)
 
     def _find_fixture_file(self, fixture_type: str) -> Path | None:
         """
@@ -150,25 +155,35 @@ class JSONFixtureLoader:
 
         items = self._prepare_data_for_import(data)
 
+        # Находим автора для шаблонов (админа или первого пользователя)
+        try:
+            author = await self._get_author_for_fixtures()
+        except ValueError as e:
+            logger.error(str(e))
+            return {"created": 0, "updated": 0, "skipped": 0}
+
         created = 0
         updated = 0
         skipped = 0
 
         for item_data in items:
+            # Удаляем author_id из данных если он там есть (используем найденного автора)
+            item_data.pop("author_id", None)
+
             # Проверяем существование по названию
             stmt = select(TemplateModel).where(TemplateModel.title == item_data["title"])
             result = await self.session.execute(stmt)
             existing = result.scalar_one_or_none()
 
             if not existing:
-                # Создаем новый шаблон
-                new_item = TemplateModel(**item_data)
+                # Создаем новый шаблон с найденным автором
+                new_item = TemplateModel(**item_data, author_id=author.id)
                 self.session.add(new_item)
                 await self.session.commit()
                 created += 1
-                logger.info("✅ Создан шаблон: %s", item_data['title'])
+                logger.info("✅ Создан шаблон: %s (автор: %s)", item_data['title'], author.username)
             elif force:
-                # Обновляем существующий
+                # Обновляем существующий (не меняем автора!)
                 update_data = {k: v for k, v in item_data.items() if k != "title"}
                 stmt = update(TemplateModel).where(
                     TemplateModel.title == item_data["title"]
@@ -183,6 +198,55 @@ class JSONFixtureLoader:
 
         logger.info("📊 Шаблоны: создано=%d, обновлено=%d, пропущено=%d", created, updated, skipped)
         return {"created": created, "updated": updated, "skipped": skipped}
+
+    async def _get_author_for_fixtures(self) -> UserModel:
+        """
+        Находит автора для создания шаблонов из фикстур.
+
+        Логика поиска:
+        1. Ищет первого пользователя с ролью 'admin'
+        2. Если админа нет - возвращает первого найденного пользователя
+        3. Если пользователей вообще нет - выбрасывает исключение
+
+        Returns:
+            UserModel: Найденный пользователь для назначения автором
+
+        Raises:
+            ValueError: Если в базе нет ни одного пользователя
+        """
+        # Ищем первого админа через связь с UserRoleModel
+        stmt = (
+            select(UserModel)
+            .join(UserRoleModel, UserModel.id == UserRoleModel.user_id)
+            .where(UserRoleModel.role_code == RoleCode.ADMIN)
+            .options(selectinload(UserModel.user_roles))
+            .limit(1)
+        )
+        result = await self.session.execute(stmt)
+        admin = result.scalar_one_or_none()
+
+        if admin:
+            logger.info("✅ Найден админ для фикстур: %s (ID: %s)", admin.username, admin.id)
+            return admin
+
+        # Если админа нет - берём первого пользователя
+        stmt = select(UserModel).limit(1)
+        result = await self.session.execute(stmt)
+        first_user = result.scalar_one_or_none()
+
+        if first_user:
+            logger.warning(
+                "⚠️ Админ не найден, используем первого пользователя: %s (ID: %s)",
+                first_user.username,
+                first_user.id
+            )
+            return first_user
+
+        # Если вообще нет пользователей - ошибка
+        raise ValueError(
+            "❌ В базе данных нет ни одного пользователя! "
+            "Создайте хотя бы одного пользователя перед загрузкой фикстур шаблонов."
+        )
 
     async def load_all_fixtures(self, force: bool = False) -> Dict[str, Dict[str, int]]:
         """

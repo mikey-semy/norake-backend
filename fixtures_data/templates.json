@@ -11,7 +11,6 @@
       "description": "Шаблон для запросов помощи по программированию с минимальным воспроизводимым примером (MRE)",
       "category": "software",
       "visibility": "public",
-      "author_id": "00000000-0000-0000-0000-000000000001",
       "usage_count": 0,
       "is_active": true,
       "fields": {
@@ -185,7 +184,6 @@
       "description": "Шаблон для документирования ошибок преобразователей частоты (ПЧ) с детальной диагностикой и решениями",
       "category": "hardware",
       "visibility": "public",
-      "author_id": "00000000-0000-0000-0000-000000000001",
       "usage_count": 0,
       "is_active": true,
       "fields": {

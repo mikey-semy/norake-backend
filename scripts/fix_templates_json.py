@@ -27,7 +27,7 @@ def main():
                 'description': 'Шаблон для запросов помощи по программированию с минимальным воспроизводимым примером (MRE)',
                 'category': dev_template['category'].lower(),
                 'visibility': dev_template['visibility'].lower(),
-                'author_id': '00000000-0000-0000-0000-000000000001',
+                'author_id': 'b8ae6930-cc58-46e3-a335-5d97502e26db',  # UUID существующего админа
                 'usage_count': 0,
                 'is_active': True,
                 'fields': {'fields': dev_template['fields']}  # ОБЁРТКА!
@@ -37,7 +37,7 @@ def main():
                 'description': 'Шаблон для документирования ошибок преобразователей частоты (ПЧ) с детальной диагностикой и решениями',
                 'category': drive_template['category'].lower(),
                 'visibility': drive_template['visibility'].lower(),
-                'author_id': '00000000-0000-0000-0000-000000000001',
+                'author_id': 'b8ae6930-cc58-46e3-a335-5d97502e26db',  # UUID существующего админа
                 'usage_count': 0,
                 'is_active': True,
                 'fields': {'fields': drive_template['fields']}  # ОБЁРТКА!
