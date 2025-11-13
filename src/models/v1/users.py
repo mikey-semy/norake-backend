@@ -136,7 +136,7 @@ class UserModel(BaseModel):
         cascade="all, delete-orphan",
     )
 
-    issue_comments: Mapped[List["IssueCommentModel"]] = relationship(
+    comments: Mapped[List["IssueCommentModel"]] = relationship(
         "IssueCommentModel",
         foreign_keys="[IssueCommentModel.author_id]",
         back_populates="author",
