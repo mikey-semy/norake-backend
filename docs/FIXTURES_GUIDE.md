@@ -57,17 +57,17 @@ from src.core.fixtures.json_handler import FixtureJSONHandler
 # Загрузка фикстур
 async with get_db_session() as session:
     loader = JSONFixtureLoader(session, "fixtures_data")
-    
+
     # Загрузить все фикстуры (без перезаписи)
     results = await loader.load_all_fixtures(force=False)
-    
+
     # Загрузить только шаблоны (с перезаписью)
     results = await loader.load_templates(force=True)
 
 # Экспорт в JSON
 async with get_db_session() as session:
     handler = FixtureJSONHandler(session, "fixtures_export")
-    
+
     # Экспорт всех шаблонов
     files = await handler.export_to_json(include_templates=True)
     # -> {"templates": "fixtures_export/templates_20251113_143022.json"}
@@ -141,13 +141,13 @@ LOAD_FIXTURES=true
    import asyncio
    from src.core.fixtures.json_loader import JSONFixtureLoader
    from src.core.connections.database import get_db_session
-   
+
    async def load():
        async for session in get_db_session():
            loader = JSONFixtureLoader(session)
            await loader.load_all_fixtures(force=False)
            break
-   
+
    asyncio.run(load())
    "
    ```

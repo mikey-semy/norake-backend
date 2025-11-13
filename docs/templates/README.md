@@ -65,6 +65,7 @@
 Шаблоны автоматически загружаются из `fixtures_data/templates.json` при инициализации проекта.
 
 **Первичная загрузка** (после `uv run bootstrap`):
+
 ```bash
 # Загрузка фикстур выполняется автоматически при инициализации
 # Или вручную:
@@ -72,6 +73,7 @@ uv run load-fixtures
 ```
 
 **Обновление шаблонов**:
+
 1. Отредактируйте `fixtures_data/templates.json`
 2. Загрузите изменения:
    ```bash
@@ -81,6 +83,7 @@ uv run load-fixtures
    ```
 
 **Экспорт текущих шаблонов из БД**:
+
 ```bash
 uv run export-fixtures
 # → Создаст fixtures_export/templates_YYYYMMDD_HHMMSS.json
@@ -110,6 +113,7 @@ python create_developer_template.py \
 ```
 
 **Вывод**:
+
 ```
 🔐 Логин в http://localhost:8000...
 ✅ Авторизация успешна
@@ -173,6 +177,7 @@ curl -X POST http://localhost:8000/api/v1/templates/{workspace_id} \
 ```
 
 **Ответ**:
+
 ```json
 {
   "success": true,
@@ -205,6 +210,7 @@ psql -U postgres -d norake_dev -f create_developer_template.sql
 ```
 
 **Проверка**:
+
 ```sql
 SELECT id, template_name, category, usage_count
 FROM templates
@@ -246,7 +252,7 @@ print(response.json())
 
 ### 1. Создание Issue с шаблоном
 
-```bash
+````bash
 POST /api/v1/issues
 Authorization: Bearer YOUR_TOKEN
 
@@ -276,7 +282,7 @@ Authorization: Bearer YOUR_TOKEN
     ]
   }
 }
-```
+````
 
 ---
 
@@ -331,7 +337,7 @@ Authorization: Bearer YOUR_TOKEN
 
 ```sql
 -- Топ-5 самых используемых шаблонов
-SELECT 
+SELECT
     template_name,
     usage_count,
     category
@@ -341,7 +347,7 @@ ORDER BY usage_count DESC
 LIMIT 5;
 
 -- Среднее время решения Issue по шаблонам
-SELECT 
+SELECT
     t.template_name,
     AVG(EXTRACT(EPOCH FROM (i.resolved_at - i.created_at))/3600) as avg_hours_to_resolve,
     COUNT(i.id) as issues_count
@@ -352,7 +358,7 @@ GROUP BY t.template_name
 ORDER BY avg_hours_to_resolve ASC;
 
 -- Категории проблем (автоматически категоризированные AI)
-SELECT 
+SELECT
     category,
     COUNT(*) as count,
     ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as percentage
@@ -388,7 +394,7 @@ Authorization: Bearer YOUR_TOKEN
 
 ```sql
 UPDATE templates
-SET 
+SET
     fields = fields || '[{"field_name": "new_field", ...}]'::jsonb,
     updated_at = NOW()
 WHERE template_name = 'Запрос помощи: Программирование';
@@ -434,6 +440,7 @@ WHERE template_name = 'Запрос помощи: Программировани
 ## 📝 Changelog
 
 ### v1.0.0 (2025-11-11)
+
 - ✅ Initial Developer Issue Template
 - ✅ 9 полей (goal, current_behavior, code_example, error_message, environment, attempts, expected_behavior, additional_context, checklist)
 - ✅ Validation rules (required, min/max length, min_selected)
@@ -443,6 +450,7 @@ WHERE template_name = 'Запрос помощи: Программировани
 - ✅ SQL creation script (create_developer_template.sql)
 
 ### Planned
+
 - ⏳ Template для hardware-проблем (оборудование, датчики)
 - ⏳ Template для process-проблем (бизнес-процессы, документация)
 - ⏳ Template для safety-проблем (безопасность, инциденты)

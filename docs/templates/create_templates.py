@@ -32,7 +32,7 @@ console = Console()
 def login(base_url: str, username: str, password: str) -> Optional[str]:
     """Авторизация и получение JWT токена."""
     console.print(f"[cyan]🔐 Логин в {base_url}...[/cyan]")
-    
+
     try:
         response = httpx.post(
             f"{base_url}/api/v1/auth/login",
@@ -55,7 +55,7 @@ def login(base_url: str, username: str, password: str) -> Optional[str]:
 def load_template_data(json_path: Path) -> Optional[Dict]:
     """Загрузка JSON-шаблона из файла."""
     console.print(f"[cyan]📄 Загрузка шаблона из {json_path.name}...[/cyan]")
-    
+
     try:
         with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -83,7 +83,7 @@ def create_template(
     """Создание шаблона через API."""
     template_name = template_data["template_name"]
     console.print(f"\n[cyan]🚀 Создание шаблона: {template_name}[/cyan]")
-    
+
     try:
         response = httpx.post(
             f"{base_url}/api/v1/templates/{workspace_id}",
@@ -93,14 +93,14 @@ def create_template(
         )
         response.raise_for_status()
         result = response.json()
-        
+
         template_id = result["data"]["id"]
         usage_count = result["data"]["usage_count"]
-        
+
         console.print(f"[green]✅ Шаблон создан успешно![/green]")
         console.print(f"   🆔 ID: {template_id}")
         console.print(f"   📈 Использований: {usage_count}")
-        
+
         return result["data"]
     except httpx.HTTPStatusError as e:
         console.print(f"[red]❌ Ошибка создания: {e.response.status_code}[/red]")
@@ -114,12 +114,12 @@ def create_template(
 def display_summary(templates: List[Dict]):
     """Отображение итоговой таблицы созданных шаблонов."""
     table = Table(title="\n✨ Созданные шаблоны", title_style="bold green")
-    
+
     table.add_column("Название", style="cyan", no_wrap=False)
     table.add_column("Категория", style="magenta")
     table.add_column("Полей", justify="center", style="yellow")
     table.add_column("ID", style="blue")
-    
+
     for t in templates:
         table.add_row(
             t["template_name"],
@@ -127,7 +127,7 @@ def display_summary(templates: List[Dict]):
             str(len(t["fields"])),
             t["id"][:8] + "..."
         )
-    
+
     console.print(table)
 
 
@@ -160,39 +160,39 @@ def main():
         default=".",
         help="Каталог с JSON-шаблонами (default: текущий)"
     )
-    
+
     args = parser.parse_args()
-    
+
     # Заголовок
     console.print(Panel.fit(
         "[bold cyan]NoRake Templates Creator[/bold cyan]\n"
         "[dim]Создание шаблонов для Issues[/dim]",
         border_style="cyan"
     ))
-    
+
     # Авторизация
     token = login(args.base_url, args.username, args.password)
     if not token:
         sys.exit(1)
-    
+
     templates_dir = Path(args.templates_dir)
     template_files = [
         templates_dir / "developer-issue-template.json",
         templates_dir / "drive-engineer-template.json"
     ]
-    
+
     created_templates = []
-    
+
     # Создание шаблонов
     console.print("\n[bold]📦 Загрузка и создание шаблонов...[/bold]")
-    
+
     for template_file in template_files:
         # Загрузка JSON
         template_data = load_template_data(template_file)
         if not template_data:
             console.print(f"[yellow]⚠️  Пропускаем {template_file.name}[/yellow]")
             continue
-        
+
         # Создание через API
         created = create_template(
             args.base_url,
@@ -200,10 +200,10 @@ def main():
             token,
             template_data
         )
-        
+
         if created:
             created_templates.append(created)
-    
+
     # Итоговая сводка
     if created_templates:
         display_summary(created_templates)
