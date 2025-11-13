@@ -548,6 +548,9 @@ class Settings(BaseSettings):
     ARGON2_MEMORY_COST: int = 102400
     ARGON2_PARALLELISM: int = 8
 
+    # Настройки фикстур
+    LOAD_FIXTURES: bool = False  # Загружать ли фикстуры при старте приложения
+
     @property
     def crypt_context_params(self) -> Dict[str, Any]:
         """
