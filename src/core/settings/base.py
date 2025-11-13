@@ -565,10 +565,12 @@ class Settings(BaseSettings):
         }
 
     # Настройки куки
+    # Для cross-site (localhost -> api.norake.ru): SameSite=None, Secure=False (HTTP dev)
+    # Для production (HTTPS): SameSite=None, Secure=True
     COOKIE_DOMAIN: Optional[str] = None
-    COOKIE_SECURE: bool = True
-    COOKIE_SAMESITE: str = "Lax"
-    COOKIE_HTTPONLY: bool = False
+    COOKIE_SECURE: bool = False  # False для HTTP localhost, True для HTTPS production
+    COOKIE_SAMESITE: str = "None"  # None для cross-site, Lax/Strict для same-site
+    COOKIE_HTTPONLY: bool = True  # True для защиты от XSS
 
     @property
     def access_token_cookie_params(self) -> Dict[str, Any]:
