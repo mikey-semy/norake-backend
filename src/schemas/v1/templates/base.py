@@ -82,8 +82,8 @@ class TemplateFieldSchema(CommonBaseSchema):
         ... )
     """
 
-    name: str = Field(
-        ...,
+    name: Optional[str] = Field(
+        default=None,
         description="Имя поля (используется как ключ)",
         min_length=1,
         max_length=100,
@@ -98,8 +98,8 @@ class TemplateFieldSchema(CommonBaseSchema):
         examples=["ID оборудования", "Код ошибки"],
     )
 
-    type: str = Field(
-        ...,
+    type: Optional[str] = Field(
+        default="text",
         description="Тип поля (text, number, date, select, textarea)",
         examples=["text", "number", "select"],
     )
@@ -124,6 +124,27 @@ class TemplateFieldSchema(CommonBaseSchema):
         description="Правила валидации (regex, min, max и т.д.)",
     )
 
+    @field_validator("name", mode="before")
+    @classmethod
+    def generate_name_from_label(cls, v: Optional[str], info) -> str:
+        """
+        Генерирует name из label если name отсутствует.
+
+        Args:
+            v: Значение name.
+            info: ValidationInfo с контекстом.
+
+        Returns:
+            str: Name поля (оригинальное или сгенерированное).
+        """
+        if v:
+            return v
+        # Генерируем name из label: "Код ошибки" -> "код_ошибки"
+        label = info.data.get("label", "")
+        if label:
+            return label.lower().replace(" ", "_").replace("-", "_")
+        return "field"
+
     @field_validator("type")
     @classmethod
     def validate_field_type(cls, v: str) -> str:
@@ -139,33 +160,57 @@ class TemplateFieldSchema(CommonBaseSchema):
         Raises:
             ValueError: Если тип не входит в список допустимых.
         """
-        allowed_types = {"text", "number", "date", "select", "textarea"}
-        if v not in allowed_types:
+        allowed_types = {"text", "number", "date", "select", "textarea", "radio", "checkbox", "time"}
+        if v and v not in allowed_types:
             raise ValueError(
                 f"Недопустимый тип поля '{v}'. "
                 f"Разрешены: {', '.join(allowed_types)}"
             )
-        return v
+        return v or "text"
+
+    @field_validator("options", mode="before")
+    @classmethod
+    def normalize_options(cls, v: Optional[List[Any]]) -> Optional[List[str]]:
+        """
+        Нормализует options: преобразует объекты {label, value} в строки.
+
+        Args:
+            v: Список опций (может быть строками или объектами).
+
+        Returns:
+            Optional[List[str]]: Нормализованный список строк.
+
+        Example:
+            >>> # Input: [{"label": "LOW", "value": "low"}]
+            >>> # Output: ["low"]
+        """
+        if not v:
+            return v
+        
+        normalized = []
+        for option in v:
+            if isinstance(option, dict):
+                # Извлекаем value из объекта {label, value}
+                normalized.append(option.get("value", option.get("label", "")))
+            else:
+                normalized.append(str(option))
+        return normalized
 
     @field_validator("options")
     @classmethod
-    def validate_options(cls, v: Optional[List[str]], info) -> Optional[List[str]]:
+    def validate_options(cls, v: Optional[List[str]]) -> Optional[List[str]]:
         """
         Валидирует options для select полей.
 
         Args:
             v: Список опций для валидации.
-            info: ValidationInfo с контекстом валидации.
 
         Returns:
             Optional[List[str]]: Валидированный список опций.
 
-        Raises:
-            ValueError: Если options не указаны для type=select.
+        Note:
+            Проверка наличия options для select отключена (soft validation).
         """
-        field_type = info.data.get("type")
-        if field_type == "select" and not v:
-            raise ValueError("Для type='select' необходимо указать options")
         return v
 
 
