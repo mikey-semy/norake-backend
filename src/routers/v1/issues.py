@@ -25,6 +25,7 @@ from src.schemas.v1.issues import (
     IssueListResponseSchema,
     IssueResolveRequestSchema,
     IssueResponseSchema,
+    IssueUpdateRequestSchema,
 )
 
 
@@ -383,6 +384,8 @@ class IssueProtectedRouter(ProtectedRouter):
                 title=data.title,
                 description=data.description,
                 category=data.category,
+                template_id=data.template_id,
+                custom_fields=data.custom_fields,
             )
 
             # Преобразуем domain object → schema
@@ -469,5 +472,97 @@ class IssueProtectedRouter(ProtectedRouter):
 
             # Преобразуем domain object → schema
             issue_schema = IssueDetailSchema.model_validate(resolved_issue)
+
+            return IssueResponseSchema(success=True, data=issue_schema)
+
+        # ==================== UPDATE ====================
+
+        @self.router.patch(
+            path="/{issue_id}",
+            response_model=IssueResponseSchema,
+            status_code=status.HTTP_200_OK,
+            description="""
+            ## ✏️ Обновить проблему
+
+            Обновляет данные проблемы (title, description, custom_fields и т.д.).
+
+            ### 🔒 Требуется аутентификация (ProtectedRouter)
+
+            ### Business Rules:
+            * Только автор проблемы может её обновлять
+            * Все поля опциональные (обновляются только переданные)
+            * custom_fields валидируются по template_id (если проблема связана с шаблоном)
+            * Нельзя изменить resolved_at и created_at напрямую
+
+            ### Path параметры:
+            * **issue_id**: UUID проблемы для обновления
+
+            ### Body параметры:
+            * **title**: Новый заголовок (опционально)
+            * **description**: Новое описание (опционально)
+            * **category**: Новая категория (опционально)
+            * **status**: Новый статус (опционально)
+            * **visibility**: Новая видимость (опционально)
+            * **custom_fields**: Обновлённые динамические поля (опционально)
+
+            ### Returns:
+            * **IssueResponseSchema**: Обновлённая проблема
+
+            ### Примеры использования:
+            * Изменить заголовок: PATCH /issues/{id} {"title": "Новый заголовок"}
+            * Обновить custom_fields: PATCH /issues/{id} {"custom_fields": {"error_code": "E402"}}
+            """,
+            responses={
+                200: {"description": "Проблема успешно обновлена"},
+                401: {"description": "Требуется аутентификация"},
+                403: {"description": "Доступ запрещён (не автор проблемы)"},
+                404: {"description": "Проблема не найдена"},
+                422: {"description": "Ошибка валидации данных"},
+            },
+        )
+        async def update_issue(
+            issue_id: UUID,
+            data: IssueUpdateRequestSchema,
+            current_user: CurrentUserDep = None,
+            issue_service: IssueServiceDep = None,
+        ) -> IssueResponseSchema:
+            """
+            Обновляет данные проблемы.
+
+            🔒 **Защищённый эндпоинт** (ProtectedRouter): Автоматическая проверка токена.
+
+            Args:
+                issue_id: UUID проблемы для обновления.
+                data: Данные для обновления (все поля опциональные).
+                current_user: Текущий пользователь (из глобальной зависимости ProtectedRouter).
+                issue_service: Сервис для работы с проблемами.
+
+            Returns:
+                IssueResponseSchema: Обёртка с обновлённой проблемой.
+
+            Raises:
+                IssueNotFoundError: Если проблема не найдена (обрабатывается глобально).
+                IssuePermissionDeniedError: Если пользователь не автор (обрабатывается глобально).
+                IssueValidationError: Если данные невалидны (обрабатывается глобально).
+                TemplateNotFoundError: Если template_id не найден (обрабатывается глобально).
+
+            Note:
+                Проверка прав доступа происходит в сервисном слое.
+                custom_fields валидируются по шаблону (если проблема связана с template_id).
+            """
+            # Обновляем проблему через сервис
+            updated_issue = await issue_service.update_issue(
+                issue_id=issue_id,
+                user_id=current_user.id,
+                title=data.title,
+                description=data.description,
+                category=data.category,
+                status=data.status,
+                visibility=data.visibility,
+                custom_fields=data.custom_fields,
+            )
+
+            # Преобразуем domain object → schema
+            issue_schema = IssueDetailSchema.model_validate(updated_issue)
 
             return IssueResponseSchema(success=True, data=issue_schema)

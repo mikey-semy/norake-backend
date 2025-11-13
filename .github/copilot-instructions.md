@@ -13,6 +13,7 @@ NoRake Backend is a FastAPI-based collective memory system for tracking and reso
 ### Plane Connection Details
 
 **ВАЖНО**: Убедись что MCP подключён с правильными параметрами:
+
 - **PLANE_API_HOST_URL**: `https://plane.equiply.ru/`
 - **PLANE_WORKSPACE_SLUG**: `projects` (НЕ "profitool-store"!)
 - **Project ID**: `c4ea1c3f-97d2-4f56-8aaa-5cce4b185f58`
@@ -25,6 +26,7 @@ NoRake Backend is a FastAPI-based collective memory system for tracking and reso
 **ОБЯЗАТЕЛЬНО**: Для каждой задачи создавать отдельную ветку от `development`:
 
 1. **Перед началом работы:**
+
    ```bash
    git checkout development
    git pull origin development
@@ -34,6 +36,7 @@ NoRake Backend is a FastAPI-based collective memory system for tracking and reso
 2. **Обновить статус в Plane** → "In Progress" (state_id: `6e814f64-8acd-4b61-992d-b89ebf6bf55e`)
 
 3. **Разработка с коммитами:**
+
    ```bash
    git commit -m "feat(NORAK-XX): краткое описание изменений"
    ```
@@ -47,6 +50,7 @@ NoRake Backend is a FastAPI-based collective memory system for tracking and reso
 ### Before Starting Work
 
 1. **Получить задачу из Plane** по readable ID (NORAK-XX):
+
    ```python
    issue = await mcp_plane_get_issue_using_readable_identifier(
        project_identifier="NORAK",
@@ -57,6 +61,7 @@ NoRake Backend is a FastAPI-based collective memory system for tracking and reso
 2. **Создать ветку** от `development` с префиксом `feature/NORAK-XX-description`
 
 3. **Обновить статус** на "In Progress":
+
    ```python
    await mcp_plane_update_issue(
        project_id="c4ea1c3f-97d2-4f56-8aaa-5cce4b185f58",
@@ -77,6 +82,7 @@ NoRake Backend is a FastAPI-based collective memory system for tracking and reso
 ### After Completing Work
 
 1. **Обновить статус** на "Done":
+
    ```python
    await mcp_plane_update_issue(
        project_id="c4ea1c3f-97d2-4f56-8aaa-5cce4b185f58",
@@ -86,6 +92,7 @@ NoRake Backend is a FastAPI-based collective memory system for tracking and reso
    ```
 
 2. **Добавить комментарий** с кратким итогом:
+
    ```python
    await mcp_plane_add_issue_comment(
        project_id="c4ea1c3f-97d2-4f56-8aaa-5cce4b185f58",
@@ -255,6 +262,7 @@ await self.update_item(user_id, {"phone": "+123"})  # Update
 **ОБЯЗАТЕЛЬНО**: Всегда используй методы BaseRepository вместо дублирования кода!
 
 ❌ **НЕПРАВИЛЬНО** - дублирование логики выполнения запросов:
+
 ```python
 async def get_by_category(self, category: str) -> List[IssueModel]:
     query = select(IssueModel).where(IssueModel.category == category)
@@ -264,12 +272,14 @@ async def get_by_category(self, category: str) -> List[IssueModel]:
 ```
 
 ✅ **ПРАВИЛЬНО** - использование filter_by из BaseRepository:
+
 ```python
 async def get_by_category(self, category: str) -> List[IssueModel]:
     return await self.filter_by(category=category)
 ```
 
 ✅ **ПРАВИЛЬНО** - комбинирование базовых методов:
+
 ```python
 async def get_active_public(self) -> List[TemplateModel]:
     return await self.filter_by_ordered(
@@ -281,6 +291,7 @@ async def get_active_public(self) -> List[TemplateModel]:
 ```
 
 ✅ **ПРАВИЛЬНО** - расширение базового метода при необходимости:
+
 ```python
 async def search_by_text(self, text: str) -> List[IssueModel]:
     # Используем execute_and_return_scalars из BaseRepository
@@ -294,6 +305,7 @@ async def search_by_text(self, text: str) -> List[IssueModel]:
 ```
 
 **Правила переиспользования**:
+
 1. **Сначала проверь BaseRepository** - возможно метод уже есть
 2. **Используй filter_by/filter_by_ordered** для простой фильтрации
 3. **Используй execute_and_return_scalars** для кастомных запросов
@@ -301,9 +313,10 @@ async def search_by_text(self, text: str) -> List[IssueModel]:
 5. **Если нужного метода нет** - добавь в BaseRepository для переиспользования
 
 **Доступные методы BaseRepository**:
+
 - `get_item_by_id(id)` - получение по UUID
 - `get_item_by_field(field, value)` - получение по любому полю
-- `filter_by(**kwargs)` - фильтрация с операторами (__gt, __lt, __in и т.д.)
+- `filter_by(**kwargs)` - фильтрация с операторами (**gt, **lt, \_\_in и т.д.)
 - `filter_by_ordered(order_by, **kwargs)` - фильтрация + сортировка
 - `execute_and_return_scalars(query)` - выполнение + список моделей
 - `execute_and_return_scalar(query)` - выполнение + одна модель
@@ -362,12 +375,14 @@ logger.debug(f"Получено {count} комментариев")  # НЕТ!
 ```
 
 **Причины использования %-formatting**:
+
 1. Отложенное форматирование - строка не форматируется, если уровень лога отключён
 2. Производительность - экономия ресурсов на форматировании
 3. Лучшая интеграция с системами мониторинга (структурированные логи)
 4. Стандарт Python logging module
 
 **Правила**:
+
 - `%s` для строк, UUID, любых объектов с `__str__`
 - `%d` для целых чисел (int)
 - `%f` для чисел с плавающей точкой (float)
@@ -404,28 +419,32 @@ class UserBriefSchema(CommonBaseSchema):  # БЕЗ системных полей
 ```
 
 **Правила наследования**:
+
 1. `CommonBaseSchema` - базовая схема БЕЗ системных полей (id/timestamps)
 2. `BaseRequestSchema` - для входных данных (requests.py), наследует CommonBaseSchema
 3. `BaseSchema` - для detail схем (responses.py), С системными полями (id/created_at/updated_at)
 4. `BaseResponseSchema` - для обёрток (success/message/data)
 
 **Naming Convention (ОБЯЗАТЕЛЬНО)**:
+
 - Входные данные: `*CreateRequestSchema`, `*UpdateRequestSchema`
 - Выходные данные: `*DetailSchema`, `*ListItemSchema`, `*ResponseSchema`
 - Обёртки: `*ResponseSchema` с полями `success: bool`, `message: str`, `data: ...`
 
 **Brief vs Detail схемы**:
+
 - **Brief схемы** (UserBriefSchema, TagBriefSchema): Наследуют `CommonBaseSchema`, БЕЗ id/timestamps
 - **Detail схемы** (UserDetailSchema, IssueDetailSchema): Наследуют `BaseSchema`, С id/timestamps
 
 **Пример правильной структуры**:
+
 ```python
 # base.py
 class IssueBaseSchema(CommonBaseSchema):  # БЕЗ системных полей
     title: str
     description: str
 
-# requests.py  
+# requests.py
 class IssueCreateRequestSchema(BaseRequestSchema):  # БЕЗ системных полей
     title: str = Field(..., min_length=1)
     description: str = Field(...)
@@ -448,6 +467,7 @@ class IssueResponseSchema(BaseResponseSchema):  # Обёртка
 ```
 
 **❌ Частые ошибки**:
+
 1. Brief схемы наследуют BaseSchema вместо CommonBaseSchema
 2. Request схемы содержат id/created_at/updated_at
 3. Названия без *RequestSchema/*ResponseSchema суффиксов
