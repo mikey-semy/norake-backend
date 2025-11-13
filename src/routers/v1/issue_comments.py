@@ -21,6 +21,7 @@ from src.schemas.v1.issue_comments import (
     CommentDetailSchema,
     CommentListResponseSchema,
     CommentResponseSchema,
+    CommentUpdateRequestSchema,
 )
 
 
@@ -58,21 +59,32 @@ class IssueCommentPublicRouter(BaseRouter):
             Возвращает все комментарии для указанной проблемы,
             отсортированные по дате создания (от старых к новым).
 
+            По умолчанию загружает дерево комментариев с вложенными ответами.
+            Используйте `with_replies=false` для получения только корневых комментариев.
+
             ### 🌐 Публичный доступ (без токена)
 
             ### Path параметры:
             * **issue_id**: UUID проблемы
+
+            ### Query параметры:
+            * **with_replies**: Загружать ли вложенные ответы (default: true)
+              - `true`: возвращает полное дерево комментариев с replies
+              - `false`: возвращает только корневые комментарии (без replies)
 
             ### Returns:
             * **CommentListResponseSchema**: Список комментариев с информацией об авторах
 
             ### Примеры использования:
             ```bash
-            # Получить все комментарии проблемы
+            # Получить все комментарии с вложенными ответами (по умолчанию)
             curl -X GET "http://localhost:8000/api/v1/issues/{issue_id}/comments"
+
+            # Получить только корневые комментарии (без replies)
+            curl -X GET "http://localhost:8000/api/v1/issues/{issue_id}/comments?with_replies=false"
             ```
 
-            ### Ответ:
+            ### Ответ (with_replies=true):
             ```json
             {
               "success": true,
@@ -81,6 +93,7 @@ class IssueCommentPublicRouter(BaseRouter):
                 {
                   "id": "uuid",
                   "issue_id": "uuid",
+                  "parent_id": null,
                   "author": {
                     "id": "uuid",
                     "username": "john_doe",
@@ -88,6 +101,14 @@ class IssueCommentPublicRouter(BaseRouter):
                   },
                   "content": "Попробуйте перезагрузить сервер",
                   "is_solution": false,
+                  "replies": [
+                    {
+                      "id": "uuid2",
+                      "parent_id": "uuid",
+                      "content": "Спасибо, помогло!",
+                      "author": {"username": "jane_smith"}
+                    }
+                  ],
                   "created_at": "2025-11-11T10:00:00Z",
                   "updated_at": "2025-11-11T10:00:00Z"
                 }
@@ -102,11 +123,15 @@ class IssueCommentPublicRouter(BaseRouter):
         )
         async def get_comments(
             issue_id: UUID,
+            with_replies: bool = True,
             service: IssueCommentServiceDep = None,
         ) -> CommentListResponseSchema:
             """Получение списка комментариев для проблемы."""
-            # Бизнес-логика: получение комментариев
-            comments = await service.get_comments(issue_id=issue_id)
+            # Бизнес-логика: получение комментариев (с или без вложенных ответов)
+            comments = await service.get_comments(
+                issue_id=issue_id,
+                with_replies=with_replies,
+            )
 
             # Преобразование domain objects → schemas
             comments_data = [
@@ -154,6 +179,7 @@ class IssueCommentProtectedRouter(ProtectedRouter):
             ## ➕ Создать новый комментарий к проблеме
 
             Создаёт комментарий для указанной проблемы от имени текущего пользователя.
+            Поддерживает вложенные ответы через параметр `parent_id`.
 
             ### 🔒 Требуется аутентификация
 
@@ -163,6 +189,7 @@ class IssueCommentProtectedRouter(ProtectedRouter):
             ### Body параметры:
             * **content**: Текстовое содержимое комментария (1-5000 символов)
             * **is_solution**: Флаг, отмечающий комментарий как решение (опционально, по умолчанию false)
+            * **parent_id**: UUID родительского комментария для создания ответа (опционально)
 
             ### Returns:
             * **CommentResponseSchema**: Созданный комментарий с полной информацией
@@ -175,6 +202,15 @@ class IssueCommentProtectedRouter(ProtectedRouter):
               -H "Content-Type: application/json" \\
               -d '{
                 "content": "Попробуйте перезагрузить сервер и проверить логи"
+              }'
+
+            # Создать ответ на комментарий (parent_id указывает на родительский комментарий)
+            curl -X POST "http://localhost:8000/api/v1/issues/{issue_id}/comments" \\
+              -H "Authorization: Bearer <token>" \\
+              -H "Content-Type: application/json" \\
+              -d '{
+                "content": "Спасибо, это помогло!",
+                "parent_id": "123e4567-e89b-12d3-a456-426614174001"
               }'
 
             # Создать комментарий-решение
@@ -195,6 +231,7 @@ class IssueCommentProtectedRouter(ProtectedRouter):
               "data": {
                 "id": "uuid",
                 "issue_id": "uuid",
+                "parent_id": null,
                 "author": {
                   "id": "uuid",
                   "username": "john_doe",
@@ -210,10 +247,11 @@ class IssueCommentProtectedRouter(ProtectedRouter):
 
             ### Ошибки:
             * **401**: Не авторизован
-            * **404**: Проблема не найдена
+            * **403**: parent_id принадлежит другой проблеме
+            * **404**: Проблема или родительский комментарий не найдены
             * **422**: Валидация не пройдена (некорректный content)
             """,
-            summary="➕ Создать комментарий",
+            summary="➕ Создать комментарий или ответ",
         )
         async def create_comment(
             issue_id: UUID,
@@ -221,13 +259,14 @@ class IssueCommentProtectedRouter(ProtectedRouter):
             current_user: CurrentUserDep = None,
             service: IssueCommentServiceDep = None,
         ) -> CommentResponseSchema:
-            """Создание нового комментария к проблеме."""
-            # Бизнес-логика: создание комментария
+            """Создание нового комментария к проблеме или ответа на комментарий."""
+            # Бизнес-логика: создание комментария (с parent_id если указан)
             comment = await service.create_comment(
                 issue_id=issue_id,
                 author_id=current_user.id,
                 content=request.content,
                 is_solution=request.is_solution,
+                parent_id=request.parent_id,
             )
 
             # Преобразование domain object → schema
@@ -291,3 +330,100 @@ class IssueCommentProtectedRouter(ProtectedRouter):
 
             # 204 No Content - ничего не возвращаем
             return None
+
+        # ==================== PATCH ====================
+
+        @self.router.patch(
+            path="/{issue_id}/comments/{comment_id}",
+            response_model=CommentResponseSchema,
+            status_code=status.HTTP_200_OK,
+            description="""
+            ## ✏️ Обновить комментарий
+
+            Обновляет содержимое комментария. Только автор или администратор могут редактировать комментарий.
+
+            **Ограничения:**
+            * Нельзя редактировать комментарии, отмеченные как решение (is_solution=true)
+            * Нельзя изменить флаг is_solution через этот endpoint (используйте mark_as_solution)
+
+            ### 🔒 Требуется аутентификация
+
+            ### Path параметры:
+            * **issue_id**: UUID проблемы (для REST-структуры URL)
+            * **comment_id**: UUID комментария для обновления
+
+            ### Body параметры:
+            * **content**: Новое текстовое содержимое (опционально, 1-5000 символов)
+            * **is_solution**: Игнорируется (используйте отдельный endpoint для пометки решения)
+
+            ### Returns:
+            * **CommentResponseSchema**: Обновлённый комментарий с полной информацией
+
+            ### Примеры использования:
+            ```bash
+            # Обновить содержимое комментария
+            curl -X PATCH "http://localhost:8000/api/v1/issues/{issue_id}/comments/{comment_id}" \\
+              -H "Authorization: Bearer <token>" \\
+              -H "Content-Type: application/json" \\
+              -d '{
+                "content": "Обновлённый текст комментария с дополнительной информацией"
+              }'
+            ```
+
+            ### Ответ:
+            ```json
+            {
+              "success": true,
+              "message": "Комментарий обновлён успешно",
+              "data": {
+                "id": "uuid",
+                "issue_id": "uuid",
+                "parent_id": null,
+                "author": {
+                  "id": "uuid",
+                  "username": "john_doe",
+                  "email": "john@example.com"
+                },
+                "content": "Обновлённый текст комментария",
+                "is_solution": false,
+                "created_at": "2025-11-11T10:00:00Z",
+                "updated_at": "2025-11-11T10:15:00Z"
+              }
+            }
+            ```
+
+            ### Ошибки:
+            * **401**: Не авторизован
+            * **403**: Нет прав для редактирования (не автор и не админ) или комментарий помечен как решение
+            * **404**: Комментарий не найден
+            * **422**: Валидация не пройдена (некорректный content)
+            """,
+            summary="✏️ Обновить комментарий",
+        )
+        async def update_comment(
+            _issue_id: UUID,  # Для REST-структуры URL (не используется в логике)
+            comment_id: UUID,
+            request: CommentUpdateRequestSchema,
+            current_user: CurrentUserDep = None,
+            service: IssueCommentServiceDep = None,
+        ) -> CommentResponseSchema:
+            """Обновление содержимого комментария."""
+            # Проверка роли администратора
+            is_admin = current_user.has_role("admin")
+
+            # Бизнес-логика: обновление с проверкой прав
+            comment = await service.update_comment(
+                comment_id=comment_id,
+                user_id=current_user.id,
+                is_admin=is_admin,
+                content=request.content,
+            )
+
+            # Преобразование domain object → schema
+            comment_data = CommentDetailSchema.model_validate(comment)
+
+            return CommentResponseSchema(
+                success=True,
+                message="Комментарий обновлён успешно",
+                data=comment_data,
+            )
