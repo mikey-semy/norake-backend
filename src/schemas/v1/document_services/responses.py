@@ -224,6 +224,7 @@ class DocumentServiceListItemSchema(BaseSchema):
         description: Краткое описание (первые 200 символов).
         tags: Теги для поиска.
         file_type: Тип файла.
+        file_size: Размер файла в байтах.
         cover_url: URL обложки.
         cover_icon: Имя иконки.
         author_id: UUID автора.
@@ -239,6 +240,7 @@ class DocumentServiceListItemSchema(BaseSchema):
             "description": "Руководство по эксплуатации оборудования XYZ",
             "tags": ["технический", "оборудование"],
             "file_type": "pdf",
+            "file_size": 2048576,
             "cover_url": "https://s3.amazonaws.com/bucket/covers/xyz_cover.jpg",
             "cover_icon": null,
             "author_id": "...",
@@ -255,6 +257,7 @@ class DocumentServiceListItemSchema(BaseSchema):
     description: Optional[str] = Field(description="Краткое описание")
     tags: List[str] = Field(description="Теги для поиска")
     file_type: DocumentFileType = Field(description="Тип файла")
+    file_size: int = Field(description="Размер файла в байтах")
     cover_url: Optional[str] = Field(description="URL обложки")
     cover_icon: Optional[str] = Field(description="Имя иконки")
     author_id: uuid.UUID = Field(description="UUID автора")
