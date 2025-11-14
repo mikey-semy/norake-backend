@@ -502,7 +502,7 @@ class Settings(BaseSettings):
     AWS_BUCKET_NAME: str = "documents"
     AWS_ACCESS_KEY_ID: Optional[SecretStr] = None  # Опционально для работы без S3
     AWS_SECRET_ACCESS_KEY: Optional[SecretStr] = None  # Опционально для работы без S3
-    AWS_ADDRESSING_STYLE: str = "auto"  # "auto" (определяет по endpoint), "path" (MinIO), "virtual" (AWS/Yandex)
+    # AWS_ADDRESSING_STYLE не используется - addressing_style определяется автоматически через signature_version='s3v4' в клиенте
 
     @property
     def s3_params(self) -> Optional[Dict[str, Any]]:

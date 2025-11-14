@@ -185,12 +185,23 @@ class BaseS3Storage(AbstractStorageBackend):
         Raises:
             ValueError: При ошибке загрузки файла
         """
+        self.logger.info(
+            "[FLOW] upload_file START: filename=%s, file_key=%s, bucket_name=%s (received)",
+            file.filename,
+            file_key,
+            bucket_name,
+        )
+        
         if bucket_name is None:
             bucket_name = self.bucket_name
+            self.logger.info(
+                "[FLOW] upload_file: bucket_name was None, resolved to default=%s",
+                bucket_name,
+            )
 
         file_content = await file.read()
-        self.logger.debug(
-            "Загрузка файла: name=%s, type=%s, size=%d, bucket=%s, key=%s",
+        self.logger.info(
+            "[FLOW] upload_file PARAMS: name=%s, type=%s, size=%d, bucket=%s, key=%s",
             file.filename,
             file.content_type,
             len(file_content),
@@ -204,8 +215,21 @@ class BaseS3Storage(AbstractStorageBackend):
             full_file_key = (
                 f"{file_key}/{unique_filename}" if file_key else unique_filename
             )
+            
+            self.logger.info(
+                "[FLOW] upload_file: generated unique_filename=%s, full_file_key=%s",
+                unique_filename,
+                full_file_key,
+            )
 
             # Загружаем файл в S3
+            self.logger.info(
+                "[FLOW] upload_file: calling put_object with Bucket=%s, Key=%s, ContentType=%s",
+                bucket_name,
+                full_file_key,
+                file.content_type,
+            )
+            
             response = await self._client.put_object(
                 Bucket=bucket_name,
                 Key=full_file_key,
@@ -216,24 +240,40 @@ class BaseS3Storage(AbstractStorageBackend):
             )
 
             self.logger.info(
-                "Файл %s успешно загружен как %s", file.filename, full_file_key
+                "[FLOW] upload_file: put_object SUCCESS for %s as %s",
+                file.filename,
+                full_file_key,
             )
-            self.logger.debug("Ответ S3(put_object): %s", response)
+            self.logger.debug("[FLOW] upload_file: S3 response=%s", response)
 
             # Получаем URL файла
+            self.logger.info(
+                "[FLOW] upload_file: calling get_file_url with key=%s, bucket=%s",
+                full_file_key,
+                bucket_name,
+            )
             file_url = await self.get_file_url(full_file_key, bucket_name)
+            
+            self.logger.info(
+                "[FLOW] upload_file END: returning url=%s, filename=%s",
+                file_url,
+                unique_filename,
+            )
             return file_url, unique_filename
 
         except ClientError as error:
+            error_details = (
+                error.response["Error"]
+                if hasattr(error, "response")
+                else "Нет деталей"
+            )
             self.logger.error(
-                "Ошибка загрузки файла %s: %s\nДетали: %s",
+                "[FLOW] upload_file FAILED (ClientError): file=%s, error=%s\nДетали: %s\nBucket=%s, Key=%s",
                 file.filename,
                 error,
-                (
-                    error.response["Error"]
-                    if hasattr(error, "response")
-                    else "Нет деталей"
-                ),
+                error_details,
+                bucket_name,
+                full_file_key,
             )
             raise ValueError(f"Ошибка при загрузке файла: {error}") from error
         except Exception as error:

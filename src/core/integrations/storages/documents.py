@@ -70,15 +70,39 @@ class DocumentS3Storage(BaseS3Storage):
             tuple[str, str, int]: (file_url, unique_filename, file_size) -
                                   URL файла, уникальное имя и размер в байтах
         """
+        self.logger.info(
+            "[FLOW] upload_document START: filename=%s, workspace_id=%s, bucket_name=%s",
+            file.filename,
+            workspace_id,
+            bucket_name,
+        )
+        
         # Определяем путь в зависимости от workspace
         if workspace_id:
             file_key = f"{self.documents_folder}/{workspace_id}"
         else:
             file_key = f"{self.documents_folder}/public"
+        
+        self.logger.info(
+            "[FLOW] upload_document: generated file_key=%s",
+            file_key,
+        )
 
         # Загружаем документ
+        self.logger.info(
+            "[FLOW] upload_document: calling upload_file with file_key=%s, bucket_name=%s",
+            file_key,
+            bucket_name,
+        )
+        
         file_url, unique_filename = await self.upload_file(
             file=file, file_key=file_key, bucket_name=bucket_name
+        )
+
+        self.logger.info(
+            "[FLOW] upload_document: upload_file returned url=%s, filename=%s",
+            file_url,
+            unique_filename,
         )
 
         # Получаем размер файла
