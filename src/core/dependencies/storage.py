@@ -45,13 +45,13 @@ async def get_s3_client_optional() -> AsyncGenerator[Optional[Any], None]:
     """
     s3_manager = None
     s3_client = None
-    
+
     try:
         logger.debug("Попытка создания подключения к S3 (optional)")
         s3_manager = S3ContextManager()
         s3_client = await s3_manager.__aenter__()
         logger.debug("S3 подключение успешно установлено")
-        
+
         try:
             yield s3_client
         except GeneratorExit:
@@ -65,7 +65,7 @@ async def get_s3_client_optional() -> AsyncGenerator[Optional[Any], None]:
             # Всегда закрываем S3, даже если было исключение
             if s3_manager:
                 await s3_manager.__aexit__(None, None, None)
-                
+
     except ValueError as e:
         # Credentials не заданы - это OK для опционального клиента
         logger.info("S3 клиент недоступен (credentials не заданы): %s", e)

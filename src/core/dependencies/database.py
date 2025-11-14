@@ -26,12 +26,12 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     """
     session = None
     session_gen = None
-    
+
     try:
         logger.debug("Создание сессии базы данных")
         session_gen = get_db_session()
         session = await session_gen.__anext__()
-        
+
         try:
             yield session
         except GeneratorExit:
@@ -46,7 +46,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
                 await session_gen.__anext__()
             except StopAsyncIteration:
                 pass
-                
+
     except RuntimeError as e:
         # Ловим только ошибки инициализации/подключения к базе
         logger.error("Ошибка подключения к базе данных: %s", e)

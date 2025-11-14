@@ -125,7 +125,7 @@ class DocumentServiceCreateRequestSchema(BaseRequestSchema):
         default="generated",
         description="Тип обложки (generated/icon/image)",
     )
-    
+
     @field_validator("file_type", mode="before")
     @classmethod
     def normalize_file_type(cls, v: str) -> str:
@@ -133,7 +133,7 @@ class DocumentServiceCreateRequestSchema(BaseRequestSchema):
         if isinstance(v, str):
             return v.lower()
         return v
-    
+
     @field_validator("cover_type", mode="before")
     @classmethod
     def normalize_cover_type(cls, v: str) -> str:
