@@ -68,14 +68,14 @@ class S3Client(BaseClient):
         # - "virtual": явно для AWS S3 / Yandex Cloud
         if self.settings.AWS_ADDRESSING_STYLE == "auto":
             is_minio = (
-                self.settings.AWS_ENDPOINT 
-                and ("localhost" in self.settings.AWS_ENDPOINT 
+                self.settings.AWS_ENDPOINT
+                and ("localhost" in self.settings.AWS_ENDPOINT
                      or "127.0.0.1" in self.settings.AWS_ENDPOINT)
             )
             addressing_style = "path" if is_minio else "virtual"
         else:
             addressing_style = self.settings.AWS_ADDRESSING_STYLE
-        
+
         s3_config = BotocoreConfig(s3={"addressing_style": addressing_style})
         try:
             # Проверка наличия credentials
