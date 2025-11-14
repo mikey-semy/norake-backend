@@ -36,7 +36,7 @@ $Headers["Authorization"] = "Basic $EncodedCredentials"
 try {
     # Проверка существования bucket
     Write-Host "🔍 Проверка bucket '$BucketName'..." -ForegroundColor Yellow
-    
+
     $CheckUrl = "$MinioEndpoint/$BucketName"
     try {
         Invoke-RestMethod -Uri $CheckUrl -Method Head -Headers $Headers -ErrorAction Stop | Out-Null
@@ -47,7 +47,7 @@ try {
         Invoke-RestMethod -Uri $CheckUrl -Method Put -Headers $Headers | Out-Null
         Write-Host "✅ Bucket '$BucketName' создан" -ForegroundColor Green
     }
-    
+
     Write-Host ""
     Write-Host "🎉 MinIO готов к использованию!" -ForegroundColor Green
     Write-Host "📊 Web Console: http://localhost:9001" -ForegroundColor Cyan
@@ -56,7 +56,7 @@ try {
     Write-Host "🪣 Bucket: $BucketName" -ForegroundColor Magenta
     Write-Host ""
     Write-Host "💡 Для просмотра файлов открой Web Console в браузере" -ForegroundColor Gray
-    
+
 } catch {
     Write-Host "❌ Ошибка при создании bucket: $($_.Exception.Message)" -ForegroundColor Red
     exit 1

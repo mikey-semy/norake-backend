@@ -5,13 +5,13 @@
     Base:
         - ServiceFunctionSchema: Конфигурация функции сервиса
         - DocumentServiceBaseSchema: Базовая схема сервиса документа
-    
+
     Requests:
         - DocumentServiceCreateRequestSchema: Создание сервиса
         - DocumentServiceUpdateRequestSchema: Обновление сервиса
         - DocumentServiceQueryRequestSchema: Фильтрация и поиск
         - DocumentFunctionAddRequestSchema: Добавление функции
-    
+
     Responses:
         - DocumentServiceAuthorBriefSchema: Краткая информация об авторе
         - DocumentServiceWorkspaceBriefSchema: Краткая информация о workspace

@@ -524,7 +524,7 @@ class Settings(BaseSettings):
     # Настройки Document Services
     DOCUMENT_MAX_FILE_SIZE: int = 50 * 1024 * 1024  # 50 MB
     DOCUMENT_BASE_URL: str = "http://localhost:8000"  # Базовый URL приложения
-    
+
     # Разрешённые MIME типы для загрузки документов (ключи соответствуют DocumentFileType.value)
     DOCUMENT_ALLOWED_MIME_TYPES: Dict[str, List[str]] = {
         "pdf": ["application/pdf"],

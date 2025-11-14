@@ -67,7 +67,7 @@ class DocumentServiceCreateRequestSchema(BaseRequestSchema):
     Example:
         POST /api/v1/document-services
         Content-Type: multipart/form-data
-        
+
         {
             "title": "Техническая документация",
             "description": "Руководство по эксплуатации оборудования XYZ",
@@ -91,7 +91,7 @@ class DocumentServiceCreateRequestSchema(BaseRequestSchema):
             "workspace_id": "123e4567-e89b-12d3-a456-426614174000",
             "is_public": false
         }
-        
+
         file: <binary PDF data>
     """
 
@@ -156,16 +156,16 @@ class DocumentServiceCreateRequestSchema(BaseRequestSchema):
     def validate_enum_case(cls, value):
         """
         Валидатор для enum полей - конвертирует UPPERCASE в lowercase.
-        
+
         Swagger UI и FastAPI Form() отправляют enum NAMES (TEXT, PDF) вместо VALUES (text, pdf).
         Этот валидатор приводит к lowercase для совместимости с БД enum значениями.
-        
+
         Args:
             value: Значение из Form() (строка "TEXT", "PDF", "GENERATED" и т.д.) или enum.
-        
+
         Returns:
             str: Lowercase строка для записи в БД.
-        
+
         Example:
             >>> # FastAPI Form() передаёт: {"file_type": "TEXT"}
             >>> # Валидатор конвертирует: "TEXT" -> "text"

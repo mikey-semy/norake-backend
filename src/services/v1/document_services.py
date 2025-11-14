@@ -161,7 +161,7 @@ class DocumentServiceService:
 
         # Создание записи в БД
         document_service = await self.repository.create_item(create_data)
-        
+
         # Перезагрузить с relationships для сериализации
         await self.repository.session.refresh(
             document_service,
@@ -205,7 +205,7 @@ class DocumentServiceService:
         service = await self.repository.get_item_by_id(service_id)
         if not service:
             raise DocumentServiceNotFoundError(service_id=service_id)
-        
+
         # Загрузить relationships для сериализации
         await self.repository.session.refresh(
             service,
@@ -277,7 +277,7 @@ class DocumentServiceService:
 
         # Обновление через репозиторий
         updated_service = await self.repository.update_item(service_id, update_dict)
-        
+
         # Перезагрузить relationships для сериализации
         await self.repository.session.refresh(
             updated_service,
@@ -424,7 +424,7 @@ class DocumentServiceService:
 
         # Подсчёт общего количества (для пагинации)
         total = await self._count_services(query)
-        
+
         # Загрузить relationships для всех сервисов
         for service in services:
             await self.repository.session.refresh(
@@ -494,7 +494,7 @@ class DocumentServiceService:
             service_id,
             {"available_functions": current_functions},
         )
-        
+
         # Перезагрузить relationships для сериализации
         await self.repository.session.refresh(
             updated_service,
@@ -564,7 +564,7 @@ class DocumentServiceService:
             service_id,
             {"available_functions": updated_functions},
         )
-        
+
         # Перезагрузить relationships для сериализации
         await self.repository.session.refresh(
             updated_service,
@@ -660,14 +660,14 @@ class DocumentServiceService:
             file_type=file_type,
             limit=limit,
         )
-        
+
         # Загрузить relationships для всех сервисов
         for service in services:
             await self.repository.session.refresh(
                 service,
                 attribute_names=["author", "workspace"]
             )
-        
+
         return services
 
     def _validate_file_type(self, content_type: str, expected_type: str) -> None:

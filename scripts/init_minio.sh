@@ -25,11 +25,11 @@ if mc ls local/$BUCKET_NAME &> /dev/null; then
 else
     echo "🪣 Создание bucket '$BUCKET_NAME'..."
     mc mb local/$BUCKET_NAME
-    
+
     # Установка публичной политики для чтения (для presigned URLs)
     echo "🔓 Настройка политики доступа..."
     mc anonymous set download local/$BUCKET_NAME
-    
+
     echo "✅ Bucket '$BUCKET_NAME' создан и настроен"
 fi
 

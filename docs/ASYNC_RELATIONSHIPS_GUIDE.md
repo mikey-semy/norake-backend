@@ -5,7 +5,7 @@
 When using SQLAlchemy async sessions with relationships, accessing relationship attributes during Pydantic serialization causes:
 
 ```
-MissingGreenlet: greenlet_spawn has not been called; 
+MissingGreenlet: greenlet_spawn has not been called;
 can't access lazy loaded attributes from async code
 ```
 
@@ -33,7 +33,7 @@ Look for models with `Mapped[...]` relationships:
 class DocumentServiceModel(BaseModel):
     # Scalar fields
     title: Mapped[str]
-    
+
     # ⚠️ RELATIONSHIPS - need explicit loading
     author: Mapped["UserModel"] = relationship(...)
     workspace: Mapped[Optional["WorkspaceModel"]] = relationship(...)
@@ -49,13 +49,13 @@ For EVERY service method that returns the model:
 async def create_something(self, data: dict) -> SomeModel:
     # Create
     item = await self.repository.create_item(data)
-    
+
     # Load relationships BEFORE returning
     await self.repository.session.refresh(
         item,
         attribute_names=["author", "workspace"]
     )
-    
+
     return item
 ```
 
@@ -67,13 +67,13 @@ async def get_something(self, item_id: UUID) -> SomeModel:
     item = await self.repository.get_item_by_id(item_id)
     if not item:
         raise NotFoundError()
-    
+
     # Load relationships
     await self.repository.session.refresh(
         item,
         attribute_names=["author", "workspace"]
     )
-    
+
     return item
 ```
 
@@ -83,13 +83,13 @@ async def get_something(self, item_id: UUID) -> SomeModel:
 async def update_something(self, item_id: UUID, data: dict) -> SomeModel:
     # Update
     item = await self.repository.update_item(item_id, data)
-    
+
     # Load relationships
     await self.repository.session.refresh(
         item,
         attribute_names=["author", "workspace"]
     )
-    
+
     return item
 ```
 
@@ -99,14 +99,14 @@ async def update_something(self, item_id: UUID, data: dict) -> SomeModel:
 async def list_something(self, filters: dict) -> List[SomeModel]:
     # Get list
     items = await self.repository.filter_by(**filters)
-    
+
     # Load relationships FOR EACH item
     for item in items:
         await self.repository.session.refresh(
             item,
             attribute_names=["author", "workspace"]
         )
-    
+
     return items
 ```
 
