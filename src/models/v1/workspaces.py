@@ -10,6 +10,7 @@ from ..base import BaseModel
 
 if TYPE_CHECKING:
     from .ai_modules import WorkspaceModuleModel
+    from .document_services import DocumentServiceModel
     from .knowledge_bases import KnowledgeBaseModel
     from .n8n_workflows import N8nWorkflowModel
     from .users import UserModel
@@ -246,6 +247,14 @@ class WorkspaceModel(BaseModel):
         back_populates="workspace",
         cascade="all, delete-orphan",
         lazy="selectin",
+    )
+
+    document_services: Mapped[List["DocumentServiceModel"]] = relationship(
+        "DocumentServiceModel",
+        foreign_keys="[DocumentServiceModel.workspace_id]",
+        back_populates="workspace",
+        passive_deletes=True,
+        cascade="all, delete-orphan",
     )
 
     def __repr__(self) -> str:

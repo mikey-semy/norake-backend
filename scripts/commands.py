@@ -1086,6 +1086,38 @@ def infra_test():
         return
     print("✅ Тестовая инфраструктура готова!")
 
+def init_minio():
+    """
+    Инициализация MinIO bucket для Document Services.
+    
+    Создает bucket 'norake-documents' если он не существует.
+    Требует запущенный MinIO контейнер.
+    """
+    print("🪣 Инициализация MinIO bucket...")
+    
+    # Определение ОС для выбора скрипта
+    if platform.system() == "Windows":
+        script_path = ROOT_DIR / "scripts" / "init_minio.ps1"
+        try:
+            subprocess.run(
+                ["powershell", "-ExecutionPolicy", "Bypass", "-File", str(script_path)],
+                check=True
+            )
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Ошибка при инициализации MinIO: {e}")
+            print("💡 Убедись что MinIO запущен: docker-compose -f docker-compose.dev.yml up minio")
+            return
+    else:
+        script_path = ROOT_DIR / "scripts" / "init_minio.sh"
+        try:
+            subprocess.run(["bash", str(script_path)], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Ошибка при инициализации MinIO: {e}")
+            print("💡 Убедись что MinIO запущен: docker-compose -f docker-compose.dev.yml up minio")
+            return
+    
+    print("✅ MinIO готов к использованию!")
+
 def test():
     """
     Запуск тестов (без поднятия инфраструктуры).
@@ -1321,6 +1353,10 @@ def bootstrap():
         if not start_infrastructure():
             print("❌ Не удалось запустить инфраструктуру!")
             return False
+
+        # Инициализируем MinIO bucket
+        print("🪣 Инициализация MinIO...")
+        init_minio()
 
         # Загружаем фикстуры
         print("📦 Загружаем фикстуры...")

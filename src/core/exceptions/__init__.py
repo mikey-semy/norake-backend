@@ -21,6 +21,18 @@ from .templates import (TemplateNotFoundError, TemplatePermissionDeniedError,
 from .openrouter import (OpenRouterError, OpenRouterConfigError)
 from .knowledge_bases import (KnowledgeBaseNotFoundError, DocumentNotFoundError)
 from .search import (SearchError, SearchTimeoutError)
+from .document_services import (
+    DocumentServiceNotFoundError,
+    DocumentServicePermissionDeniedError,
+    DocumentServiceValidationError,
+    DocumentUploadError,
+    ThumbnailGenerationError,
+    QRCodeGenerationError,
+    FunctionNotAvailableError,
+    DocumentAccessDeniedError,
+    FileTypeValidationError,
+    FileSizeExceededError,
+)
 
 __all__ = [
     # Base
@@ -94,4 +106,16 @@ __all__ = [
     # Search
     "SearchError",
     "SearchTimeoutError",
+
+    # Document Services
+    "DocumentServiceNotFoundError",
+    "DocumentServicePermissionDeniedError",
+    "DocumentServiceValidationError",
+    "DocumentUploadError",
+    "ThumbnailGenerationError",
+    "QRCodeGenerationError",
+    "FunctionNotAvailableError",
+    "DocumentAccessDeniedError",
+    "FileTypeValidationError",
+    "FileSizeExceededError",
 ]

@@ -7,8 +7,10 @@
     - TemplateRepository: Работа с шаблонами (Templates)
     - WorkspaceRepository: Работа с workspace
     - WorkspaceMemberRepository: Работа с участниками workspace
+    - DocumentServiceRepository: Работа с сервисами документов
 """
 
+from .document_services import DocumentServiceRepository
 from .issue_comments import IssueCommentRepository
 from .issues import IssueRepository
 from .templates import TemplateRepository
@@ -20,4 +22,5 @@ __all__ = [
     "TemplateRepository",
     "WorkspaceRepository",
     "WorkspaceMemberRepository",
+    "DocumentServiceRepository",
 ]

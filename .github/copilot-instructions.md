@@ -201,7 +201,61 @@ async def login(
 
 ## Service → Domain Object Boundary
 
+```
+
+## Configuration Management (КРИТИЧНО)
+
+**ПРАВИЛО**: НЕ ХАРДКОДИТЬ параметры! Все конфигурационные значения складывать в `src/core/settings/base.py`.
+
+### ❌ НЕПРАВИЛЬНО - хардкод в коде:
+
+```python
+# В service:
+MAX_FILE_SIZE = 50 * 1024 * 1024  # ❌ Хардкод!
+ALLOWED_TYPES = ["application/pdf"]  # ❌ Хардкод!
+
+# В router:
+base_url: str = Query("http://localhost:8000")  # ❌ Хардкод!
+```
+
+### ✅ ПРАВИЛЬНО - через Settings:
+
+```python
+# В src/core/settings/base.py:
+class Settings(BaseSettings):
+    # Document Services Configuration
+    DOCUMENT_MAX_FILE_SIZE: int = 50 * 1024 * 1024
+    DOCUMENT_BASE_URL: str = "http://localhost:8000"
+    DOCUMENT_ALLOWED_MIME_TYPES: Dict[str, List[str]] = {...}
+
+# В service:
+def __init__(self, session, s3_client, settings: Settings):
+    self.settings = settings
+
+def validate(self):
+    if size > self.settings.DOCUMENT_MAX_FILE_SIZE:  # ✅ Из настроек!
+        raise Error()
+
+# В router:
+from src.core.settings.base import settings
+qr_url = await service.generate_qr(base_url=settings.DOCUMENT_BASE_URL)  # ✅
+```
+
+**Что добавлять в Settings**:
+- Размеры файлов, лимиты, таймауты
+- URL endpoints, базовые пути
+- Списки разрешённых типов, форматов
+- Любые "магические числа" и строки
+- Флаги feature toggles
+
+**Обязательно**: Добавить соответствующие переменные в `.env.example` и `.env.dev`.
+
+## Service → Domain Object Boundary
+
 **CRITICAL**: Services return SQLAlchemy models, NOT Pydantic schemas. Routers handle schema conversion.
+
+```python
+````
 
 ```python
 # ✅ CORRECT - Service returns domain object

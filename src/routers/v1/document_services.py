@@ -1,0 +1,599 @@
+"""
+Роутеры для работы с сервисами документов (Document Services).
+
+Модуль предоставляет HTTP API для управления сервисами документов:
+- DocumentServiceProtectedRouter (ProtectedRouter) - защищённые CRUD endpoints
+
+Все endpoints требуют JWT авторизации. Роутеры преобразуют domain objects
+(DocumentServiceModel) в Pydantic схемы для ответа.
+
+Routes:
+    POST   /document-services              - Загрузить документ и создать сервис
+    GET    /document-services              - Список сервисов с фильтрацией
+    GET    /document-services/most-viewed  - Топ по просмотрам
+    GET    /document-services/{id}         - Детали сервиса
+    PUT    /document-services/{id}         - Обновить сервис
+    DELETE /document-services/{id}         - Удалить сервис
+    POST   /document-services/{id}/functions        - Добавить функцию
+    DELETE /document-services/{id}/functions/{name} - Удалить функцию
+    GET    /document-services/{id}/qr      - Сгенерировать QR-код
+"""
+
+from typing import Optional
+from uuid import UUID
+
+from fastapi import File, Form, Query, UploadFile, status
+
+from src.core.dependencies.document_services import DocumentServiceServiceDep
+from src.core.security import CurrentUserDep
+from src.core.settings.base import settings
+from src.models.v1.document_services import DocumentFileType
+from src.routers.base import ProtectedRouter
+from src.schemas.v1.document_services import (
+    DocumentServiceCreateRequestSchema,
+    DocumentServiceDetailSchema,
+    DocumentServiceListItemSchema,
+    DocumentServiceListResponseSchema,
+    DocumentServiceQueryRequestSchema,
+    DocumentServiceResponseSchema,
+    DocumentServiceUpdateRequestSchema,
+    DocumentFunctionAddRequestSchema,
+    ServiceFunctionSchema,
+)
+
+
+class DocumentServiceProtectedRouter(ProtectedRouter):
+    """
+    Защищённый роутер для управления сервисами документов.
+
+    Предоставляет HTTP API для CRUD операций с сервисами документов.
+    Все endpoints требуют JWT авторизации.
+
+    Protected Endpoints (требуется JWT):
+        POST   /document-services              - Загрузить документ
+        GET    /document-services              - Список с фильтрацией
+        GET    /document-services/most-viewed  - Топ по просмотрам
+        GET    /document-services/{id}         - Детали сервиса
+        PUT    /document-services/{id}         - Обновить сервис
+        DELETE /document-services/{id}         - Удалить сервис
+        POST   /document-services/{id}/functions        - Добавить функцию
+        DELETE /document-services/{id}/functions/{name} - Удалить функцию
+        GET    /document-services/{id}/qr      - Сгенерировать QR
+
+    Архитектурные особенности:
+        - Роутер преобразует DocumentServiceModel → Schema
+        - Бизнес-логика и права доступа в DocumentServiceService
+        - NO try-catch: глобальный exception handler обрабатывает ошибки
+        - Multipart/form-data для загрузки файлов
+    """
+
+    def __init__(self):
+        """Инициализирует DocumentServiceProtectedRouter с префиксом и тегами."""
+        super().__init__(prefix="document-services", tags=["Document Services"])
+
+    def configure(self):
+        """Настройка защищённых endpoint'ов роутера."""
+
+        # ==================== CREATE (UPLOAD) ====================
+
+        @self.router.post(
+            path="",
+            response_model=DocumentServiceResponseSchema,
+            status_code=status.HTTP_201_CREATED,
+            description="""
+            ## 📤 Загрузить документ и создать сервис
+
+            Создаёт сервис документа с загрузкой файла в S3:
+            - Валидация размера (макс. 50MB)
+            - Валидация MIME типа
+            - Генерация thumbnail для PDF
+            - Генерация QR-кода
+            - Сохранение метаданных в БД
+
+            ### 🔒 Требуется JWT токен
+
+            ### Form Data:
+            * **file**: Файл документа (PDF/DOC/DOCX/TXT/MD)
+            * **title**: Название сервиса (3-200 символов)
+            * **description**: Описание (опционально)
+            * **tags**: Теги через запятую (опционально)
+            * **file_type**: Тип файла (PDF/DOC/DOCX/TXT/MD)
+            * **workspace_id**: UUID workspace (опционально)
+            * **is_public**: Публичность (true/false)
+
+            ### Returns:
+            * **DocumentServiceResponseSchema**: Созданный сервис
+
+            ### Errors:
+            * **400**: Невалидные данные, превышен размер, недопустимый тип
+            * **500**: Ошибка загрузки в S3
+            """,
+            responses={
+                201: {"description": "Документ загружен, сервис создан"},
+                400: {"description": "Ошибка валидации"},
+                401: {"description": "Не авторизован"},
+                500: {"description": "Ошибка загрузки"},
+            },
+        )
+        async def create_document_service(
+            current_user: CurrentUserDep = None,
+            document_service: DocumentServiceServiceDep = None,
+            file: UploadFile = File(..., description="Файл документа"),
+            title: str = Form(..., min_length=3, max_length=200, description="Название"),
+            file_type: DocumentFileType = Form(..., description="Тип файла"),
+            description: Optional[str] = Form(None, description="Описание"),
+            tags: Optional[str] = Form(None, description="Теги через запятую"),
+            workspace_id: Optional[UUID] = Form(None, description="UUID workspace"),
+            is_public: bool = Form(True, description="Публичность"),
+        ) -> DocumentServiceResponseSchema:
+            """Загрузить документ и создать сервис."""
+            # Парсинг тегов
+            tags_list = [tag.strip() for tag in tags.split(",")] if tags else []
+
+            # Подготовка метаданных - передаём .value для совместимости с валидатором схемы
+            metadata = DocumentServiceCreateRequestSchema(
+                title=title,
+                description=description,
+                tags=tags_list,
+                file_type=file_type.value,  # Извлекаем lowercase строку
+                workspace_id=workspace_id,
+                is_public=is_public,
+            )
+
+            # Создание через сервис
+            service = await document_service.create_document_service(
+                file=file, metadata=metadata, author_id=current_user.id
+            )
+
+            # Преобразование в схему
+            schema = DocumentServiceDetailSchema.model_validate(service)
+            return DocumentServiceResponseSchema(
+                success=True,
+                message="Документ успешно загружен и сервис создан",
+                data=schema,
+            )
+
+        # ==================== LIST ====================
+
+        @self.router.get(
+            path="",
+            response_model=DocumentServiceListResponseSchema,
+            status_code=status.HTTP_200_OK,
+            description="""
+            ## 📋 Получить список сервисов с фильтрацией
+
+            Возвращает список сервисов с опциональными фильтрами:
+            - Публичные сервисы доступны всем
+            - Приватные сервисы видны только владельцу
+            - Поддержка полнотекстового поиска
+            - Фильтрация по тегам, автору, workspace, типу файла
+
+            ### 🔒 Требуется JWT токен
+
+            ### Query параметры:
+            * **search**: Полнотекстовый поиск по title/description
+            * **tags**: Фильтр по тегам (через запятую)
+            * **author_id**: UUID автора
+            * **workspace_id**: UUID workspace
+            * **file_type**: Тип файла (PDF/DOC/DOCX/TXT/MD)
+            * **is_public**: Публичность (true/false)
+            * **limit**: Количество результатов (по умолчанию 20)
+            * **offset**: Смещение для пагинации (по умолчанию 0)
+
+            ### Returns:
+            * **DocumentServiceListResponseSchema**: Список сервисов + total
+
+            ### Примеры:
+            * Все доступные: GET /document-services
+            * Поиск: GET /document-services?search=инструкция
+            * По тегам: GET /document-services?tags=api,docs
+            * По типу: GET /document-services?file_type=PDF
+            """,
+            responses={
+                200: {"description": "Список сервисов успешно получен"},
+                401: {"description": "Не авторизован"},
+            },
+        )
+        async def list_document_services(
+            current_user: CurrentUserDep = None,
+            document_service: DocumentServiceServiceDep = None,
+            search: Optional[str] = Query(None, description="Полнотекстовый поиск"),
+            tags: Optional[str] = Query(None, description="Теги через запятую"),
+            author_id: Optional[UUID] = Query(None, description="UUID автора"),
+            workspace_id: Optional[UUID] = Query(None, description="UUID workspace"),
+            file_type: Optional[DocumentFileType] = Query(
+                None, description="Тип файла"
+            ),
+            is_public: Optional[bool] = Query(None, description="Публичность"),
+            limit: int = Query(20, ge=1, le=100, description="Количество результатов"),
+            offset: int = Query(0, ge=0, description="Смещение для пагинации"),
+        ) -> DocumentServiceListResponseSchema:
+            """Получить список сервисов с фильтрами."""
+            # Парсинг тегов
+            tags_list = [tag.strip() for tag in tags.split(",")] if tags else None
+
+            # Подготовка query
+            query = DocumentServiceQueryRequestSchema(
+                search=search,
+                tags=tags_list,
+                author_id=author_id,
+                workspace_id=workspace_id,
+                file_type=file_type,
+                is_public=is_public,
+                limit=limit,
+                offset=offset,
+            )
+
+            # Получение через сервис
+            services, total = await document_service.list_document_services(
+                query, current_user.id
+            )
+
+            # Преобразование в схемы
+            items = [DocumentServiceListItemSchema.model_validate(s) for s in services]
+            return DocumentServiceListResponseSchema(
+                success=True, data=items, total=total
+            )
+
+        # ==================== MOST VIEWED ====================
+
+        @self.router.get(
+            path="/most-viewed",
+            response_model=DocumentServiceListResponseSchema,
+            status_code=status.HTTP_200_OK,
+            description="""
+            ## 🔥 Получить самые просматриваемые сервисы
+
+            Возвращает топ сервисов по количеству просмотров.
+
+            ### 🔒 Требуется JWT токен
+
+            ### Query параметры:
+            * **file_type**: Фильтр по типу файла (опционально)
+            * **limit**: Количество результатов (по умолчанию 10)
+
+            ### Returns:
+            * **DocumentServiceListResponseSchema**: Топ сервисов
+
+            ### Пример:
+            * Топ-10: GET /document-services/most-viewed
+            * Топ-5 PDF: GET /document-services/most-viewed?file_type=PDF&limit=5
+            """,
+            responses={
+                200: {"description": "Топ сервисов получен"},
+                401: {"description": "Не авторизован"},
+            },
+        )
+        async def get_most_viewed(
+            document_service: DocumentServiceServiceDep = None,
+            file_type: Optional[DocumentFileType] = Query(
+                None, description="Тип файла"
+            ),
+            limit: int = Query(10, ge=1, le=50, description="Количество результатов"),
+        ) -> DocumentServiceListResponseSchema:
+            """Получить самые просматриваемые сервисы."""
+            services = await document_service.get_most_viewed(
+                file_type=file_type, limit=limit
+            )
+            items = [DocumentServiceListItemSchema.model_validate(s) for s in services]
+            return DocumentServiceListResponseSchema(
+                success=True, data=items, total=len(items)
+            )
+
+        # ==================== GET ONE ====================
+
+        @self.router.get(
+            path="/{service_id}",
+            response_model=DocumentServiceResponseSchema,
+            status_code=status.HTTP_200_OK,
+            description="""
+            ## 📄 Получить детали сервиса по ID
+
+            Возвращает полную информацию о сервисе документа.
+            Приватные сервисы доступны только владельцу.
+            Автоматически увеличивает счётчик просмотров.
+
+            ### 🔒 Требуется JWT токен
+
+            ### Path параметры:
+            * **service_id**: UUID сервиса
+
+            ### Query параметры:
+            * **increment_views**: Увеличить счётчик просмотров (по умолчанию true)
+
+            ### Returns:
+            * **DocumentServiceResponseSchema**: Детали сервиса
+
+            ### Errors:
+            * **404**: Сервис не найден
+            * **403**: Нет прав на просмотр приватного сервиса
+            """,
+            responses={
+                200: {"description": "Сервис найден"},
+                404: {"description": "Сервис не найден"},
+                403: {"description": "Нет прав доступа"},
+                401: {"description": "Не авторизован"},
+            },
+        )
+        async def get_document_service(
+            service_id: UUID,
+            current_user: CurrentUserDep = None,
+            document_service: DocumentServiceServiceDep = None,
+            increment_views: bool = Query(
+                True, description="Увеличить счётчик просмотров"
+            ),
+        ) -> DocumentServiceResponseSchema:
+            """Получить сервис по ID."""
+            service = await document_service.get_document_service(
+                service_id=service_id,
+                user_id=current_user.id,
+                increment_views=increment_views,
+            )
+            schema = DocumentServiceDetailSchema.model_validate(service)
+            return DocumentServiceResponseSchema(success=True, data=schema)
+
+        # ==================== UPDATE ====================
+
+        @self.router.put(
+            path="/{service_id}",
+            response_model=DocumentServiceResponseSchema,
+            status_code=status.HTTP_200_OK,
+            description="""
+            ## ✏️ Обновить сервис документа
+
+            Обновляет метаданные сервиса (title, description, tags, публичность).
+            Файл документа изменить нельзя - только метаданные.
+            Только владелец может обновлять сервис.
+
+            ### 🔒 Требуется JWT токен
+
+            ### Path параметры:
+            * **service_id**: UUID сервиса
+
+            ### Body:
+            * **title**: Новое название (опционально)
+            * **description**: Новое описание (опционально)
+            * **tags**: Новые теги (опционально)
+            * **is_public**: Новая публичность (опционально)
+
+            ### Returns:
+            * **DocumentServiceResponseSchema**: Обновлённый сервис
+
+            ### Errors:
+            * **404**: Сервис не найден
+            * **403**: Нет прав на обновление (не владелец)
+            """,
+            responses={
+                200: {"description": "Сервис обновлён"},
+                404: {"description": "Сервис не найден"},
+                403: {"description": "Нет прав доступа"},
+                401: {"description": "Не авторизован"},
+            },
+        )
+        async def update_document_service(
+            service_id: UUID,
+            update_data: DocumentServiceUpdateRequestSchema,
+            current_user: CurrentUserDep = None,
+            document_service: DocumentServiceServiceDep = None,
+        ) -> DocumentServiceResponseSchema:
+            """Обновить сервис документа."""
+            service = await document_service.update_document_service(
+                service_id=service_id,
+                update_data=update_data,
+                user_id=current_user.id,
+            )
+            schema = DocumentServiceDetailSchema.model_validate(service)
+            return DocumentServiceResponseSchema(
+                success=True, message="Сервис успешно обновлён", data=schema
+            )
+
+        # ==================== DELETE ====================
+
+        @self.router.delete(
+            path="/{service_id}",
+            response_model=DocumentServiceResponseSchema,
+            status_code=status.HTTP_200_OK,
+            description="""
+            ## 🗑️ Удалить сервис документа
+
+            Удаляет сервис и все связанные файлы из S3:
+            - Основной документ
+            - Thumbnail (если есть)
+            - QR-код (если есть)
+            - Запись из БД
+
+            Только владелец может удалить сервис.
+
+            ### 🔒 Требуется JWT токен
+
+            ### Path параметры:
+            * **service_id**: UUID сервиса
+
+            ### Returns:
+            * **DocumentServiceResponseSchema**: Подтверждение удаления
+
+            ### Errors:
+            * **404**: Сервис не найден
+            * **403**: Нет прав на удаление (не владелец)
+            """,
+            responses={
+                200: {"description": "Сервис удалён"},
+                404: {"description": "Сервис не найден"},
+                403: {"description": "Нет прав доступа"},
+                401: {"description": "Не авторизован"},
+            },
+        )
+        async def delete_document_service(
+            service_id: UUID,
+            current_user: CurrentUserDep = None,
+            document_service: DocumentServiceServiceDep = None,
+        ) -> DocumentServiceResponseSchema:
+            """Удалить сервис документа."""
+            await document_service.delete_document_service(
+                service_id=service_id, user_id=current_user.id
+            )
+            return DocumentServiceResponseSchema(
+                success=True,
+                message="Сервис и связанные файлы успешно удалены",
+                data=None,
+            )
+
+        # ==================== ADD FUNCTION ====================
+
+        @self.router.post(
+            path="/{service_id}/functions",
+            response_model=DocumentServiceResponseSchema,
+            status_code=status.HTTP_200_OK,
+            description="""
+            ## ➕ Добавить функцию к сервису
+
+            Добавляет новую функцию в available_functions JSONB поле.
+            Только владелец может добавлять функции.
+
+            ### 🔒 Требуется JWT токен
+
+            ### Path параметры:
+            * **service_id**: UUID сервиса
+
+            ### Body:
+            * **name**: Имя функции (view_pdf, download, qr, share, ai_chat)
+            * **enabled**: Включена ли функция (true/false)
+            * **config**: Конфигурация функции (опционально)
+
+            ### Returns:
+            * **DocumentServiceResponseSchema**: Обновлённый сервис
+
+            ### Errors:
+            * **404**: Сервис не найден
+            * **403**: Нет прав на добавление (не владелец)
+            * **400**: Функция уже существует
+            """,
+            responses={
+                200: {"description": "Функция добавлена"},
+                404: {"description": "Сервис не найден"},
+                403: {"description": "Нет прав доступа"},
+                400: {"description": "Функция уже существует"},
+                401: {"description": "Не авторизован"},
+            },
+        )
+        async def add_function(
+            service_id: UUID,
+            function_data: DocumentFunctionAddRequestSchema,
+            current_user: CurrentUserDep = None,
+            document_service: DocumentServiceServiceDep = None,
+        ) -> DocumentServiceResponseSchema:
+            """Добавить функцию к сервису."""
+            # Преобразование в ServiceFunctionSchema
+            function = ServiceFunctionSchema(
+                name=function_data.name,
+                enabled=function_data.enabled,
+                config=function_data.config,
+            )
+
+            service = await document_service.add_function(
+                service_id=service_id, function=function, user_id=current_user.id
+            )
+            schema = DocumentServiceDetailSchema.model_validate(service)
+            return DocumentServiceResponseSchema(
+                success=True, message="Функция успешно добавлена", data=schema
+            )
+
+        # ==================== REMOVE FUNCTION ====================
+
+        @self.router.delete(
+            path="/{service_id}/functions/{function_name}",
+            response_model=DocumentServiceResponseSchema,
+            status_code=status.HTTP_200_OK,
+            description="""
+            ## ➖ Удалить функцию из сервиса
+
+            Удаляет функцию из available_functions JSONB поля.
+            Только владелец может удалять функции.
+
+            ### 🔒 Требуется JWT токен
+
+            ### Path параметры:
+            * **service_id**: UUID сервиса
+            * **function_name**: Имя функции для удаления
+
+            ### Returns:
+            * **DocumentServiceResponseSchema**: Обновлённый сервис
+
+            ### Errors:
+            * **404**: Сервис не найден
+            * **403**: Нет прав на удаление (не владелец)
+            * **400**: Функция не найдена
+            """,
+            responses={
+                200: {"description": "Функция удалена"},
+                404: {"description": "Сервис не найден"},
+                403: {"description": "Нет прав доступа"},
+                400: {"description": "Функция не найдена"},
+                401: {"description": "Не авторизован"},
+            },
+        )
+        async def remove_function(
+            service_id: UUID,
+            function_name: str,
+            current_user: CurrentUserDep = None,
+            document_service: DocumentServiceServiceDep = None,
+        ) -> DocumentServiceResponseSchema:
+            """Удалить функцию из сервиса."""
+            service = await document_service.remove_function(
+                service_id=service_id,
+                function_name=function_name,
+                user_id=current_user.id,
+            )
+            schema = DocumentServiceDetailSchema.model_validate(service)
+            return DocumentServiceResponseSchema(
+                success=True, message="Функция успешно удалена", data=schema
+            )
+
+        # ==================== GENERATE QR ====================
+
+        @self.router.get(
+            path="/{service_id}/qr",
+            response_model=dict,
+            status_code=status.HTTP_200_OK,
+            description="""
+            ## 🔲 Сгенерировать QR-код для документа
+
+            Генерирует QR-код со ссылкой на документ и загружает в S3.
+            Только владелец может генерировать QR-коды.
+
+            ### 🔒 Требуется JWT токен
+
+            ### Path параметры:
+            * **service_id**: UUID сервиса
+
+            ### Returns:
+            * **dict**: {"success": true, "qr_url": "...", "document_url": "..."}
+
+            ### Errors:
+            * **404**: Сервис не найден
+            * **403**: Нет прав на генерацию (не владелец)
+            * **500**: Ошибка генерации QR
+            """,
+            responses={
+                200: {"description": "QR-код сгенерирован"},
+                404: {"description": "Сервис не найден"},
+                403: {"description": "Нет прав доступа"},
+                500: {"description": "Ошибка генерации QR"},
+                401: {"description": "Не авторизован"},
+            },
+        )
+        async def generate_qr(
+            service_id: UUID,
+            current_user: CurrentUserDep = None,
+            document_service: DocumentServiceServiceDep = None,
+        ) -> dict:
+            """Сгенерировать QR-код для документа."""
+            qr_url = await document_service.generate_qr(
+                service_id=service_id, user_id=current_user.id, base_url=settings.DOCUMENT_BASE_URL
+            )
+            return {
+                "success": True,
+                "message": "QR-код успешно сгенерирован",
+                "qr_url": qr_url,
+                "document_url": f"{settings.DOCUMENT_BASE_URL}/documents/{service_id}",
+            }

@@ -9,6 +9,8 @@
 from .database import AsyncSessionDep
 # Cache dependencies
 from .cache import RedisDep
+# Storage dependencies
+from .storage import S3ClientDep
 # Health Service dependency
 from .health import HealthServiceDep
 # Token Service dependency
@@ -31,6 +33,8 @@ __all__ = [
     "AsyncSessionDep",
     # Cache dependencies
     "RedisDep",
+    # Storage dependencies
+    "S3ClientDep",
     # Health Service dependency
     "HealthServiceDep",
     # Token Service dependency

@@ -495,6 +495,55 @@ class Settings(BaseSettings):
             "exchange": self.RABBITMQ_EXCHANGE,
         }
 
+    # Настройки S3/MinIO Storage
+    AWS_SERVICE_NAME: str = "s3"
+    AWS_REGION: str = "us-east-1"
+    AWS_ENDPOINT: Optional[str] = None  # MinIO endpoint для локальной разработки
+    AWS_BUCKET_NAME: str = "norake-documents"
+    AWS_ACCESS_KEY_ID: SecretStr
+    AWS_SECRET_ACCESS_KEY: SecretStr
+
+    @property
+    def s3_params(self) -> Dict[str, Any]:
+        """
+        Формирует параметры подключения к S3/MinIO.
+
+        Returns:
+            Dict с параметрами подключения к S3
+        """
+        params = {
+            "service_name": self.AWS_SERVICE_NAME,
+            "region_name": self.AWS_REGION,
+            "aws_access_key_id": self.AWS_ACCESS_KEY_ID.get_secret_value(),
+            "aws_secret_access_key": self.AWS_SECRET_ACCESS_KEY.get_secret_value(),
+        }
+        if self.AWS_ENDPOINT:
+            params["endpoint_url"] = self.AWS_ENDPOINT
+        return params
+
+    # Настройки Document Services
+    DOCUMENT_MAX_FILE_SIZE: int = 50 * 1024 * 1024  # 50 MB
+    DOCUMENT_BASE_URL: str = "http://localhost:8000"  # Базовый URL приложения
+    
+    # Разрешённые MIME типы для загрузки документов (ключи соответствуют DocumentFileType.value)
+    DOCUMENT_ALLOWED_MIME_TYPES: Dict[str, List[str]] = {
+        "pdf": ["application/pdf"],
+        "spreadsheet": [
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ],
+        "text": [
+            "text/plain",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ],
+        "image": [
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "image/webp",
+        ],
+    }
 
     # Настройки аутентификации
 

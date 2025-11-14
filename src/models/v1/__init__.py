@@ -10,9 +10,16 @@
     - WorkspaceModel, WorkspaceMemberModel, WorkspaceVisibility, WorkspaceMemberRole (workspace)
     - KnowledgeBaseModel, DocumentModel, DocumentChunkModel, KnowledgeBaseType, DocumentStatus (KB)
     - N8nWorkflowModel, N8nWorkflowType (n8n workflows)
+    - DocumentServiceModel, ServiceFunctionType, DocumentFileType, CoverType (document services)
 """
 
 from .ai_modules import AIModuleModel, AIModuleType, WorkspaceModuleModel
+from .document_services import (
+    CoverType,
+    DocumentFileType,
+    DocumentServiceModel,
+    ServiceFunctionType,
+)
 from .issue_comments import IssueCommentModel
 from .issues import IssueModel, IssueStatus
 from .knowledge_bases import (
@@ -64,4 +71,9 @@ __all__ = [
     # n8n Workflows
     "N8nWorkflowModel",
     "N8nWorkflowType",
+    # Document Services
+    "DocumentServiceModel",
+    "ServiceFunctionType",
+    "DocumentFileType",
+    "CoverType",
 ]

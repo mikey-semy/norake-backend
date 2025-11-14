@@ -16,6 +16,7 @@ from .templates import TemplateProtectedRouter
 from .workspaces import WorkspaceProtectedRouter
 from .n8n_workflows import N8nWorkflowProtectedRouter
 from .search import SearchPublicRouter, SearchProtectedRouter
+from .document_services import DocumentServiceProtectedRouter
 
 
 class APIv1(BaseRouter):
@@ -41,3 +42,4 @@ class APIv1(BaseRouter):
         self.router.include_router(N8nWorkflowProtectedRouter().get_router())
         self.router.include_router(SearchPublicRouter().get_router())
         self.router.include_router(SearchProtectedRouter().get_router())
+        self.router.include_router(DocumentServiceProtectedRouter().get_router())

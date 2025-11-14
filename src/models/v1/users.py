@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from .roles import UserRoleModel
     from .templates import TemplateModel
     from .workspaces import WorkspaceMemberModel, WorkspaceModel
-
+    from .document_services import DocumentServiceModel
 
 class UserModel(BaseModel):
     """
@@ -139,6 +139,14 @@ class UserModel(BaseModel):
     comments: Mapped[List["IssueCommentModel"]] = relationship(
         "IssueCommentModel",
         foreign_keys="[IssueCommentModel.author_id]",
+        back_populates="author",
+        passive_deletes=True,
+        cascade="all, delete-orphan",
+    )
+
+    document_services: Mapped[List["DocumentServiceModel"]] = relationship(
+        "DocumentServiceModel",
+        foreign_keys="[DocumentServiceModel.author_id]",
         back_populates="author",
         passive_deletes=True,
         cascade="all, delete-orphan",
