@@ -191,7 +191,7 @@ class BaseS3Storage(AbstractStorageBackend):
             file_key,
             bucket_name,
         )
-        
+
         if bucket_name is None:
             bucket_name = self.bucket_name
             self.logger.info(
@@ -215,7 +215,7 @@ class BaseS3Storage(AbstractStorageBackend):
             full_file_key = (
                 f"{file_key}/{unique_filename}" if file_key else unique_filename
             )
-            
+
             self.logger.info(
                 "[FLOW] upload_file: generated unique_filename=%s, full_file_key=%s",
                 unique_filename,
@@ -229,7 +229,7 @@ class BaseS3Storage(AbstractStorageBackend):
                 full_file_key,
                 file.content_type,
             )
-            
+
             response = await self._client.put_object(
                 Bucket=bucket_name,
                 Key=full_file_key,
@@ -253,7 +253,7 @@ class BaseS3Storage(AbstractStorageBackend):
                 bucket_name,
             )
             file_url = await self.get_file_url(full_file_key, bucket_name)
-            
+
             self.logger.info(
                 "[FLOW] upload_file END: returning url=%s, filename=%s",
                 file_url,
