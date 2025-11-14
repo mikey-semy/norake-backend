@@ -30,10 +30,10 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
             yield session
     except RuntimeError as e:
         # Ловим только ошибки инициализации/подключения к базе
-        logger.error("Ошибка подключения к базе данных: %s", e)
-        raise ServiceUnavailableException("Database (Postgres)") from e
+        logger.error("❌ Ошибка подключения к базе данных: %s", e)
+        raise ServiceUnavailableException("Database (Postgres)")
     except Exception:
-        # Все остальные ошибки пробрасываем дальше!
+        # Все остальные ошибки (включая ValidationError) пробрасываем!
         raise
 
 
