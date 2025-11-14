@@ -199,6 +199,60 @@ class DocumentServiceCreateRequestSchema(BaseRequestSchema):
         description="UUID workspace (NULL для публичных документов)",
     )
 
+
+class DocumentCoverUpdateRequestSchema(BaseRequestSchema):
+    """
+    Схема для обновления обложки документа.
+
+    Поддерживает три варианта обложки:
+    1. GENERATED - регенерация из PDF (только для PDF документов)
+    2. ICON - установка эмодзи/иконки (передать cover_icon)
+    3. IMAGE - загрузка изображения (передать файл)
+
+    Attributes:
+        cover_type: Тип обложки (generated/icon/image).
+        cover_icon: Эмодзи/иконка (если cover_type=ICON).
+
+    Note:
+        Для cover_type=IMAGE файл изображения передаётся отдельно в multipart/form-data.
+
+    Example:
+        PUT /api/v1/document-services/{service_id}/cover
+        Content-Type: multipart/form-data
+
+        # Вариант 1: Регенерировать из PDF
+        {"cover_type": "generated"}
+
+        # Вариант 2: Установить иконку
+        {"cover_type": "icon", "cover_icon": "📄"}
+
+        # Вариант 3: Загрузить изображение
+        {"cover_type": "image"}
+        cover_image: <binary image data>
+    """
+
+    cover_type: str = Field(
+        ...,
+        description="Тип обложки (generated/icon/image)",
+    )
+
+    @field_validator("cover_type", mode="before")
+    @classmethod
+    def normalize_cover_type(cls, v: str) -> str:
+        """Приводит cover_type к lowercase."""
+        if isinstance(v, str):
+            return v.lower()
+        if hasattr(v, "value"):
+            return v.value
+        return v
+
+    cover_icon: Optional[str] = Field(
+        default=None,
+        max_length=100,
+        description="Эмодзи/иконка (если cover_type=ICON)",
+        examples=["📄", "📊", "📋"],
+    )
+
     is_public: bool = Field(
         default=False,
         description="Публичный ли сервис (доступен всем без авторизации)",

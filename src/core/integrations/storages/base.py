@@ -315,6 +315,62 @@ class BaseS3Storage(AbstractStorageBackend):
             self.logger.error(error_message)
             raise RuntimeError(error_message) from error
 
+    async def get_file_stream(
+        self, file_key: str, bucket_name: Optional[str] = None
+    ) -> tuple[bytes, str]:
+        """
+        Получает файл из S3 как stream байтов.
+
+        Args:
+            file_key: Ключ файла в S3
+            bucket_name: Название бакета (если None, используется дефолтный)
+
+        Returns:
+            tuple[bytes, str]: (file_content, content_type) - содержимое файла и MIME тип
+
+        Raises:
+            ValueError: При ошибке получения файла
+        """
+        if bucket_name is None:
+            bucket_name = self.bucket_name
+
+        self.logger.info(
+            "Получение файла из S3: bucket=%s, key=%s", bucket_name, file_key
+        )
+
+        try:
+            response = await self._client.get_object(Bucket=bucket_name, Key=file_key)
+
+            # Читаем содержимое файла
+            file_content = await response["Body"].read()
+
+            # Получаем Content-Type
+            content_type = response.get("ContentType", "application/octet-stream")
+
+            self.logger.info(
+                "Файл успешно получен: %s (размер: %d байт, тип: %s)",
+                file_key,
+                len(file_content),
+                content_type,
+            )
+
+            return file_content, content_type
+
+        except ClientError as error:
+            error_code = error.response.get("Error", {}).get("Code", "Unknown")
+            if error_code == "NoSuchKey":
+                error_message = f"Файл не найден в S3: {file_key}"
+                self.logger.error(error_message)
+                raise FileNotFoundError(error_message) from error
+            else:
+                error_message = f"Ошибка при получении файла из S3: {error}"
+                self.logger.error(error_message)
+                raise ValueError(error_message) from error
+        except Exception as error:
+            error_message = f"Ошибка при получении файла из S3: {error}"
+            self.logger.error(error_message)
+            raise RuntimeError(error_message) from error
+
     async def delete_file(
         self, file_key: str, bucket_name: Optional[str] = None
     ) -> bool:

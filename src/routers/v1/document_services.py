@@ -23,11 +23,12 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import File, Form, Query, UploadFile, status
+from fastapi.responses import StreamingResponse
+import io
 
 from src.core.dependencies.document_services import DocumentServiceServiceDep
 from src.core.security import CurrentUserDep
 from src.core.settings.base import settings
-from src.models.v1.document_services import DocumentFileType
 from src.routers.base import ProtectedRouter
 from src.schemas.v1.document_services import (
     DocumentServiceCreateRequestSchema,
@@ -59,6 +60,7 @@ class DocumentServiceProtectedRouter(ProtectedRouter):
         POST   /document-services/{id}/functions        - Добавить функцию
         DELETE /document-services/{id}/functions/{name} - Удалить функцию
         GET    /document-services/{id}/qr      - Сгенерировать QR
+        GET    /document-services/{id}/file    - Стриминг файла документа
 
     Архитектурные особенности:
         - Роутер преобразует DocumentServiceModel → Schema
@@ -597,3 +599,139 @@ class DocumentServiceProtectedRouter(ProtectedRouter):
                 "qr_url": qr_url,
                 "document_url": f"{settings.DOCUMENT_BASE_URL}/documents/{service_id}",
             }
+
+        # ==================== UPDATE COVER ====================
+
+        @self.router.put(
+            path="/{service_id}/cover",
+            response_model=DocumentServiceResponseSchema,
+            status_code=status.HTTP_200_OK,
+            description="""
+            ## 🎨 Обновить обложку документа
+
+            Поддерживает три варианта обложки:
+            1. **GENERATED** - автоматическая генерация из PDF (первая страница)
+            2. **ICON** - установка эмодзи/иконки
+            3. **IMAGE** - загрузка изображения обложки
+
+            Только владелец может обновлять обложку.
+
+            ### 🔒 Требуется JWT токен
+
+            ### Path параметры:
+            * **service_id**: UUID сервиса
+
+            ### Form Data:
+            * **cover_type**: Тип обложки (generated/icon/image)
+            * **cover_icon**: Эмодзи/иконка (если cover_type=ICON)
+            * **cover_image**: Файл изображения (если cover_type=IMAGE, макс 5MB)
+
+            ### Returns:
+            * **DocumentServiceResponseSchema**: Обновлённый сервис с новой обложкой
+
+            ### Errors:
+            * **404**: Сервис не найден
+            * **403**: Нет прав на изменение (не владелец)
+            * **400**: Невалидные данные, некорректный тип обложки
+            * **400**: Для PDF generated доступен только для PDF документов
+
+            ### Примеры:
+            * Регенерировать из PDF: `{"cover_type": "generated"}`
+            * Установить иконку: `{"cover_type": "icon", "cover_icon": "📄"}`
+            * Загрузить изображение: `{"cover_type": "image"}` + файл cover_image
+            """,
+            responses={
+                200: {"description": "Обложка обновлена"},
+                404: {"description": "Сервис не найден"},
+                403: {"description": "Нет прав доступа"},
+                400: {"description": "Невалидные данные"},
+                401: {"description": "Не авторизован"},
+            },
+        )
+        async def update_cover(
+            service_id: UUID,
+            cover_type: str = Form(..., description="Тип обложки (generated/icon/image)"),
+            cover_icon: Optional[str] = Form(None, description="Эмодзи/иконка (для ICON)"),
+            cover_image: Optional[UploadFile] = File(None, description="Изображение обложки (для IMAGE)"),
+            current_user: CurrentUserDep = None,
+            document_service: DocumentServiceServiceDep = None,
+        ) -> DocumentServiceResponseSchema:
+            """Обновить обложку документа."""
+            service = await document_service.update_cover(
+                service_id=service_id,
+                user_id=current_user.id,
+                cover_type=cover_type,
+                cover_icon=cover_icon,
+                cover_image=cover_image,
+            )
+            schema = DocumentServiceDetailSchema.model_validate(service)
+            return DocumentServiceResponseSchema(
+                success=True,
+                message="Обложка успешно обновлена",
+                data=schema,
+            )
+
+        # ==================== GET FILE (PROXY) ====================
+
+        @self.router.get(
+            path="/{service_id}/file",
+            response_class=StreamingResponse,
+            status_code=status.HTTP_200_OK,
+            description="""
+            ## 📥 Получить файл документа
+
+            Проксирует файл из S3 через backend с правильными CORS заголовками.
+            Поддерживает просмотр PDF в браузере и скачивание файлов.
+
+            ### 🔒 Требуется JWT токен
+
+            ### Path параметры:
+            * **service_id**: UUID сервиса
+
+            ### Returns:
+            * **StreamingResponse**: Файл документа с MIME типом
+
+            ### Errors:
+            * **404**: Сервис или файл не найден
+            * **403**: Нет прав доступа (приватный документ)
+            * **401**: Не авторизован
+
+            ### Примеры:
+            * Просмотр PDF: GET /document-services/{id}/file
+            * Скачивание: GET /document-services/{id}/file?download=true
+            """,
+            responses={
+                200: {"description": "Файл получен", "content": {"application/pdf": {}}},
+                404: {"description": "Сервис или файл не найден"},
+                403: {"description": "Нет прав доступа"},
+                401: {"description": "Не авторизован"},
+            },
+        )
+        async def get_file(
+            service_id: UUID,
+            current_user: CurrentUserDep = None,
+            document_service: DocumentServiceServiceDep = None,
+            download: bool = Query(False, description="Скачать файл вместо просмотра"),
+        ) -> StreamingResponse:
+            """Получить файл документа через backend proxy."""
+            # Получаем файл из S3 через сервис
+            file_content, content_type, filename = await document_service.get_document_file(
+                service_id=service_id, user_id=current_user.id
+            )
+
+            # Создаём stream из байтов
+            file_stream = io.BytesIO(file_content)
+
+            # Определяем Content-Disposition
+            disposition_type = "attachment" if download else "inline"
+
+            # Возвращаем файл с правильными заголовками
+            return StreamingResponse(
+                file_stream,
+                media_type=content_type,
+                headers={
+                    "Content-Disposition": f'{disposition_type}; filename="{filename}"',
+                    "Access-Control-Allow-Origin": "*",  # CORS для фронтенда
+                    "Cache-Control": "public, max-age=3600",  # Кэширование на 1 час
+                },
+            )

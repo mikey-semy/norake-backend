@@ -33,6 +33,7 @@ from .base import (
     ServiceFunctionSchema,
 )
 from .requests import (
+    DocumentCoverUpdateRequestSchema,
     DocumentFunctionAddRequestSchema,
     DocumentServiceCreateRequestSchema,
     DocumentServiceQueryRequestSchema,
@@ -56,6 +57,7 @@ __all__ = [
     "DocumentServiceUpdateRequestSchema",
     "DocumentServiceQueryRequestSchema",
     "DocumentFunctionAddRequestSchema",
+    "DocumentCoverUpdateRequestSchema",
     # Responses
     "DocumentServiceAuthorBriefSchema",
     "DocumentServiceWorkspaceBriefSchema",

@@ -111,9 +111,11 @@ class DocumentServiceService:
         """
         # Валидация размера файла
         content = await file.read()
-        if len(content) > self.settings.DOCUMENT_MAX_FILE_SIZE:
+        file_size = len(content)  # Сохраняем размер сразу после чтения
+
+        if file_size > self.settings.DOCUMENT_MAX_FILE_SIZE:
             raise FileSizeExceededError(
-                file_size=len(content),
+                file_size=file_size,
                 max_size=self.settings.DOCUMENT_MAX_FILE_SIZE,
             )
 
@@ -122,7 +124,7 @@ class DocumentServiceService:
 
         # Загрузка файла в S3
         await file.seek(0)  # Вернуть указатель в начало
-        file_url, _, file_size = await self.storage.upload_document(
+        file_url, _, _ = await self.storage.upload_document(
             file=file,
             workspace_id=str(metadata.workspace_id) if metadata.workspace_id else None,
         )
@@ -169,9 +171,10 @@ class DocumentServiceService:
         )
 
         self.logger.info(
-            "Создан document service %s для пользователя %s",
+            "✅ Создан document service %s для пользователя %s (file_size=%d bytes)",
             document_service.id,
             author_id,
+            file_size,
         )
         return document_service
 
@@ -582,6 +585,186 @@ class DocumentServiceService:
         )
         return updated_service
 
+    async def update_cover(
+        self,
+        service_id: UUID,
+        user_id: UUID,
+        cover_type: str,
+        cover_icon: Optional[str] = None,
+        cover_image: Optional[UploadFile] = None,
+    ) -> DocumentServiceModel:
+        """
+        Обновить обложку документа.
+
+        Поддерживает три варианта:
+        1. GENERATED - регенерация thumbnail из PDF (только для PDF)
+        2. ICON - установка эмодзи/иконки
+        3. IMAGE - загрузка изображения обложки
+
+        Args:
+            service_id: UUID сервиса.
+            user_id: UUID пользователя (проверка прав).
+            cover_type: Тип обложки (generated/icon/image).
+            cover_icon: Эмодзи/иконка (для ICON).
+            cover_image: Файл изображения (для IMAGE).
+
+        Returns:
+            Обновлённый DocumentServiceModel.
+
+        Raises:
+            DocumentServiceNotFoundError: Сервис не найден.
+            DocumentServicePermissionDeniedError: Нет прав на изменение.
+            DocumentServiceValidationError: Невалидные данные.
+            FileTypeValidationError: Некорректный тип изображения.
+            FileSizeExceededError: Превышен размер изображения.
+
+        Example:
+            >>> # Регенерировать из PDF
+            >>> service = await service.update_cover(
+            ...     service_id=doc_id,
+            ...     user_id=user_id,
+            ...     cover_type="generated"
+            ... )
+            >>>
+            >>> # Установить иконку
+            >>> service = await service.update_cover(
+            ...     service_id=doc_id,
+            ...     user_id=user_id,
+            ...     cover_type="icon",
+            ...     cover_icon="📄"
+            ... )
+            >>>
+            >>> # Загрузить изображение
+            >>> service = await service.update_cover(
+            ...     service_id=doc_id,
+            ...     user_id=user_id,
+            ...     cover_type="image",
+            ...     cover_image=upload_file
+            ... )
+        """
+        # Получаем сервис и проверяем права
+        service = await self.repository.get_item_by_id(service_id)
+        if not service:
+            raise DocumentServiceNotFoundError(service_id=service_id)
+
+        if service.author_id != user_id:
+            raise DocumentServicePermissionDeniedError(
+                service_id=service_id, user_id=user_id, action="update_cover"
+            )
+
+        # Нормализация cover_type
+        cover_type_lower = cover_type.lower()
+
+        # Обработка разных типов обложек
+        new_cover_url = None
+        new_cover_icon = None
+
+        if cover_type_lower == "generated":
+            # Регенерация thumbnail из PDF
+            if service.file_type != DocumentFileType.PDF:
+                raise DocumentServiceValidationError(
+                    detail="Автоматическая генерация обложки доступна только для PDF документов"
+                )
+
+            # Получаем PDF файл из S3
+            file_content, _, _ = await self.get_document_file(
+                service_id=service_id, user_id=user_id
+            )
+
+            # Генерируем новый thumbnail
+            try:
+                new_cover_url = await self.storage.generate_pdf_thumbnail(
+                    file_content=file_content,
+                    filename=service.title,
+                    workspace_id=str(service.workspace_id) if service.workspace_id else None,
+                )
+            except (OSError, RuntimeError) as e:
+                raise DocumentServiceValidationError(
+                    detail=f"Не удалось сгенерировать обложку: {str(e)}"
+                ) from e
+
+            self.logger.info(
+                "✅ Регенерирована обложка для сервиса %s (cover_url=%s)",
+                service_id,
+                new_cover_url,
+            )
+
+        elif cover_type_lower == "icon":
+            # Установка иконки
+            if not cover_icon:
+                raise DocumentServiceValidationError(
+                    detail="Для cover_type=ICON необходимо указать cover_icon"
+                )
+            new_cover_icon = cover_icon
+            self.logger.info(
+                "✅ Установлена иконка для сервиса %s (cover_icon=%s)",
+                service_id,
+                cover_icon,
+            )
+
+        elif cover_type_lower == "image":
+            # Загрузка изображения обложки
+            if not cover_image:
+                raise DocumentServiceValidationError(
+                    detail="Для cover_type=IMAGE необходимо загрузить изображение"
+                )
+
+            # Валидация размера
+            content = await cover_image.read()
+            if len(content) > 5 * 1024 * 1024:  # Макс 5MB для изображений
+                raise FileSizeExceededError(
+                    file_size=len(content),
+                    max_size=5 * 1024 * 1024,
+                )
+
+            # Валидация MIME типа
+            allowed_types = ["image/jpeg", "image/png", "image/webp"]
+            if cover_image.content_type not in allowed_types:
+                raise FileTypeValidationError(
+                    content_type=cover_image.content_type or "unknown",
+                    expected_types=allowed_types,
+                )
+
+            # Загрузка в S3
+            await cover_image.seek(0)
+            workspace_str = str(service.workspace_id) if service.workspace_id else None
+            folder = f"covers/{workspace_str}" if workspace_str else "covers/public"
+
+            new_cover_url, _ = await self.storage.upload_file(
+                file=cover_image,
+                file_key=f"{folder}/{service_id}-cover",
+            )
+
+            self.logger.info(
+                "✅ Загружена обложка для сервиса %s (cover_url=%s)",
+                service_id,
+                new_cover_url,
+            )
+
+        else:
+            raise DocumentServiceValidationError(
+                detail=f"Недопустимый cover_type: {cover_type}. Используйте: generated, icon, image"
+            )
+
+        # Обновляем сервис
+        update_data = {
+            "cover_type": CoverType(cover_type_lower),
+            "cover_url": new_cover_url,
+            "cover_icon": new_cover_icon,
+        }
+
+        updated_service = await self.repository.update_item(
+            item_id=service_id, data=update_data
+        )
+
+        self.logger.info(
+            "✅ Обновлена обложка сервиса %s (cover_type=%s)",
+            service_id,
+            cover_type_lower,
+        )
+
+        return updated_service
+
     async def generate_qr(
         self,
         service_id: UUID,
@@ -756,3 +939,60 @@ class DocumentServiceService:
 
         count = await self.repository.count_items(**filters)
         return count
+
+    async def get_document_file(
+        self, service_id: UUID, user_id: UUID
+    ) -> tuple[bytes, str, str]:
+        """
+        Получить файл документа для стриминга через backend.
+
+        Проверяет права доступа и возвращает файл из S3.
+
+        Args:
+            service_id: UUID сервиса документа.
+            user_id: UUID текущего пользователя.
+
+        Returns:
+            tuple[bytes, str, str]: (file_content, content_type, filename)
+
+        Raises:
+            DocumentServiceNotFoundError: Если сервис не найден.
+            DocumentAccessDeniedError: Если доступ запрещён.
+        """
+        self.logger.info(
+            "🔍 Получение файла для сервиса %s пользователем %s",
+            service_id,
+            user_id,
+        )
+
+        # Получаем сервис с проверкой доступа
+        service = await self.get_document_service(service_id, user_id)
+
+        # Извлекаем ключ файла из URL
+        # Формат URL: https://storage.yandexcloud.net/bucket/documents/public/uuid_filename.pdf
+        file_url = service.file_url
+        file_key = file_url.split(f"{self.settings.AWS_BUCKET_NAME}/", 1)[-1]
+
+        self.logger.info("📂 Получение файла из S3: key=%s", file_key)
+
+        try:
+            # Получаем файл из S3
+            file_content, content_type = await self.storage.get_file_stream(file_key)
+
+            # Извлекаем оригинальное имя файла из file_url
+            filename = file_url.split("/")[-1]
+
+            self.logger.info(
+                "✅ Файл успешно получен: %s (размер: %d байт)",
+                filename,
+                len(file_content),
+            )
+
+            return file_content, content_type, filename
+
+        except FileNotFoundError:
+            self.logger.error("❌ Файл не найден в S3: %s", file_key)
+            raise DocumentServiceNotFoundError(service_id=service_id)
+        except Exception as e:
+            self.logger.error("❌ Ошибка получения файла из S3: %s", str(e))
+            raise
