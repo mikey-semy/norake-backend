@@ -19,7 +19,7 @@ def main():
             'export_type': 'templates',
             'export_date': '2025-11-13T00:00:00',
             'count': 2,
-            'description': 'Базовые шаблоны для NoRake Backend: Developer Help и Drive Engineer Error Tracking'
+            'description': 'Базовые шаблоны для Equiply Backend: Developer Help и Drive Engineer Error Tracking'
         },
         'data': [
             {

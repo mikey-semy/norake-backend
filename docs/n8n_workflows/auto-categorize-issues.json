@@ -1,5 +1,5 @@
 {
-  "name": "NoRake: Auto-categorize Issues",
+  "name": "Equiply: Auto-categorize Issues",
   "nodes": [
     {
       "parameters": {
@@ -52,11 +52,11 @@
           "parameters": [
             {
               "name": "HTTP-Referer",
-              "value": "https://norake.equiply.ru"
+              "value": "https://equiply.equiply.ru"
             },
             {
               "name": "X-Title",
-              "value": "NoRake Backend"
+              "value": "Equiply Backend"
             }
           ]
         },
@@ -211,7 +211,7 @@
   "staticData": null,
   "tags": [
     {
-      "name": "NoRake",
+      "name": "Equiply",
       "createdAt": "2025-11-11T01:00:00.000Z",
       "updatedAt": "2025-11-11T01:00:00.000Z"
     }

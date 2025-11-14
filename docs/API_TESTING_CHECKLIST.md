@@ -1,4 +1,4 @@
-# ✅ NoRake Backend - API Testing Checklist
+# ✅ Equiply Backend - API Testing Checklist
 
 ## 📦 Deliverables
 
@@ -22,9 +22,9 @@
 ## 🧪 Manual Testing Checklist
 
 ### Pre-flight Check
-- [ ] Backend server running (`docker ps | grep norake`)
-- [ ] PostgreSQL accessible (`docker exec -it norake-postgres psql -U postgres -d norake`)
-- [ ] Redis accessible (`docker exec -it norake-redis redis-cli ping`)
+- [ ] Backend server running (`docker ps | grep equiply`)
+- [ ] PostgreSQL accessible (`docker exec -it equiply-postgres psql -U postgres -d equiply`)
+- [ ] Redis accessible (`docker exec -it equiply-redis redis-cli ping`)
 - [ ] RabbitMQ accessible (http://localhost:15672)
 
 ### Import Collections
@@ -154,7 +154,7 @@ Run **Scenario 12: Cleanup**
 ### Run All Scenarios at Once
 ```bash
 # In Postman Desktop
-Collection → Run → Select "NoRake Complete Test Scenarios" → Run
+Collection → Run → Select "Equiply Complete Test Scenarios" → Run
 
 # In Newman CLI
 newman run docs/NoRake_Complete_Test_Scenarios.postman_collection.json \
@@ -198,7 +198,7 @@ template_id: "uuid" // Should be UUID
 #### Check Database
 ```sql
 -- Connect to PostgreSQL
-docker exec -it norake-postgres psql -U postgres -d norake
+docker exec -it equiply-postgres psql -U postgres -d equiply
 
 -- Verify test data
 SELECT COUNT(*) FROM issues;
@@ -212,7 +212,7 @@ SELECT status, COUNT(*) FROM issues GROUP BY status;
 
 #### Check Redis (Token Blacklist)
 ```bash
-docker exec -it norake-redis redis-cli
+docker exec -it equiply-redis redis-cli
 
 # Check blacklisted tokens (after logout)
 KEYS "blacklist:*"
@@ -257,10 +257,10 @@ SELECT COUNT(*) FROM templates WHERE is_active = true;
 curl http://localhost:8000/api/v1/health
 
 # Check Docker containers
-docker ps | grep norake
+docker ps | grep equiply
 
 # Check logs
-docker logs norake-backend --tail 50
+docker logs equiply-backend --tail 50
 ```
 
 ---

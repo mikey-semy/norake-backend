@@ -1,8 +1,8 @@
-# NoRake Backend - AI Agent Instructions
+# Equiply Backend - AI Agent Instructions
 
 ## Project Overview
 
-NoRake Backend is a FastAPI-based collective memory system for tracking and resolving problems. Built with strict 4-layer architecture (Router → Service → Repository → Model) using PostgreSQL, Redis, and JWT authentication. Russian codebase with comprehensive dependency injection.
+Equiply Backend is a FastAPI-based collective memory system for tracking and resolving problems. Built with strict 4-layer architecture (Router → Service → Repository → Model) using PostgreSQL, Redis, and JWT authentication. Russian codebase with comprehensive dependency injection.
 
 **Current Status**: Core authentication system implemented, ready for feature expansion
 
@@ -104,7 +104,7 @@ NoRake Backend is a FastAPI-based collective memory system for tracking and reso
 3. **Создать PR** в `development` с описанием изменений
 4. **После мержа** удалить feature-ветку
 
-### Plane State IDs (NoRake Backend)
+### Plane State IDs (Equiply Backend)
 
 ```python
 STATES = {

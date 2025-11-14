@@ -2,7 +2,7 @@
 
 ## Обзор
 
-Модуль `src.core.integrations.n8n` предоставляет асинхронный HTTP клиент для взаимодействия с n8n workflows через webhook триггеры. Используется для автоматизации бизнес-процессов NoRake Backend.
+Модуль `src.core.integrations.n8n` предоставляет асинхронный HTTP клиент для взаимодействия с n8n workflows через webhook триггеры. Используется для автоматизации бизнес-процессов Equiply Backend.
 
 ## Архитектура
 
@@ -313,7 +313,7 @@ N8N_WEBHOOK_RETRY_DELAY=1.0
    - Header Value: `Bearer sk-or-v1-YOUR_KEY`
 
 2. **HTTP Header Auth (Backend)**
-   - Name: `NoRake Backend Token`
+   - Name: `Equiply Backend Token`
    - Header Name: `Authorization`
    - Header Value: `Bearer YOUR_JWT_TOKEN`
 
@@ -414,20 +414,20 @@ DEBUG: Запущен background task для auto-categorize issue <uuid> (webho
 
 ### Recommendations
 
-1. **Auto-categorize**: 
+1. **Auto-categorize**:
    - Fire-and-forget pattern (не блокирует создание Issue)
    - Модель: Qwen3 Coder 480B (оптимальная точность для free tier)
    - Temperature: 0.2 (детерминизм)
-   
-2. **KB Indexing**: 
+
+2. **KB Indexing**:
    - Синхронный вызов + увеличить timeout для больших документов
    - Chunking: 512 токенов с overlap 50 токенов
-   
-3. **Smart Search**: 
+
+3. **Smart Search**:
    - Синхронный вызов + кэширование результатов
    - Hybrid: DB + RAG + Tavily (параллельно)
-   
-4. **Weekly Digest**: 
+
+4. **Weekly Digest**:
    - Cron trigger (не через webhook)
    - Batch processing для агрегаций
 
@@ -492,7 +492,7 @@ async def test_autocategorize_webhook():
         title="Test Issue",
         description="Test description"
     )
-    
+
     assert result is not None
     assert result["success"] is True
     assert result["category"] in ["hardware", "software", ...]
@@ -508,7 +508,7 @@ async def test_issue_service_create(mock_client):
     mock_response = AsyncMock()
     mock_response.json.return_value = {"success": True, "category": "hardware"}
     mock_client.return_value.__aenter__.return_value.post.return_value = mock_response
-    
+
     # Test IssueService.create_issue with mocked webhook
     ...
 ```
@@ -542,7 +542,7 @@ client = N8nWebhookClient(timeout=120.0)
 
 **Check**:
 1. n8n execution logs: n8n UI → Executions
-2. Backend logs: `docker logs norake-backend`
+2. Backend logs: `docker logs equiply-backend`
 3. Issue model has category field: `IssueModel.category`
 
 ---
@@ -588,7 +588,7 @@ result = await client.trigger_autocategorize(...)
 - [n8n REST API](https://docs.n8n.io/api/)
 - [OpenRouter API](https://openrouter.ai/docs)
 - [httpx Documentation](https://www.python-httpx.org/)
-- [NoRake Workflows README](../../docs/n8n_workflows/README.md)
+- [Equiply Workflows README](../../docs/n8n_workflows/README.md)
 
 ---
 

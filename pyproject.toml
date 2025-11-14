@@ -28,7 +28,7 @@ dependencies = [
   "pillow>=11.3.0", # Обработка изображений
 ]
 description = ""
-name = "norake-backend"
+name = "equiply-backend"
 requires-python = ">= 3.12"
 version = "0.1.0"
 

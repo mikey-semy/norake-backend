@@ -1,4 +1,4 @@
-"""n8n интеграции для NoRake Backend.
+"""n8n интеграции для Equiply Backend.
 
 Модуль содержит клиенты и утилиты для работы с n8n workflows:
 - Вызов webhooks для автоматизации

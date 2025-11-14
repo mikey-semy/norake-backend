@@ -1,4 +1,4 @@
-# NoRake Developer Issue Template - Workflow Diagram
+# Equiply Developer Issue Template - Workflow Diagram
 
 ## 📊 Полный Workflow
 
@@ -66,7 +66,7 @@
 │  "🔴 NEW ISSUE: FastAPI OAuth2 возвращает 401"                         │
 │  "Category: software | Priority: urgent"                                │
 │  "Author: @developer | Template: Developer Issue"                      │
-│  "Link: https://norake.equiply.ru/issues/uuid"                         │
+│  "Link: https://equiply.equiply.ru/issues/uuid"                         │
 └─────────────────────┬───────────────────────────────────────────────────┘
                       │
                       ▼
@@ -194,7 +194,7 @@
 
 ## 🔄 Integration Points
 
-### 1. NoRake Backend
+### 1. Equiply Backend
 - **TemplateModel**: JSONB fields, validation rules
 - **IssueModel**: template_id FK, template_data JSONB
 - **IssueService**: create_issue() → trigger n8n webhook
@@ -227,7 +227,7 @@
 
 ---
 
-**Status**: Production-ready ✅  
-**Created**: 2025-11-11  
-**Version**: 1.0.0  
-**Author**: NoRake Team
+**Status**: Production-ready ✅
+**Created**: 2025-11-11
+**Version**: 1.0.0
+**Author**: Equiply Team

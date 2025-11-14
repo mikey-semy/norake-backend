@@ -1,4 +1,4 @@
-# Шаблоны для NoRake
+# Шаблоны для Equiply
 
 Этот каталог содержит готовые шаблоны для структурированного создания Issues.
 
@@ -432,7 +432,7 @@ WHERE template_name = 'Запрос помощи: Программировани
 
 - [Stack Overflow: How to Ask](https://stackoverflow.com/help/how-to-ask)
 - [GitHub: Minimal Reproducible Example](https://stackoverflow.com/help/minimal-reproducible-example)
-- [NoRake API Documentation](../../../README.md)
+- [Equiply API Documentation](../../../README.md)
 - [n8n Workflows for Auto-categorization](../n8n_workflows/README.md)
 
 ---

@@ -2,11 +2,11 @@
 
 ## ✅ Что уже сделано автоматически
 
-- ✅ Коллекция создана: **"NoRake Production API Tests"**
+- ✅ Коллекция создана: **"Equiply Production API Tests"**
 - ✅ 9 запросов добавлены с правильными именами (эмодзи для удобства)
 - ✅ HTTP методы установлены (GET/POST)
 - ✅ Переменные коллекции настроены:
-  - `base_url` = `https://api.norake.ru`
+  - `base_url` = `https://api.equiply.ru`
   - `admin_username` = `admin`
   - `admin_password` = `admin123`
   - Пустые переменные для автосохранения: `access_token`, `workspace_id`, `issue_id`, etc.
@@ -17,7 +17,7 @@
 Postman API не позволяет программно устанавливать URL, body и test scripts через `updateCollectionRequest`.
 
 ### Открой коллекцию в Postman Web:
-https://web.postman.co/workspace/norake~55ff152b-e920-48b3-8f5e-8cdfa4ced418
+https://web.postman.co/workspace/equiply~55ff152b-e920-48b3-8f5e-8cdfa4ced418
 
 ---
 
@@ -42,11 +42,11 @@ pm.test('✅ Admin login successful', () => {
     pm.response.to.have.status(200);
     const json = pm.response.json();
     pm.expect(json.success).to.be.true;
-    
+
     const data = json.data;
     pm.collectionVariables.set('access_token', data.access_token);
     pm.collectionVariables.set('refresh_token', data.refresh_token);
-    
+
     console.log('🔑 Access token saved:', data.access_token.substring(0, 20) + '...');
     console.log('🔄 Refresh token saved');
 });
@@ -69,11 +69,11 @@ pm.test('✅ Health check passed', () => {
     pm.response.to.have.status(200);
     const json = pm.response.json();
     pm.expect(json.success).to.be.true;
-    
+
     const data = json.data;
     pm.expect(data.app).to.eql('ok');
     pm.expect(data.db).to.eql('ok');
-    
+
     console.log('💚 App status:', data.app);
     console.log('💾 Database status:', data.db);
 });
@@ -96,10 +96,10 @@ pm.test('✅ Public issues retrieved', () => {
     pm.response.to.have.status(200);
     const json = pm.response.json();
     pm.expect(json.success).to.be.true;
-    
+
     const data = json.data;
     pm.expect(data).to.be.an('array');
-    
+
     console.log('📋 Total public issues:', data.length);
     if (data.length > 0) {
         console.log('📝 First issue:', data[0].title);
@@ -124,10 +124,10 @@ pm.test('✅ Public templates retrieved', () => {
     pm.response.to.have.status(200);
     const json = pm.response.json();
     pm.expect(json.success).to.be.true;
-    
+
     const data = json.data;
     pm.expect(data).to.be.an('array');
-    
+
     console.log('📄 Total public templates:', data.length);
     if (data.length > 0) {
         console.log('📝 First template:', data[0].name);
@@ -160,10 +160,10 @@ pm.test('✅ Workspace created', () => {
     pm.response.to.have.status(201);
     const json = pm.response.json();
     pm.expect(json.success).to.be.true;
-    
+
     const data = json.data;
     pm.collectionVariables.set('workspace_id', data.id);
-    
+
     console.log('🏢 Workspace ID:', data.id);
     console.log('📛 Workspace name:', data.name);
 });
@@ -199,11 +199,11 @@ pm.test('✅ Issue created', () => {
     pm.response.to.have.status(201);
     const json = pm.response.json();
     pm.expect(json.success).to.be.true;
-    
+
     const data = json.data;
     pm.collectionVariables.set('issue_id', data.id);
     pm.expect(data.status).to.eql('open');
-    
+
     console.log('📋 Issue ID:', data.id);
     console.log('📝 Issue title:', data.title);
     console.log('🔴 Status:', data.status);
@@ -235,10 +235,10 @@ pm.test('✅ Comment added', () => {
     pm.response.to.have.status(201);
     const json = pm.response.json();
     pm.expect(json.success).to.be.true;
-    
+
     const data = json.data;
     pm.collectionVariables.set('comment_id', data.id);
-    
+
     console.log('💬 Comment ID:', data.id);
     console.log('📝 Content:', data.content);
 });
@@ -276,11 +276,11 @@ pm.test('✅ Template created', () => {
     pm.response.to.have.status(201);
     const json = pm.response.json();
     pm.expect(json.success).to.be.true;
-    
+
     const data = json.data;
     pm.collectionVariables.set('template_id', data.id);
     pm.expect(data.is_active).to.be.true;
-    
+
     console.log('📄 Template ID:', data.id);
     console.log('📝 Template name:', data.name);
     console.log('✅ Active:', data.is_active);
@@ -313,13 +313,13 @@ pm.test('✅ Search executed', () => {
     pm.response.to.have.status(200);
     const json = pm.response.json();
     pm.expect(json.success).to.be.true;
-    
+
     const data = json.data;
     pm.expect(data).to.have.property('results');
-    
+
     console.log('🔍 Total results:', data.results.length);
     console.log('📊 Sources used:', Object.keys(data.results_by_source || {}));
-    
+
     if (data.results_by_source) {
         Object.entries(data.results_by_source).forEach(([source, results]) => {
             console.log(`  - ${source}: ${results.length} results`);

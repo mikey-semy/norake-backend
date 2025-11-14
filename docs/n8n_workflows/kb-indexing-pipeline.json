@@ -1,5 +1,5 @@
 {
-  "name": "NoRake: KB Indexing Pipeline",
+  "name": "Equiply: KB Indexing Pipeline",
   "nodes": [
     {
       "parameters": {
@@ -240,11 +240,11 @@
           "parameters": [
             {
               "name": "HTTP-Referer",
-              "value": "https://norake.equiply.ru"
+              "value": "https://equiply.equiply.ru"
             },
             {
               "name": "X-Title",
-              "value": "NoRake Backend"
+              "value": "Equiply Backend"
             }
           ]
         },
@@ -338,8 +338,8 @@
       "position": [2450, 400],
       "credentials": {
         "postgres": {
-          "id": "norake-postgres",
-          "name": "NoRake PostgreSQL"
+          "id": "equiply-postgres",
+          "name": "Equiply PostgreSQL"
         }
       }
     },

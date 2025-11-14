@@ -1,12 +1,12 @@
-# n8n Workflows для NoRake Backend
+# n8n Workflows для Equiply Backend
 
-> **Статус**: ✅ Проверено через n8n MCP (541 нод, 87% документации)  
-> **Дата**: 11 ноября 2025  
+> **Статус**: ✅ Проверено через n8n MCP (541 нод, 87% документации)
+> **Дата**: 11 ноября 2025
 > **Версия n8n**: 1.x+
 
 ## 📖 Введение
 
-Production-ready коллекция n8n workflows для автоматизации NoRake Backend. Все workflows валидированы через **официальный n8n MCP server** и следуют best practices.
+Production-ready коллекция n8n workflows для автоматизации Equiply Backend. Все workflows валидированы через **официальный n8n MCP server** и следуют best practices.
 
 ### Что такое n8n?
 
@@ -20,7 +20,7 @@ Production-ready коллекция n8n workflows для автоматизац�
 - 🐍 **JavaScript + Python** — нативная поддержка
 - 📊 **Built-in мониторинг** выполнения
 
-📚 **Документация**: https://docs.n8n.io/  
+📚 **Документация**: https://docs.n8n.io/
 🛠️ **MCP Stats**: 541 нод, 87% покрытие, 104 триггера
 
 ---
@@ -95,8 +95,8 @@ Webhook → Extract Data → OpenRouter LLM → Parse Category → Update Backen
 
 **Архитектура Flow**:
 ```
-Webhook → Extract → Update Status (INDEXING) → Set Chunk Config → 
-Check Size → [Split Chunks | Single Chunk] → Merge → 
+Webhook → Extract → Update Status (INDEXING) → Set Chunk Config →
+Check Size → [Split Chunks | Single Chunk] → Merge →
 For Each Chunk:
   - Add Metadata
   - Generate Embedding (OpenRouter)
@@ -171,7 +171,7 @@ CREATE TABLE document_chunks (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_chunks_embedding ON document_chunks 
+CREATE INDEX idx_chunks_embedding ON document_chunks
 USING ivfflat (embedding vector_cosine_ops);
 ```
 
@@ -185,7 +185,7 @@ USING ivfflat (embedding vector_cosine_ops);
 
 **Архитектура Flow**:
 ```
-Webhook → Extract Params → 
+Webhook → Extract Params →
 [Параллельно]:
   1. PostgreSQL Full-Text Search (ts_rank)
   2. Generate Embedding → RAG Vector Search (pgvector)
@@ -213,16 +213,16 @@ Webhook → Extract Params →
 **Конфигурация PostgreSQL Full-Text**:
 ```sql
 -- Full-text search с русской морфологией
-SELECT 
+SELECT
   id, title, description, category, status,
   ts_rank(
-    to_tsvector('russian', title || ' ' || description), 
+    to_tsvector('russian', title || ' ' || description),
     plainto_tsquery('russian', $query)
   ) AS similarity_score
 FROM issues
-WHERE 
+WHERE
   workspace_id = $workspace_id
-  AND to_tsvector('russian', title || ' ' || description) 
+  AND to_tsvector('russian', title || ' ' || description)
       @@ plainto_tsquery('russian', $query)
 ORDER BY similarity_score DESC
 LIMIT $limit;
@@ -231,7 +231,7 @@ LIMIT $limit;
 **Конфигурация Vector Search**:
 ```sql
 -- Cosine similarity через pgvector
-SELECT 
+SELECT
   dc.document_id,
   d.filename,
   dc.content,
@@ -253,7 +253,7 @@ LIMIT $limit;
   "search_depth": "basic",
   "include_domains": [
     "stackoverflow.com",
-    "github.com", 
+    "github.com",
     "docs.python.org",
     "medium.com"
   ],
@@ -347,7 +347,7 @@ n8n import:workflow --input=smart-search-helper.json
 
 ### Шаг 2: Настройка Credentials
 
-**PostgreSQL Credential** (`norake-postgres`):
+**PostgreSQL Credential** (`equiply-postgres`):
 ```json
 {
   "host": "localhost",
@@ -567,7 +567,7 @@ docker-compose.yml:
     environment:
       - EXECUTIONS_MODE=queue
       - QUEUE_BULL_REDIS_HOST=redis
-  
+
   n8n-worker-1:
     environment:
       - EXECUTIONS_MODE=queue
@@ -671,7 +671,7 @@ const items = $input.all();
 - 💬 Community Forum: https://community.n8n.io/
 - 🐙 GitHub: https://github.com/n8n-io/n8n
 
-### NoRake Backend Docs
+### Equiply Backend Docs
 - 📋 Development Plan: `docs/DEVELOPMENT_PLAN.md`
 - 📐 MVP Extended Plan: `docs/MVP_EXTENDED_PLAN.md`
 - 🏗️ Architecture: `.github/copilot-instructions.md`
@@ -686,14 +686,14 @@ const items = $input.all();
 
 ## 🤝 Контакты
 
-**NoRake Backend Team**
+**Equiply Backend Team**
 
-- 📧 Email: team@norake.equiply.ru
-- 🐙 GitHub: https://github.com/mikey-semy/norake-backend
+- 📧 Email: team@equiply.equiply.ru
+- 🐙 GitHub: https://github.com/mikey-semy/equiply-backend
 - 🔗 Plane: https://plane.equiply.ru/projects/projects/NORAK
 
 ---
 
-**Дата создания**: 11 ноября 2025  
-**Последнее обновление**: 11 ноября 2025  
+**Дата создания**: 11 ноября 2025
+**Последнее обновление**: 11 ноября 2025
 **Версия документа**: 1.0.0

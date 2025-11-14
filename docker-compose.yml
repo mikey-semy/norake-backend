@@ -38,7 +38,7 @@ services:
       - LOG_FILE=/var/log/app.log
       - ENVIRONMENT=production
       # PostgreSQL (внутренний сервис с pgvector)
-      - POSTGRES_HOST=${POSTGRES_HOST:-norake-database-0hp66q}
+      - POSTGRES_HOST=${POSTGRES_HOST:-equiply-database-0hp66q}
       - POSTGRES_PORT=${POSTGRES_PORT:-5432}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}

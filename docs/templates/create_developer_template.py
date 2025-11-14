@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Скрипт для создания Developer Issue Template через NoRake Backend API.
+Скрипт для создания Developer Issue Template через Equiply Backend API.
 
 Использование:
     python create_developer_template.py --workspace-id UUID --username admin --password pass
@@ -29,7 +29,7 @@ console = Console()
 def login(base_url: str, username: str, password: str) -> Optional[str]:
     """Авторизация и получение JWT токена."""
     console.print(f"[cyan]Логин в {base_url}...[/cyan]")
-    
+
     try:
         response = httpx.post(
             f"{base_url}/api/v1/auth/login",
@@ -52,7 +52,7 @@ def login(base_url: str, username: str, password: str) -> Optional[str]:
 def load_template_data(json_path: Path) -> Optional[Dict]:
     """Загрузка JSON-шаблона из файла."""
     console.print(f"[cyan]Загрузка шаблона из {json_path}...[/cyan]")
-    
+
     try:
         with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -79,7 +79,7 @@ def create_template(
 ) -> Optional[Dict]:
     """Создание шаблона через API."""
     console.print(f"[cyan]Создание шаблона для workspace {workspace_id}...[/cyan]")
-    
+
     try:
         response = httpx.post(
             f"{base_url}/api/v1/templates/{workspace_id}",
@@ -105,7 +105,7 @@ def display_template_info(template: Dict):
     table = Table(title="Созданный шаблон", show_header=True, header_style="bold magenta")
     table.add_column("Параметр", style="cyan", width=20)
     table.add_column("Значение", style="green")
-    
+
     table.add_row("ID", template["id"])
     table.add_row("Название", template["template_name"])
     table.add_row("Категория", template["category"])
@@ -113,16 +113,16 @@ def display_template_info(template: Dict):
     table.add_row("Активен", "✅ Да" if template["is_active"] else "❌ Нет")
     table.add_row("Использований", str(template["usage_count"]))
     table.add_row("Полей", str(len(template["fields"])))
-    
+
     console.print(table)
-    
+
     # Таблица полей
     fields_table = Table(title="Поля шаблона", show_header=True, header_style="bold cyan")
     fields_table.add_column("#", justify="right", width=3)
     fields_table.add_column("Field Name", style="yellow", width=25)
     fields_table.add_column("Type", style="blue", width=12)
     fields_table.add_column("Required", justify="center", width=10)
-    
+
     for i, field in enumerate(template["fields"], 1):
         required = "✅" if field.get("validation_rules", {}).get("required") else "❌"
         fields_table.add_row(
@@ -131,18 +131,18 @@ def display_template_info(template: Dict):
             field["field_type"],
             required
         )
-    
+
     console.print(fields_table)
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Создать Developer Issue Template через NoRake API"
+        description="Создать Developer Issue Template через Equiply API"
     )
     parser.add_argument(
         "--base-url",
         default="http://localhost:8000",
-        help="Base URL NoRake Backend (default: http://localhost:8000)"
+        help="Base URL Equiply Backend (default: http://localhost:8000)"
     )
     parser.add_argument(
         "--workspace-id",
@@ -164,23 +164,23 @@ def main():
         default="developer-issue-template.json",
         help="Путь к JSON файлу шаблона (default: developer-issue-template.json)"
     )
-    
+
     args = parser.parse_args()
-    
-    console.print("[bold cyan]NoRake: Developer Issue Template Creator[/bold cyan]")
+
+    console.print("[bold cyan]Equiply: Developer Issue Template Creator[/bold cyan]")
     console.print("=" * 60)
-    
+
     # 1. Авторизация
     token = login(args.base_url, args.username, args.password)
     if not token:
         sys.exit(1)
-    
+
     # 2. Загрузка шаблона
     template_path = Path(__file__).parent / args.template_json
     template_data = load_template_data(template_path)
     if not template_data:
         sys.exit(1)
-    
+
     # 3. Создание шаблона
     created_template = create_template(
         args.base_url,
@@ -190,11 +190,11 @@ def main():
     )
     if not created_template:
         sys.exit(1)
-    
+
     # 4. Отображение результата
     console.print()
     display_template_info(created_template)
-    
+
     # 5. Инструкции по использованию
     console.print()
     console.print("[bold green]🎉 Шаблон готов к использованию![/bold green]")

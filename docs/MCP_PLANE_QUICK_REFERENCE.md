@@ -1,6 +1,6 @@
 # MCP Plane Quick Reference
 
-Краткая справка по работе с MCP Plane в проекте NoRake Backend.
+Краткая справка по работе с MCP Plane в проекте Equiply Backend.
 
 ---
 
@@ -182,7 +182,7 @@ gh pr create --base development --title "feat(NORAK-5): описание"
 
 ```
 Промпт:
-"Получи задачу NORAK-10, создай ветку feature/NORAK-10-название 
+"Получи задачу NORAK-10, создай ветку feature/NORAK-10-название
 и обнови статус на In Progress"
 ```
 
@@ -190,7 +190,7 @@ gh pr create --base development --title "feat(NORAK-5): описание"
 
 ```
 Промпт:
-"Обнови статус задачи NORAK-10 на Done и добавь комментарий: 
+"Обнови статус задачи NORAK-10 на Done и добавь комментарий:
 'Реализовано: [описание изменений]'"
 ```
 
@@ -216,7 +216,7 @@ gh pr create --base development --title "feat(NORAK-5): описание"
 
 **Причина**: Неверный readable ID
 
-**Решение**: 
+**Решение**:
 ```
 # Проверить список задач
 Промпт: "Покажи все задачи проекта NORAK"
@@ -226,7 +226,7 @@ gh pr create --base development --title "feat(NORAK-5): описание"
 
 **Причина**: Неверный или отсутствующий API ключ
 
-**Решение**: 
+**Решение**:
 1. Проверить `.vscode/mcp.json` или `claude_desktop_config.json`
 2. Создать новый API токен в Plane
 3. Перезапустить Claude Desktop / VS Code
@@ -258,7 +258,7 @@ state="6e814f64-8acd-4b61-992d-b89ebf6bf55e"  # In Progress
 
 2. **Батчинг операций**: Можно объединять несколько действий в один промпт:
    ```
-   "Получи задачу NORAK-10, обнови статус на In Progress 
+   "Получи задачу NORAK-10, обнови статус на In Progress
    и добавь комментарий 'Начата работа'"
    ```
 
@@ -270,5 +270,5 @@ state="6e814f64-8acd-4b61-992d-b89ebf6bf55e"  # In Progress
 
 ---
 
-**Версия**: 1.0  
+**Версия**: 1.0
 **Последнее обновление**: 2025-11-13

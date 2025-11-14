@@ -7,15 +7,13 @@ Middleware для защиты доступа к документации API.
 - Валидацию логина/пароля из конфига
 """
 
+import base64
 import time
 
 from fastapi import HTTPException, Request, Response
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.core.settings import settings
-
-security = HTTPBasic(description="Credentials for API documentation access")
 
 
 class DocsAuthMiddleware(BaseHTTPMiddleware):
@@ -53,26 +51,37 @@ class DocsAuthMiddleware(BaseHTTPMiddleware):
             # Получаем заголовок Authorization
             auth_header = request.headers.get("Authorization")
 
-            if not auth_header:
+            if not auth_header or not auth_header.startswith("Basic "):
                 return Response(
                     status_code=401,
-                    headers={"WWW-Authenticate": "Basic"},
+                    headers={"WWW-Authenticate": 'Basic realm="API Docs"'},
                 )
 
             try:
-                auth: HTTPBasicCredentials = await security(request)
+                # Декодируем Base64 credentials
+                scheme, credentials = auth_header.split(" ", 1)
+                decoded = base64.b64decode(credentials).decode("utf-8")
+                username, password = decoded.split(":", 1)
+
+                # Проверяем credentials
                 if (
-                    auth.username == settings.DOCS_USERNAME
-                    and auth.password == settings.DOCS_PASSWORD.get_secret_value()
+                    username == settings.DOCS_USERNAME
+                    and password == settings.DOCS_PASSWORD.get_secret_value()
                 ):
                     # Сохраняем успешную авторизацию в кэш
                     self.auth_cache[client_ip] = {"timestamp": current_time}
                     return await call_next(request)
-                raise HTTPException(status_code=401)
-            except HTTPException:
+
+                # Неверные credentials
                 return Response(
                     status_code=401,
-                    headers={"WWW-Authenticate": "Basic"},
+                    headers={"WWW-Authenticate": 'Basic realm="API Docs"'},
+                )
+            except (ValueError, UnicodeDecodeError):
+                # Ошибка декодирования
+                return Response(
+                    status_code=401,
+                    headers={"WWW-Authenticate": 'Basic realm="API Docs"'},
                 )
 
         return await call_next(request)

@@ -93,7 +93,7 @@ Authorization: Bearer YOUR_TOKEN
 
 ```sql
 -- Список всех шаблонов
-SELECT 
+SELECT
     id,
     template_name,
     category,
@@ -104,7 +104,7 @@ FROM templates
 ORDER BY created_at DESC;
 
 -- Детали конкретного шаблона
-SELECT 
+SELECT
     template_name,
     jsonb_pretty(fields) as fields_structure
 FROM templates
@@ -118,7 +118,7 @@ WHERE template_name = 'Запрос помощи: Программировани
 - **Полная документация**: [README.md](README.md)
 - **Примеры использования**: [developer-issue-template.md](developer-issue-template.md)
 - **n8n Integration**: [../n8n_workflows/README.md](../n8n_workflows/README.md)
-- **NoRake API**: [../../README.md](../../README.md)
+- **Equiply API**: [../../README.md](../../README.md)
 
 ---
 

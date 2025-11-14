@@ -9,7 +9,7 @@ Write-Host "🪣 Инициализация MinIO bucket..." -ForegroundColor Cy
 $MinioEndpoint = "http://localhost:9000"
 $MinioUser = "minioadmin"
 $MinioPassword = "minioadmin"
-$BucketName = "norake-documents"
+$BucketName = "equiply-documents"
 
 # Ожидание запуска MinIO
 Write-Host "⏳ Ожидание запуска MinIO (5 секунд)..." -ForegroundColor Yellow

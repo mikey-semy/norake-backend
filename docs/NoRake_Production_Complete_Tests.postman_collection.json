@@ -1,18 +1,18 @@
 {
   "info": {
-    "name": "NoRake Production API Complete Testing",
-    "description": "Complete collection for production API testing at api.norake.ru - 37 endpoints with full coverage",
+    "name": "Equiply Production API Complete Testing",
+    "description": "Complete collection for production API testing at api.equiply.ru - 37 endpoints with full coverage",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "base_url",
-      "value": "https://api.norake.ru/api/v1",
+      "value": "https://api.equiply.ru/api/v1",
       "type": "string"
     },
     {
       "key": "admin_email",
-      "value": "admin@norake.ru",
+      "value": "admin@equiply.ru",
       "type": "string"
     },
     {

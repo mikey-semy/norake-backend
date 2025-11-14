@@ -1,6 +1,6 @@
 # Scripts Directory
 
-Вспомогательные скрипты для работы с проектом NoRake Backend.
+Вспомогательные скрипты для работы с проектом Equiply Backend.
 
 ## Доступные скрипты
 
@@ -33,7 +33,7 @@ python scripts/check_plane_api.py
 1. ✅ Базовое подключение к Plane API
 2. ✅ Доступность workspace "projects"
 3. ✅ Список проектов в workspace
-4. ✅ Доступность проекта NoRake Backend (NORAK)
+4. ✅ Доступность проекта Equiply Backend (NORAK)
 5. ✅ Статусы (states) проекта
 
 **Выходные данные**:

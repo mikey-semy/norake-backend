@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "NoRake Backend API - Complete Test Scenarios",
-    "_postman_id": "norake-test-scenarios-v1",
-    "description": "**Comprehensive test collection for NoRake Backend**\n\n✅ **Complete API Coverage**\n✅ **Flow-based Testing Scenarios**\n✅ **Automated Validation**\n✅ **Authorization Checks**\n\n**Test Scenarios:**\n- User Journey (Registration → Login → Operations)\n- Admin Workflow (User Management → Issue Resolution)\n- Public Access Tests (No Auth Required)\n- Search System (DB + RAG + MCP Integration)\n- Error Handling & Edge Cases\n\n**Base URL:** `{{base_url}}`",
+    "name": "Equiply Backend API - Complete Test Scenarios",
+    "_postman_id": "equiply-test-scenarios-v1",
+    "description": "**Comprehensive test collection for Equiply Backend**\n\n✅ **Complete API Coverage**\n✅ **Flow-based Testing Scenarios**\n✅ **Automated Validation**\n✅ **Authorization Checks**\n\n**Test Scenarios:**\n- User Journey (Registration → Login → Operations)\n- Admin Workflow (User Management → Issue Resolution)\n- Public Access Tests (No Auth Required)\n- Search System (DB + RAG + MCP Integration)\n- Error Handling & Edge Cases\n\n**Base URL:** `{{base_url}}`",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {

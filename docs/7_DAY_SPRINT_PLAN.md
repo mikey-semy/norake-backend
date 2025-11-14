@@ -1,8 +1,8 @@
-# 📋 5-Day Sprint Plan - NoRake Backend MVP
+# 📋 5-Day Sprint Plan - Equiply Backend MVP
 
 **Deadline**: 15 ноября 2025 (Пятница EOD)
 **Start**: 11 ноября 2025 (Понедельник)
-**Project**: NoRake - Collective Memory System с AI + n8n
+**Project**: Equiply - Collective Memory System с AI + n8n
 **Status**: 17/44 задач завершено (38.6%)
 
 ---

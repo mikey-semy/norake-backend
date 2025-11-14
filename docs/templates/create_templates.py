@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Скрипт для создания обоих шаблонов через NoRake Backend API:
+Скрипт для создания обоих шаблонов через Equiply Backend API:
 - Developer Issue Template (Программирование)
 - Drive Engineer Template (Приводчики)
 
@@ -133,7 +133,7 @@ def display_summary(templates: List[Dict]):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Создание шаблонов для NoRake Backend"
+        description="Создание шаблонов для Equiply Backend"
     )
     parser.add_argument(
         "--base-url",
@@ -165,7 +165,7 @@ def main():
 
     # Заголовок
     console.print(Panel.fit(
-        "[bold cyan]NoRake Templates Creator[/bold cyan]\n"
+        "[bold cyan]Equiply Templates Creator[/bold cyan]\n"
         "[dim]Создание шаблонов для Issues[/dim]",
         border_style="cyan"
     ))

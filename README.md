@@ -1,22 +1,22 @@
-# NoRake
+# Equiply
 
 ## Описание проекта
 
-**NoRake** — система коллективной памяти для решения и предотвращения проблем
+**Equiply** — система коллективной памяти для решения и предотвращения проблем
 
 ## Установка
 
 Клонируйте репозиторий в директорию, в которой находитесь:
 ```bash
-git clone https://github.com/mikey-semy/norake-backend.git .
+git clone https://github.com/mikey-semy/equiply-backend.git .
 ```
 Или:
 ```bash
-git clone https://github.com/mikey-semy/norake-backend.git
+git clone https://github.com/mikey-semy/equiply-backend.git
 ```
 Перейдите в директорию с проектом:
 ```bash
-cd ./norake-backend
+cd ./equiply-backend
 ```
 
 > [!NOTE]
@@ -192,6 +192,6 @@ git push origin --delete feature/your-name-of-feature
 ## Контакты
 Если у вас есть вопросы или предложения, вы можете обратиться по адресу telegram: [@mikey_semi](https://t.me/mikey_semi).
 
-Спасибо за интерес к проекту norake!
+Спасибо за интерес к проекту equiply!
 
 Мы надеемся, что эта документация поможет вам начать работу и внести свой вклад в развитие платформы.

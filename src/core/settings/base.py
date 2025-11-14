@@ -311,8 +311,8 @@ class Settings(BaseSettings):
     paths: PathSettings = PathSettings()
 
     # Настройки микросервиса
-    TITLE: str = "NoRake Backend Service"
-    DESCRIPTION: str = "API NoRake Backend Service"
+    TITLE: str = "Equiply Backend Service"
+    DESCRIPTION: str = "API Equiply Backend Service"
     VERSION: str = "0.1.0"
     HOST: str = "0.0.0.0"
     PORT: int = 8000
@@ -499,7 +499,7 @@ class Settings(BaseSettings):
     AWS_SERVICE_NAME: str = "s3"
     AWS_REGION: str = "us-east-1"
     AWS_ENDPOINT: Optional[str] = None  # MinIO endpoint для локальной разработки
-    AWS_BUCKET_NAME: str = "norake-documents"
+    AWS_BUCKET_NAME: str = "equiply-documents"
     AWS_ACCESS_KEY_ID: Optional[SecretStr] = None  # Опционально для работы без S3
     AWS_SECRET_ACCESS_KEY: Optional[SecretStr] = None  # Опционально для работы без S3
 
@@ -620,7 +620,7 @@ class Settings(BaseSettings):
         }
 
     # Настройки куки
-    # Для cross-site (localhost -> api.norake.ru): SameSite=None, Secure=False (HTTP dev)
+    # Для cross-site (localhost -> api.equiply.ru): SameSite=None, Secure=False (HTTP dev)
     # Для production (HTTPS): SameSite=None, Secure=True
     COOKIE_DOMAIN: Optional[str] = None
     COOKIE_SECURE: bool = False  # False для HTTP localhost, True для HTTPS production
@@ -673,12 +673,12 @@ class Settings(BaseSettings):
     # Дефолтный админ (обязательный)
     # Создаётся автоматически при первом запуске, если не существует
     DEFAULT_ADMIN_USERNAME: str = "admin"
-    DEFAULT_ADMIN_EMAIL: EmailStr = "admin@norake.ru"
+    DEFAULT_ADMIN_EMAIL: EmailStr = "admin@equiply.ru"
     DEFAULT_ADMIN_PASSWORD: SecretStr
 
     # Дополнительные админы (опционально)
     # Формат: username:email:password,username2:email2:password2
-    # Пример: ADMINS=mike:mike@norake.ru:SecurePass123,anna:anna@norake.ru:AnotherPass456
+    # Пример: ADMINS=mike:mike@equiply.ru:SecurePass123,anna:anna@equiply.ru:AnotherPass456
     ADMINS: Optional[str] = None
 
     @property
@@ -688,7 +688,7 @@ class Settings(BaseSettings):
 
         Returns:
             List[Dict]: Список словарей с данными админов
-                [{"username": "mike", "email": "mike@norake.ru", "password": "Pass123"}, ...]
+                [{"username": "mike", "email": "mike@equiply.ru", "password": "Pass123"}, ...]
         """
         if not self.ADMINS:
             return []
@@ -775,7 +775,7 @@ class Settings(BaseSettings):
 
     # Настройки CORS
     ALLOW_ORIGINS: List[str] = [
-        "https://norake.ru",
+        "https://equiply.ru",
         "http://localhost:3000",
         "http://localhost:5173",
     ]

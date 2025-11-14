@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "NoRake Backend API - Complete Collection",
-    "_postman_id": "norake-complete-api-v1",
-    "description": "**Полная коллекция всех API endpoints NoRake Backend**\n\n✅ **40+ endpoints**\n✅ **Автоматическая авторизация**\n✅ **Test Scripts для проверки**\n✅ **Сценарии Search**\n\n**Разделы:**\n- Main (Root)\n- Health Checks\n- Authentication\n- Registration\n- Protected Routes\n- Users\n- Issues\n- Issue Comments\n- Templates\n- Workspaces\n- N8n Workflows\n- Search (DB, RAG, MCP)\n\n**Base URL:** `{{base_url}}`",
+    "name": "Equiply Backend API - Complete Collection",
+    "_postman_id": "equiply-complete-api-v1",
+    "description": "**Полная коллекция всех API endpoints Equiply Backend**\n\n✅ **40+ endpoints**\n✅ **Автоматическая авторизация**\n✅ **Test Scripts для проверки**\n✅ **Сценарии Search**\n\n**Разделы:**\n- Main (Root)\n- Health Checks\n- Authentication\n- Registration\n- Protected Routes\n- Users\n- Issues\n- Issue Comments\n- Templates\n- Workspaces\n- N8n Workflows\n- Search (DB, RAG, MCP)\n\n**Base URL:** `{{base_url}}`",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {

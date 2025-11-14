@@ -1,4 +1,4 @@
-# NoRake Backend - Postman Testing Summary
+# Equiply Backend - Postman Testing Summary
 
 ## ✅ Выполненные задачи
 
@@ -149,7 +149,7 @@
 
 ### In Postman Desktop:
 1. Import both collections
-2. Run "NoRake Complete Test Scenarios"
+2. Run "Equiply Complete Test Scenarios"
 3. View test results in Console
 
 ### In Newman CLI:
@@ -228,7 +228,7 @@ newman run docs/NoRake_Complete_Test_Scenarios.postman_collection.json \
 При возникновении проблем:
 1. Проверьте `docs/POSTMAN_TESTING_GUIDE.md` (Troubleshooting section)
 2. Убедитесь что сервер запущен: `curl http://localhost:8000/api/v1/health`
-3. Проверьте логи: `docker logs norake-backend`
+3. Проверьте логи: `docker logs equiply-backend`
 
 ---
 

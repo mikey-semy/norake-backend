@@ -18,7 +18,7 @@ echo "🔧 Настройка MinIO клиента..."
 mc alias set local http://localhost:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin}
 
 # Создание bucket если не существует
-BUCKET_NAME=${AWS_BUCKET_NAME:-norake-documents}
+BUCKET_NAME=${AWS_BUCKET_NAME:-equiply-documents}
 
 if mc ls local/$BUCKET_NAME &> /dev/null; then
     echo "✅ Bucket '$BUCKET_NAME' уже существует"

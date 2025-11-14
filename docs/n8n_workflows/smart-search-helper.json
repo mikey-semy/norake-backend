@@ -1,5 +1,5 @@
 {
-  "name": "NoRake: Smart Search Helper",
+  "name": "Equiply: Smart Search Helper",
   "nodes": [
     {
       "parameters": {
@@ -82,8 +82,8 @@
       "position": [650, 200],
       "credentials": {
         "postgres": {
-          "id": "norake-postgres",
-          "name": "NoRake PostgreSQL"
+          "id": "equiply-postgres",
+          "name": "Equiply PostgreSQL"
         }
       }
     },
@@ -98,11 +98,11 @@
           "parameters": [
             {
               "name": "HTTP-Referer",
-              "value": "https://norake.equiply.ru"
+              "value": "https://equiply.equiply.ru"
             },
             {
               "name": "X-Title",
-              "value": "NoRake Backend"
+              "value": "Equiply Backend"
             }
           ]
         },
@@ -200,8 +200,8 @@
       "position": [1050, 400],
       "credentials": {
         "postgres": {
-          "id": "norake-postgres",
-          "name": "NoRake PostgreSQL"
+          "id": "equiply-postgres",
+          "name": "Equiply PostgreSQL"
         }
       }
     },

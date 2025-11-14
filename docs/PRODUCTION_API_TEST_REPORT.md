@@ -1,7 +1,7 @@
-# 📊 NoRake Backend Production API - Test Report
+# 📊 Equiply Backend Production API - Test Report
 **Date**: 2025-01-16
-**Environment**: `https://api.norake.ru`
-**Collection**: NoRake Production API - Complete Test Suite (37 endpoints)
+**Environment**: `https://api.equiply.ru`
+**Collection**: Equiply Production API - Complete Test Suite (37 endpoints)
 **Total Requests**: 43 | **Total Tests**: 12 | **Passed**: 4 ✅ | **Failed**: 8 ❌
 **Success Rate**: 33.3%
 
@@ -53,7 +53,7 @@
 - **Expected**: `{"status": "healthy"}`
 - **Fix Required**: Проверить фактический формат response:
   ```bash
-  curl https://api.norake.ru/api/v1/health
+  curl https://api.equiply.ru/api/v1/health
   ```
 
 ### 2. ❌ Refresh Token (`POST /api/v1/auth/refresh`)
@@ -79,7 +79,7 @@
     "data": {
       "id": "b8ae6930-cc58-46e3-a335-5d97502e26db",
       "username": "admin",
-      "email": "admin@norake.ru",
+      "email": "admin@equiply.ru",
       "role": "user"
     }
   }
@@ -184,7 +184,7 @@ pm.request.headers.add({
 
 **Recommended Fix**: Проверить response format:
 ```bash
-curl https://api.norake.ru/api/v1/health | jq
+curl https://api.equiply.ru/api/v1/health | jq
 ```
 
 ### CRUD Operations 📝
@@ -389,18 +389,18 @@ curl https://api.norake.ru/api/v1/health | jq
 ## 📎 Appendices
 
 ### A. Collection Details
-- **Name**: NoRake Production API - Complete Test Suite
+- **Name**: Equiply Production API - Complete Test Suite
 - **ID**: afd6fcf8-2109-42e5-a32f-f4a7494afaf6
-- **Workspace**: norake (55ff152b-e920-48b3-8f5e-8cdfa4ced418)
+- **Workspace**: equiply (55ff152b-e920-48b3-8f5e-8cdfa4ced418)
 - **Variables**:
-  - `base_url`: https://api.norake.ru
+  - `base_url`: https://api.equiply.ru
   - `admin_password`: [REDACTED]
   - `access_token`, `refresh_token`: Auto-filled from login
   - Resource IDs: `issue_id`, `comment_id`, `template_id`, `workspace_id`
 
 ### B. Test Environment
-- **API URL**: https://api.norake.ru
-- **Admin**: admin@norake.ru (role: "user" ⚠️ должна быть "admin")
+- **API URL**: https://api.equiply.ru
+- **Admin**: admin@equiply.ru (role: "user" ⚠️ должна быть "admin")
 - **Admin ID**: b8ae6930-cc58-46e3-a335-5d97502e26db
 - **Token Expiry**: 1800 seconds (30 minutes)
 

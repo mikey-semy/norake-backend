@@ -1,4 +1,4 @@
-# 📋 Расширенный план разработки NoRake MVP
+# 📋 Расширенный план разработки Equiply MVP
 
 ## 🎯 Обновления от 2025-11-04
 
@@ -25,25 +25,25 @@ class IssueVisibility(str, Enum):
 
 class IssueModel(BaseModel):
     __tablename__ = "issues"
-    
+
     # Основная информация
     title: Mapped[str]  # Заголовок
     description: Mapped[str]  # Подробное описание
     category: Mapped[str]  # hardware, software, process
-    
+
     # Статус и видимость
     status: Mapped[IssueStatus] = IssueStatus.RED
     visibility: Mapped[IssueVisibility] = IssueVisibility.PRIVATE
-    
+
     # Решение
     solution: Mapped[Optional[str]]  # Текст решения
     resolved_at: Mapped[Optional[datetime]]  # Когда решена
-    
+
     # Связи
     author_id: Mapped[UUID]  # FK users.id
     template_id: Mapped[Optional[UUID]]  # FK templates.id
     team_id: Mapped[Optional[UUID]]  # FK teams.id (v0.2)
-    
+
     # Relationships
     author: Mapped["UserModel"] = relationship(back_populates="issues")
     template: Mapped[Optional["TemplateModel"]] = relationship()
@@ -51,16 +51,16 @@ class IssueModel(BaseModel):
         back_populates="issue",
         cascade="all, delete-orphan"
     )
-    
+
     # Properties
     @property
     def is_resolved(self) -> bool:
         return self.status == IssueStatus.GREEN
-    
+
     @property
     def is_public(self) -> bool:
         return self.visibility == IssueVisibility.PUBLIC
-    
+
     @property
     def comments_count(self) -> int:
         return len(self.comments)
@@ -78,24 +78,24 @@ class TemplateVisibility(str, Enum):
 
 class TemplateModel(BaseModel):
     __tablename__ = "templates"
-    
+
     # Основная информация
     title: Mapped[str]  # "Проблема с оборудованием"
     description: Mapped[Optional[str]]  # Описание назначения
     category: Mapped[str]  # hardware, software, process
-    
+
     # Динамические поля (JSONB)
     fields: Mapped[dict]  # JSON-структура полей шаблона
-    
+
     # Видимость и владение
     visibility: Mapped[TemplateVisibility] = TemplateVisibility.PRIVATE
     author_id: Mapped[UUID]  # FK users.id
     team_id: Mapped[Optional[UUID]]  # FK teams.id (v0.2)
-    
+
     # Метрики
     usage_count: Mapped[int] = 0  # Сколько раз использовали
     is_active: Mapped[bool] = True  # Активен ли шаблон
-    
+
     # Relationships
     author: Mapped["UserModel"] = relationship()
     issues: Mapped[List["IssueModel"]] = relationship(back_populates="template")
@@ -162,22 +162,22 @@ class TemplateModel(BaseModel):
 ```python
 class UserTemplateModel(BaseModel):
     __tablename__ = "user_templates"
-    
+
     user_id: Mapped[UUID]  # FK users.id
     template_id: Mapped[UUID]  # FK templates.id
-    
+
     is_default: Mapped[bool] = False  # Шаблон по умолчанию
     sort_order: Mapped[int] = 0  # Порядок в списке
-    
+
     # Relationships
     user: Mapped["UserModel"] = relationship()
     template: Mapped["TemplateModel"] = relationship()
-    
+
     __table_args__ = (
         # Только один default на пользователя + категорию
-        Index('idx_user_default_template', 
-              user_id, template_id, 
-              unique=True, 
+        Index('idx_user_default_template',
+              user_id, template_id,
+              unique=True,
               postgresql_where=(is_default == True)),
     )
 ```
@@ -195,16 +195,16 @@ class UserTemplateModel(BaseModel):
 ```python
 class IssueCommentModel(BaseModel):
     __tablename__ = "issue_comments"
-    
+
     # Связи
     issue_id: Mapped[UUID]  # FK issues.id (ON DELETE CASCADE)
     author_id: Mapped[UUID]  # FK users.id
     parent_id: Mapped[Optional[UUID]]  # FK issue_comments.id (для ответов)
-    
+
     # Содержимое
     content: Mapped[str]  # Текст комментария
     is_solution: Mapped[bool] = False  # Отметка "это решение"
-    
+
     # Relationships
     issue: Mapped["IssueModel"] = relationship(back_populates="comments")
     author: Mapped["UserModel"] = relationship()
@@ -216,12 +216,12 @@ class IssueCommentModel(BaseModel):
         back_populates="parent",
         cascade="all, delete-orphan"
     )
-    
+
     # Properties
     @property
     def is_reply(self) -> bool:
         return self.parent_id is not None
-    
+
     @property
     def replies_count(self) -> int:
         return len(self.replies)
@@ -446,6 +446,6 @@ uv run alembic upgrade head
 
 ---
 
-**Версия документа**: 2.0  
-**Дата обновления**: 2025-11-04  
+**Версия документа**: 2.0
+**Дата обновления**: 2025-11-04
 **Статус**: Готов к декомпозиции на задачи в Plane

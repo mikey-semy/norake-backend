@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "NoRake Backend API - Full Flow Tests",
-    "_postman_id": "norake-backend-api-tests",
-    "description": "Полный набор API запросов для тестирования всех сценариев NoRake Backend:\n\n**Сценарии:**\n- Authentication: Регистрация → Вход → Refresh токена → Logout\n- Workspaces: Создание → Список → Получение по ID\n- Issues: Создание → Список → Поиск → Получение по ID\n- Comments: Создание → Список → Отметка решением → Удаление\n\n**Base URL:** http://localhost:8000",
+    "name": "Equiply Backend API - Full Flow Tests",
+    "_postman_id": "equiply-backend-api-tests",
+    "description": "Полный набор API запросов для тестирования всех сценариев Equiply Backend:\n\n**Сценарии:**\n- Authentication: Регистрация → Вход → Refresh токена → Logout\n- Workspaces: Создание → Список → Получение по ID\n- Issues: Создание → Список → Поиск → Получение по ID\n- Comments: Создание → Список → Отметка решением → Удаление\n\n**Base URL:** http://localhost:8000",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [

@@ -15,14 +15,14 @@ docker-compose -f docker-compose.dev.yml up -d minio
 ### 2. Инициализация MinIO bucket
 
 ```bash
-# Автоматическое создание bucket 'norake-documents'
+# Автоматическое создание bucket 'equiply-documents'
 uv run init-minio
 ```
 
 **Альтернативно (вручную через Web Console):**
 1. Открой http://localhost:9001
 2. Логин: `minioadmin`, Пароль: `minioadmin`
-3. Создай bucket: `norake-documents`
+3. Создай bucket: `equiply-documents`
 
 ### 3. Запуск FastAPI
 
@@ -130,7 +130,7 @@ DELETE /api/v1/document-services/{service_id}/functions/qr_code
 
 ### Генерация QR-кода (только владелец)
 ```http
-GET /api/v1/document-services/{service_id}/qr?base_url=https://norake.ru
+GET /api/v1/document-services/{service_id}/qr?base_url=https://equiply.ru
 ```
 
 **Response:**
@@ -138,8 +138,8 @@ GET /api/v1/document-services/{service_id}/qr?base_url=https://norake.ru
 {
   "success": true,
   "message": "QR-код сгенерирован",
-  "qr_url": "http://localhost:9000/norake-documents/qr-codes/uuid/qr.png?...",
-  "document_url": "https://norake.ru/documents/uuid"
+  "qr_url": "http://localhost:9000/equiply-documents/qr-codes/uuid/qr.png?...",
+  "document_url": "https://equiply.ru/documents/uuid"
 }
 ```
 
@@ -151,7 +151,7 @@ GET /api/v1/document-services/{service_id}/qr?base_url=https://norake.ru
 AWS_ENDPOINT=http://localhost:9000
 MINIO_ROOT_USER=minioadmin
 MINIO_ROOT_PASSWORD=minioadmin
-AWS_BUCKET_NAME=norake-documents
+AWS_BUCKET_NAME=equiply-documents
 AWS_PRESIGNED_URL_EXPIRATION=3600
 ```
 
@@ -162,14 +162,14 @@ AWS_ENDPOINT=  # пусто = настоящий AWS S3
 AWS_ACCESS_KEY_ID=AKIA...
 AWS_SECRET_ACCESS_KEY=secret...
 AWS_REGION=eu-central-1
-AWS_BUCKET_NAME=norake-prod-documents
+AWS_BUCKET_NAME=equiply-prod-documents
 AWS_PRESIGNED_URL_EXPIRATION=3600
 ```
 
 ## 📁 Структура хранилища S3/MinIO
 
 ```
-norake-documents/
+equiply-documents/
 ├── documents/
 │   └── {service_id}/
 │       └── document.pdf          # Оригинальный файл
@@ -221,7 +221,7 @@ docker-compose -f docker-compose.dev.yml restart minio
 # Вручную через Web Console
 1. http://localhost:9001
 2. Login: minioadmin / minioadmin
-3. Create Bucket: norake-documents
+3. Create Bucket: equiply-documents
 4. Access Policy: Public (для presigned URLs)
 ```
 

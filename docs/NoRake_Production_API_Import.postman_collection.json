@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "NoRake Production API Tests",
-    "description": "🚀 **Production API Testing for api.norake.ru**\n\n## Quick Start\n1. Run \"1. Admin Login\" to get access token\n2. Token auto-saves to collection variables\n3. Run remaining requests in sequence\n\n## Coverage\n✅ Authentication & Authorization\n✅ Public endpoints (no auth)\n✅ Workspace management\n✅ Issue tracking\n✅ Comments system\n✅ Template management\n✅ Multi-source search (DB + RAG + MCP)\n\n## Variables\n- `base_url`: https://api.norake.ru\n- `admin_username`: admin\n- `admin_password`: admin123\n- Auto-saved: `access_token`, `workspace_id`, `issue_id`, etc.",
+    "name": "Equiply Production API Tests",
+    "description": "🚀 **Production API Testing for api.equiply.ru**\n\n## Quick Start\n1. Run \"1. Admin Login\" to get access token\n2. Token auto-saves to collection variables\n3. Run remaining requests in sequence\n\n## Coverage\n✅ Authentication & Authorization\n✅ Public endpoints (no auth)\n✅ Workspace management\n✅ Issue tracking\n✅ Comments system\n✅ Template management\n✅ Multi-source search (DB + RAG + MCP)\n\n## Variables\n- `base_url`: https://api.equiply.ru\n- `admin_username`: admin\n- `admin_password`: admin123\n- Auto-saved: `access_token`, `workspace_id`, `issue_id`, etc.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -15,7 +15,7 @@
     ]
   },
   "variable": [
-    {"key": "base_url", "value": "https://api.norake.ru", "type": "string"},
+    {"key": "base_url", "value": "https://api.equiply.ru", "type": "string"},
     {"key": "admin_username", "value": "admin", "type": "string"},
     {"key": "admin_password", "value": "admin123", "type": "string"},
     {"key": "access_token", "value": "", "type": "string"},

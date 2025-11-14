@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "dcd5aab9-9244-44c4-9b78-243d0a62c8fb",
-    "name": "NoRake Production Tests - api.norake.ru",
-    "description": "🚀 **Production Testing for NoRake Backend**\n\n✅ All critical endpoints covered\n✅ Automated token management\n✅ Real production environment: https://api.norake.ru\n\n**Quick Start:**\n1. Run \"1. Admin Login\" first\n2. Run remaining tests sequentially\n3. Check test results for each endpoint\n\n**Coverage:**\n- Authentication & Authorization\n- Public APIs (no auth required)\n- Protected APIs (admin access)\n- CRUD operations (Workspaces, Issues, Templates)\n- Search system (DB + RAG + MCP)\n- Comment system",
+    "name": "Equiply Production Tests - api.equiply.ru",
+    "description": "🚀 **Production Testing for Equiply Backend**\n\n✅ All critical endpoints covered\n✅ Automated token management\n✅ Real production environment: https://api.equiply.ru\n\n**Quick Start:**\n1. Run \"1. Admin Login\" first\n2. Run remaining tests sequentially\n3. Check test results for each endpoint\n\n**Coverage:**\n- Authentication & Authorization\n- Public APIs (no auth required)\n- Protected APIs (admin access)\n- CRUD operations (Workspaces, Issues, Templates)\n- Search system (DB + RAG + MCP)\n- Comment system",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -14,7 +14,7 @@
     }]
   },
   "variable": [
-    {"key": "base_url", "value": "https://api.norake.ru", "type": "string"},
+    {"key": "base_url", "value": "https://api.equiply.ru", "type": "string"},
     {"key": "admin_username", "value": "admin", "type": "string"},
     {"key": "admin_password", "value": "admin123", "type": "string"},
     {"key": "access_token", "value": "", "type": "string"},

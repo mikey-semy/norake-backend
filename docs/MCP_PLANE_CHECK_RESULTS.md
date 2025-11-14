@@ -1,8 +1,8 @@
 # Результаты проверки MCP Plane Integration
 
-**Дата проверки**: 2025-11-13  
-**Проверяющий**: GitHub Copilot Agent  
-**Цель**: Проверить работоспособность интеграции MCP Plane с проектом NoRake Backend
+**Дата проверки**: 2025-11-13
+**Проверяющий**: GitHub Copilot Agent
+**Цель**: Проверить работоспособность интеграции MCP Plane с проектом Equiply Backend
 
 ---
 
@@ -26,7 +26,7 @@ Project Identifier: NORAK
     "env": {
         "PLANE_API_KEY": "YOUR_PLANE_API_KEY",
         "PLANE_API_HOST_URL": "https://plane.equiply.ru/",
-        "PLANE_WORKSPACE_SLUG": "norake"
+        "PLANE_WORKSPACE_SLUG": "equiply"
     }
 }
 ```
@@ -34,7 +34,7 @@ Project Identifier: NORAK
 ### ⚠️ ОБНАРУЖЕНО РАСХОЖДЕНИЕ:
 
 - **В `copilot-instructions.md`**: `PLANE_WORKSPACE_SLUG: projects`
-- **В `mcp.json.example`**: `PLANE_WORKSPACE_SLUG: "norake"`
+- **В `mcp.json.example`**: `PLANE_WORKSPACE_SLUG: "equiply"`
 
 **Рекомендация**: Необходимо синхронизировать конфигурацию!
 
@@ -157,8 +157,8 @@ STATES = {
 
 1. **Расхождение в WORKSPACE_SLUG**:
    - `copilot-instructions.md`: "projects"
-   - `mcp.json.example`: "norake"
-   
+   - `mcp.json.example`: "equiply"
+
 2. **MCP инструменты недоступны** в текущем CI/CD окружении
 
 3. **Отсутствует `.vscode/mcp.json`** (только example файл)
@@ -182,5 +182,5 @@ STATES = {
 
 ---
 
-**Статус проверки**: ⚠️ Частично выполнено  
+**Статус проверки**: ⚠️ Частично выполнено
 **Результат**: MCP Plane настроен корректно в документации, но требует исправления конфигурации

@@ -1,4 +1,4 @@
-# NoRake Backend API - Comprehensive Test Documentation
+# Equiply Backend API - Comprehensive Test Documentation
 
 ## 📋 Обзор тестовых коллекций
 
@@ -394,7 +394,7 @@
 
 3. **Запуск полной коллекции**:
    - Collection → Run
-   - Select: "NoRake Complete Test Scenarios"
+   - Select: "Equiply Complete Test Scenarios"
    - Run Collection
 
 4. **Запуск отдельных сценариев**:
@@ -444,7 +444,7 @@ newman run docs/NoRake_Complete_Test_Scenarios.postman_collection.json \
 10. Scenario 12 (Cleanup) - удалить тестовые данные
 
 **Для ежедневного тестирования**:
-- Запускать всю коллекцию "NoRake Complete Test Scenarios" целиком
+- Запускать всю коллекцию "Equiply Complete Test Scenarios" целиком
 - Newman будет выполнять сценарии последовательно
 
 ---
@@ -487,7 +487,7 @@ newman run docs/NoRake_Complete_Test_Scenarios.postman_collection.json \
 curl http://localhost:8000/api/v1/health
 
 # Убедитесь что база данных и Redis запущены
-docker ps | grep norake
+docker ps | grep equiply
 ```
 
 ---
@@ -514,4 +514,4 @@ docker ps | grep norake
 
 **Последнее обновление**: 2025-11-12
 **Версия коллекции**: v1.0
-**Автор**: NoRake Development Team
+**Автор**: Equiply Development Team

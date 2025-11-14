@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "NoRake Production API - Complete Test Suite",
-    "description": "Complete collection of 37 endpoints for NoRake Backend production testing at api.norake.ru\n\nFeatures:\n- Auto-authentication with admin credentials\n- Test scripts for all endpoints\n- Full CRUD coverage\n- Search scenarios (DB, RAG, MCP)\n\nSections:\n- Main & Health\n- Authentication & Registration\n- Protected Routes\n- Users, Issues, Comments\n- Templates & Workspaces\n- N8n Workflows\n- Search (Public, DB, RAG, MCP, Combined)",
+    "name": "Equiply Production API - Complete Test Suite",
+    "description": "Complete collection of 37 endpoints for Equiply Backend production testing at api.equiply.ru\n\nFeatures:\n- Auto-authentication with admin credentials\n- Test scripts for all endpoints\n- Full CRUD coverage\n- Search scenarios (DB, RAG, MCP)\n\nSections:\n- Main & Health\n- Authentication & Registration\n- Protected Routes\n- Users, Issues, Comments\n- Templates & Workspaces\n- N8n Workflows\n- Search (Public, DB, RAG, MCP, Combined)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -871,7 +871,7 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "https://api.norake.ru",
+      "value": "https://api.equiply.ru",
       "type": "string"
     },
     {

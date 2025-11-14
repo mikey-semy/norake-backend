@@ -1,8 +1,8 @@
-# NoRake n8n Workflows# n8n Workflows для NoRake Backend
+# Equiply n8n Workflows# n8n Workflows для Equiply Backend
 
 
 
-Коллекция n8n workflow для автоматизации NoRake Backend. **Все workflows проверены через n8n MCP server** (541 нод, 87% документации) и готовы к импорту.Этот каталог содержит готовые n8n workflows для автоматизации процессов в NoRake.
+Коллекция n8n workflow для автоматизации Equiply Backend. **Все workflows проверены через n8n MCP server** (541 нод, 87% документации) и готовы к импорту.Этот каталог содержит готовые n8n workflows для автоматизации процессов в Equiply.
 
 
 
@@ -50,7 +50,7 @@
 
 7. Calculate Stats - подсчёт количества чанков
 
-#### 1. NoRake PostgreSQL (`norake-postgres`)8. Update Status: INDEXED - финальное обновление статуса + indexed_at
+#### 1. Equiply PostgreSQL (`equiply-postgres`)8. Update Status: INDEXED - финальное обновление статуса + indexed_at
 
 ```9. Respond - возврат результата
 
@@ -60,7 +60,7 @@ Host: <database_host>**Параметры**:
 
 Port: 5432- Chunk Size: 500 токенов (примерно 375 слов)
 
-Database: norake- Overlap: 50 токенов (сохранение контекста между чанками)
+Database: equiply- Overlap: 50 токенов (сохранение контекста между чанками)
 
 User: <db_user>- Embedding Dimension: 1536 (text-embedding-3-small)
 
@@ -122,7 +122,7 @@ Header Value: Bearer <backend_jwt_token>2. Extract Issue Data - извлечен
 
 ```bash6. Respond - возврат результата
 
-BACKEND_URL=https://api.norake.equiply.ru
+BACKEND_URL=https://api.equiply.equiply.ru
 
 ```**Категории**: hardware, software, process, documentation, safety, quality, maintenance, training, other
 
@@ -312,7 +312,7 @@ Content-Type: application/jsonopen http://localhost:5678
 
 3. Настройте:
 
-### Архитектура   - **Name**: `NoRake Backend Token`
+### Архитектура   - **Name**: `Equiply Backend Token`
 
 ```   - **Header Name**: `Authorization`
 
@@ -326,7 +326,7 @@ Extract Document Data
 
 Update Status: INDEXING```bash
 
-  ↓# Залогиньтесь в NoRake Backend
+  ↓# Залогиньтесь в Equiply Backend
 
 Set Chunk Config (500 tokens, overlap 50)curl -X POST http://localhost:8000/api/v1/auth/login \
 
@@ -352,7 +352,7 @@ Add Chunk Metadata2. Выберите **"Postgres"**
 
   ↓3. Настройте:
 
-[LOOP] For each chunk:   - **Name**: `NoRake PostgreSQL`
+[LOOP] For each chunk:   - **Name**: `Equiply PostgreSQL`
 
     OpenRouter: Generate Embeddings   - **Host**: `postgres` (имя сервиса в docker-compose)
 
@@ -380,7 +380,7 @@ Update Status: INDEXED1. В n8n UI → **Credentials** → **New Credential**
 
 Respond to Webhook3. Настройте:
 
-```   - **Name**: `NoRake PostgreSQL`
+```   - **Name**: `Equiply PostgreSQL`
 
    - **Host**: `postgres` (имя сервиса в docker-compose)
 
@@ -408,7 +408,7 @@ Respond to Webhook3. Настройте:
 
 | Postgres | `n8n-nodes-base.postgres` | 2.4 | ✅ Validated |```env
 
-| Aggregate | `n8n-nodes-base.aggregate` | 1 | ✅ Validated |BACKEND_URL=http://norake-backend:8000
+| Aggregate | `n8n-nodes-base.aggregate` | 1 | ✅ Validated |BACKEND_URL=http://equiply-backend:8000
 
 | Respond to Webhook | `n8n-nodes-base.respondToWebhook` | 1 | ✅ Validated |```
 
@@ -434,7 +434,7 @@ minChunkRatio = 0.8  // Min 80% of desired size
 
 2. If last space > 80% chunk_size → cut there4. Нажмите на ноду **"Update Issue Category"**
 
-3. Else cut at endIndex5. В секции **Authentication** выберите credential **"NoRake Backend Token"**
+3. Else cut at endIndex5. В секции **Authentication** выберите credential **"Equiply Backend Token"**
 
 4. trim() each chunk6. Нажмите **Save** для workflow
 
@@ -448,7 +448,7 @@ minChunkRatio = 0.8  // Min 80% of desired size
 
 - **Dimensions**: 15362. Нажмите на ноду **"Update Status: INDEXING"**
 
-- **Cost**: $0.00002 per 1K tokens3. В секции **Authentication** выберите credential **"NoRake Backend Token"**
+- **Cost**: $0.00002 per 1K tokens3. В секции **Authentication** выберите credential **"Equiply Backend Token"**
 
 - **Context**: 8191 tokens max4. Нажмите на ноду **"OpenRouter: Generate Embeddings"**
 
@@ -456,11 +456,11 @@ minChunkRatio = 0.8  // Min 80% of desired size
 
 ### Database Schema (pgvector)6. Нажмите на ноду **"Insert Chunk to DB"**
 
-```sql7. В секции **Credential** выберите **"NoRake PostgreSQL"**
+```sql7. В секции **Credential** выберите **"Equiply PostgreSQL"**
 
 CREATE TABLE document_chunks (8. Нажмите на ноду **"Update Status: INDEXED"**
 
-    id UUID PRIMARY KEY,9. В секции **Authentication** выберите credential **"NoRake Backend Token"**
+    id UUID PRIMARY KEY,9. В секции **Authentication** выберите credential **"Equiply Backend Token"**
 
     document_id UUID NOT NULL,10. Нажмите **Save** для workflow
 
@@ -538,7 +538,7 @@ Content-Type: application/json
 
 ### Производительность
 
-- **Chunking**: ~50ms (JavaScript)## 📝 Регистрация Workflows в NoRake Backend
+- **Chunking**: ~50ms (JavaScript)## 📝 Регистрация Workflows в Equiply Backend
 
 - **Embeddings**: ~500ms per chunk
 
@@ -708,7 +708,7 @@ ORDER BY dc.embedding <=> $1::vector
 
 LIMIT $3# Ответ содержит workflow ID
 
-```# {"id": "abc123", "name": "NoRake: Auto-categorize Issues", ...}
+```# {"id": "abc123", "name": "Equiply: Auto-categorize Issues", ...}
 
 **Weight**: 0.8 × similarity
 
@@ -1004,13 +1004,13 @@ Settings → Credentials → Add Credential2. Улучшите system prompt в 
 
 Type: Postgres3. Попробуйте другую модель (например, `openai/gpt-3.5-turbo`)
 
-Name: norake-postgres
+Name: equiply-postgres
 
 Host: <db_host>---
 
 Port: 5432
 
-Database: norake## 📊 Мониторинг Executions
+Database: equiply## 📊 Мониторинг Executions
 
 User: <db_user>
 
@@ -1074,7 +1074,7 @@ Header Value: Bearer <jwt_token>    }
 
 Settings → Environments---
 
-BACKEND_URL=https://api.norake.equiply.ru
+BACKEND_URL=https://api.equiply.equiply.ru
 
 ```## 🎯 Best Practices
 
@@ -1096,7 +1096,7 @@ Open workflow → Toggle "Activate" (top right)3. **Logging**: Использу�
 
 -- Подключение к базе
 
-psql -U norake -d norake## 📚 Дополнительные Workflows
+psql -U equiply -d equiply## 📚 Дополнительные Workflows
 
 
 
@@ -1120,7 +1120,7 @@ CREATE EXTENSION IF NOT EXISTS vector;- **Smart Search Helper** (`smart-search-h
 
 ## 🧪 Тестирование- [OpenRouter API](https://openrouter.ai/docs)
 
-- [NoRake Backend API Docs](http://localhost:8000/docs)
+- [Equiply Backend API Docs](http://localhost:8000/docs)
 
 ### Test 1: Auto-categorize
 ```bash
