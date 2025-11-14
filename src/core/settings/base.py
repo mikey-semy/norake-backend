@@ -792,6 +792,11 @@ class Settings(BaseSettings):
         "x-csrftoken",
         "x-requested-with",
         "manifest-fetch-site",
+        "cookie",
+        "set-cookie",
+    ]
+    EXPOSE_HEADERS: List[str] = [
+        "set-cookie",
     ]
 
     @property
@@ -801,6 +806,7 @@ class Settings(BaseSettings):
             "allow_credentials": self.ALLOW_CREDENTIALS,
             "allow_methods": self.ALLOW_METHODS,
             "allow_headers": self.ALLOW_HEADERS,
+            "expose_headers": self.EXPOSE_HEADERS,
         }
 
     model_config = SettingsConfigDict(
