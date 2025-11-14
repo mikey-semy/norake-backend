@@ -416,7 +416,7 @@ class ManualImporter:
                     filename=unique_filename,
                     workspace_id=None,  # Публичные документы
                 )
-                
+
                 if cover_url:
                     logger.info("Сгенерирована обложка: %s", cover_url)
                 else:
