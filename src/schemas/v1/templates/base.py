@@ -186,7 +186,7 @@ class TemplateFieldSchema(CommonBaseSchema):
         """
         if not v:
             return v
-        
+
         normalized = []
         for option in v:
             if isinstance(option, dict):
