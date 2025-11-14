@@ -124,10 +124,13 @@ class DocumentServiceService:
 
         # Загрузка файла в S3
         await file.seek(0)  # Вернуть указатель в начало
-        file_url, _, _ = await self.storage.upload_document(
+        file_url, _, file_size_from_storage, file_content_from_storage = await self.storage.upload_document(
             file=file,
             workspace_id=str(metadata.workspace_id) if metadata.workspace_id else None,
         )
+
+        # Используем размер из storage (более надёжно)
+        file_size = file_size_from_storage
 
         # Генерация thumbnail для PDF
         cover_url = None
@@ -135,7 +138,7 @@ class DocumentServiceService:
         if metadata.file_type == "pdf" and cover_type == "generated":
             try:
                 cover_url = await self.storage.generate_pdf_thumbnail(
-                    file_content=content,
+                    file_content=file_content_from_storage,
                     filename=file.filename or "document",
                     workspace_id=str(metadata.workspace_id) if metadata.workspace_id else None,
                 )
@@ -768,6 +771,12 @@ class DocumentServiceService:
 
         updated_service = await self.repository.update_item(
             item_id=service_id, data=update_data
+        )
+
+        # Перезагрузить relationships для сериализации
+        await self.repository.session.refresh(
+            updated_service,
+            attribute_names=["author", "workspace"]
         )
 
         self.logger.info(

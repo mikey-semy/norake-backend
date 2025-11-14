@@ -24,7 +24,33 @@ uv run init-minio
 2. Логин: `minioadmin`, Пароль: `minioadmin`
 3. Создай bucket: `equiply-documents`
 
-### 3. Запуск FastAPI
+### 3. Установка Poppler (для генерации обложек)
+
+**Windows:**
+```powershell
+# Через Chocolatey
+choco install poppler
+
+# Или скачай с GitHub:
+# https://github.com/oschwartz10612/poppler-windows/releases/
+# Добавь папку bin в PATH
+```
+
+**Linux:**
+```bash
+sudo apt-get install -y poppler-utils
+```
+
+**macOS:**
+```bash
+brew install poppler
+```
+
+**Docker:** Уже включен в Dockerfile (автоматически)
+
+> 📘 Подробнее: [docs/POPPLER_SETUP.md](./POPPLER_SETUP.md)
+
+### 4. Запуск FastAPI
 
 ```bash
 # Применить миграции
@@ -181,6 +207,109 @@ equiply-documents/
         └── qr.png                # QR-код для быстрого доступа
 ```
 
+## 🎨 Обложки документов (Covers)
+
+Document Services поддерживает 3 типа обложек:
+
+### 1. GENERATED (авто-генерация из PDF)
+```json
+{
+  "cover_type": "generated",
+  "cover_url": "https://.../thumbnails/public/uuid_document.pdf_thumbnail.jpg"
+}
+```
+- Автоматически создается thumbnail из **первой страницы PDF**
+- Размер: 400x566px (пропорции A4)
+- Формат: JPEG, качество 85%
+- Хранится в S3: `thumbnails/public/` или `thumbnails/{workspace_id}/`
+
+**Требования:**
+- Установленный [poppler-utils](./POPPLER_SETUP.md)
+- PDF должен быть валидным (не поврежден)
+
+**Ошибки:**
+```
+❌ "Unable to get page count. Is poppler installed and in PATH?"
+   → Решение: Установите poppler (см. docs/POPPLER_SETUP.md)
+
+❌ "Не удалось извлечь страницы из PDF"
+   → Файл поврежден или не является PDF
+```
+
+### 2. ICON (эмодзи или SVG)
+```json
+{
+  "cover_type": "icon",
+  "cover_icon": "📄"
+}
+```
+- Используется эмодзи или SVG код
+- Легковесная альтернатива для быстрых превью
+- Подходит для списков документов
+
+### 3. IMAGE (загруженное изображение)
+```json
+{
+  "cover_type": "image",
+  "cover_url": "https://.../covers/{workspace_id}/custom_cover.png"
+}
+```
+- Загрузка кастомной обложки через отдельный endpoint
+- Поддерживаемые форматы: JPG, PNG, WebP
+- Максимальный размер: 5MB
+
+**API для загрузки обложки:**
+```http
+POST /api/v1/document-services/{service_id}/cover
+Content-Type: multipart/form-data
+
+cover_image: image.png
+```
+
+### Структура в S3
+
+```
+equiply-documents/
+├── documents/
+│   └── {workspace_id}/
+│       └── document.pdf          # Оригинальный файл
+├── thumbnails/                    # GENERATED обложки
+│   └── {workspace_id}/
+│       └── uuid_document.pdf_thumbnail.jpg
+├── covers/                        # IMAGE обложки (кастомные)
+│   └── {workspace_id}/
+│       └── custom_cover.png
+└── qrcodes/
+    └── {workspace_id}/
+        └── qr.png
+```
+
+### Как работает генерация thumbnail
+
+1. **При загрузке PDF** с `cover_type="generated"`:
+   ```python
+   # DocumentS3Storage.upload_document()
+   file_url, filename, size, content = await storage.upload_document(file)
+
+   # DocumentS3Storage.generate_pdf_thumbnail()
+   cover_url = await storage.generate_pdf_thumbnail(
+       file_content=content,
+       filename=filename,
+       workspace_id=workspace_id
+   )
+   ```
+
+2. **Процесс конвертации:**
+   - `pdf2image.convert_from_bytes()` → конвертирует 1-ю страницу в PIL Image
+   - Ресайз до 400x566px через `Image.thumbnail()`
+   - Сохранение в JPEG с quality=85%
+   - Загрузка в S3 с `ContentType: image/jpeg`
+
+3. **Результат:**
+   - `cover_url` записывается в `document_services.cover_url`
+   - Фронтенд отображает обложку в карточке документа
+   - Кэширование: `CacheControl: max-age=31536000` (1 год)
+
 ## 🎯 Доступные функции сервиса
 
 Каждый документ имеет набор функций в `available_functions`:
@@ -229,6 +358,29 @@ docker-compose -f docker-compose.dev.yml restart minio
 - **413 Payload Too Large**: Файл > 10 MB (настраивается в `DocumentServiceService.MAX_FILE_SIZE`)
 - **400 Invalid file type**: Поддерживаются только PDF (пока)
 - **500 Upload failed**: Проверь MinIO доступность и credentials в .env.dev
+
+### Ошибки генерации обложек
+- **"Unable to get page count. Is poppler installed and in PATH?"**
+  ```bash
+  # Windows
+  choco install poppler
+
+  # Linux
+  sudo apt-get install poppler-utils
+
+  # Проверка
+  pdftoppm -v
+  ```
+
+- **"Не удалось извлечь страницы из PDF"**
+  - PDF файл поврежден → проверь через Adobe Reader
+  - Файл защищен паролем → снять защиту
+  - Формат не поддерживается → конвертировать в стандартный PDF
+
+- **Обложка не генерируется, но ошибок нет**
+  - Thumbnail генерация НЕ блокирует создание документа
+  - Проверь логи: `docker-compose -f docker-compose.dev.yml logs backend`
+  - Fallback: используй `cover_type="icon"` с эмодзи
 
 ## 📊 MinIO Web Console
 

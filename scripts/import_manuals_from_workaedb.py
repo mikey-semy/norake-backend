@@ -3,7 +3,7 @@
 
 Скрипт читает JSON файлы из work-aedb (categories, groups, manuals),
 скачивает PDF с Yandex Cloud и импортирует их в Document Services
-с правильным маппингом данных и извлечением тегов.
+с правильным маппингом данных, извлечением тегов и генерацией обложек.
 
 Usage:
     python scripts/import_manuals_from_workaedb.py [--workaedb-path ../work-aedb]
@@ -13,6 +13,17 @@ Requirements:
     - JSON файлы: app/data/manuals/{categories,groups,manuals}.json
     - norake-backend должен иметь хотя бы одного пользователя в БД
     - S3 credentials должны быть настроены в .env
+    - Poppler установлен для генерации обложек (см. docs/POPPLER_SETUP.md)
+      * Windows: choco install poppler
+      * Linux: sudo apt-get install poppler-utils
+      * macOS: brew install poppler
+
+Features:
+    ✅ Автоматическая загрузка PDF из Yandex Cloud
+    ✅ Генерация thumbnail (обложек) из первой страницы PDF
+    ✅ Извлечение тегов (тип документа, язык, производитель, серия)
+    ✅ Создание описаний с версией и датой документа
+    ✅ Публичные документы (is_public=True) для общего доступа
 """
 
 import asyncio
@@ -49,9 +60,16 @@ class ManualImporter:
     Workflow:
         1. Загружает JSON (categories, groups, manuals) из work-aedb
         2. Скачивает PDF с Yandex Cloud через httpx
-        3. Загружает файл в S3 norake-backend
-        4. Извлекает теги из названия (Руководство/Инструкция/Брошура + язык)
-        5. Создаёт Document Service через DocumentServiceService
+        3. Загружает файл в S3 norake-backend (папка documents/)
+        4. Генерирует thumbnail из первой страницы PDF (папка thumbnails/)
+        5. Извлекает теги из названия (Руководство/Инструкция/Брошура + язык)
+        6. Создаёт Document Service через DocumentServiceService
+
+    Cover Generation:
+        - Использует pdf2image + poppler для конвертации PDF → JPEG
+        - Размер: 400x566px, качество 85%
+        - Сохраняется в S3: thumbnails/public/{uuid}_filename_thumbnail.jpg
+        - Если poppler не установлен → warning, документ создается без обложки
     """
 
     # Паттерны для извлечения типов документов и языков из названий
@@ -404,15 +422,16 @@ class ManualImporter:
                     headers={"content-type": "application/pdf"},
                 )
 
-                # Загружаем через DocumentS3Storage (как в DocumentServiceService)
-                file_url, unique_filename, file_size = await self.storage.upload_document(
+                # Загружаем через DocumentS3Storage (теперь возвращает file_content)
+                file_url, unique_filename, file_size, uploaded_content = await self.storage.upload_document(
                     file=upload_file,
                     workspace_id=None,  # Публичные документы
                 )
 
                 # Генерируем thumbnail (обложка) из первой страницы PDF
+                # Используем uploaded_content вместо file_content для консистентности
                 cover_url = await self.storage.generate_pdf_thumbnail(
-                    file_content=file_content,
+                    file_content=uploaded_content,
                     filename=unique_filename,
                     workspace_id=None,  # Публичные документы
                 )

@@ -33,11 +33,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONOPTIMIZE=2 \
     MALLOC_ARENA_MAX=2
 
-# Устанавливаем только runtime библиотеки
+# Устанавливаем только runtime библиотеки + poppler для pdf2image
 RUN apk add --no-cache \
     postgresql-libs \
     libffi \
     wget \
+    poppler-utils \
     && rm -rf /var/cache/apk/*
 
 # Копируем venv из builder

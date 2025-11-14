@@ -57,7 +57,7 @@ class DocumentS3Storage(BaseS3Storage):
         file: UploadFile,
         workspace_id: Optional[str] = None,
         bucket_name: Optional[str] = None,
-    ) -> tuple[str, str, int]:
+    ) -> tuple[str, str, int, bytes]:
         """
         Загружает документ в S3 с организацией по workspace.
 
@@ -67,15 +67,27 @@ class DocumentS3Storage(BaseS3Storage):
             bucket_name: Название бакета (опционально)
 
         Returns:
-            tuple[str, str, int]: (file_url, unique_filename, file_size) -
-                                  URL файла, уникальное имя и размер в байтах
+            tuple[str, str, int, bytes]: (file_url, unique_filename, file_size, file_content) -
+                                         URL файла, уникальное имя, размер в байтах и содержимое
         """
         self.logger.info(
-            "[FLOW] upload_document START: filename=%s, workspace_id=%s, bucket_name=%s",
+            "📼 [FLOW] upload_document START: filename=%s, workspace_id=%s, bucket_name=%s",
             file.filename,
             workspace_id,
             bucket_name,
         )
+
+        # КРИТИЧНО: Читаем файл ДО загрузки, чтобы получить размер и контент
+        file_content = await file.read()
+        file_size = len(file_content)
+
+        self.logger.debug(
+            "📦 Прочитан файл: size=%d bytes",
+            file_size,
+        )
+
+        # Возвращаем указатель в начало для upload_file
+        await file.seek(0)
 
         # Определяем путь в зависимости от workspace
         if workspace_id:
@@ -83,14 +95,14 @@ class DocumentS3Storage(BaseS3Storage):
         else:
             file_key = f"{self.documents_folder}/public"
 
-        self.logger.info(
-            "[FLOW] upload_document: generated file_key=%s",
+        self.logger.debug(
+            "📁 [FLOW] upload_document: generated file_key=%s",
             file_key,
         )
 
         # Загружаем документ
-        self.logger.info(
-            "[FLOW] upload_document: calling upload_file with file_key=%s, bucket_name=%s",
+        self.logger.debug(
+            "☁️  [FLOW] upload_document: calling upload_file with file_key=%s, bucket_name=%s",
             file_key,
             bucket_name,
         )
@@ -100,23 +112,13 @@ class DocumentS3Storage(BaseS3Storage):
         )
 
         self.logger.info(
-            "[FLOW] upload_document: upload_file returned url=%s, filename=%s",
-            file_url,
-            unique_filename,
-        )
-
-        # Получаем размер файла
-        file_content = await file.read()
-        file_size = len(file_content)
-
-        self.logger.info(
-            "Документ загружен: url=%s, name=%s, size=%d bytes",
+            "✨ Документ загружен: url=%s, name=%s, size=%d bytes",
             file_url,
             unique_filename,
             file_size,
         )
 
-        return file_url, unique_filename, file_size
+        return file_url, unique_filename, file_size, file_content
 
     async def generate_pdf_thumbnail(
         self,
