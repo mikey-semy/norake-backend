@@ -69,7 +69,7 @@ services:
   rabbitmq:
     image: rabbitmq:3-alpine  # Без management UI для экономии памяти
     ports:
-      - "5675:5672"
+      - "5677:5672"
       # Management UI отключен - если нужен, используйте rabbitmq:3-management
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-admin}
