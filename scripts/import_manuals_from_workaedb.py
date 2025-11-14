@@ -410,6 +410,18 @@ class ManualImporter:
                     workspace_id=None,  # Публичные документы
                 )
 
+                # Генерируем thumbnail (обложка) из первой страницы PDF
+                cover_url = await self.storage.generate_pdf_thumbnail(
+                    file_content=file_content,
+                    filename=unique_filename,
+                    workspace_id=None,  # Публичные документы
+                )
+                
+                if cover_url:
+                    logger.info("Сгенерирована обложка: %s", cover_url)
+                else:
+                    logger.warning("Не удалось сгенерировать обложку для %s", manual_name)
+
                 # Извлекаем теги и создаём description
                 tags = self.extract_tags(manual_name, category_name, group_name)
                 description = self.create_description(
@@ -426,7 +438,7 @@ class ManualImporter:
                         "file_size": file_size,
                         "file_type": DocumentFileType.PDF.value,  # .value для enum
                         "cover_type": CoverType.GENERATED.value,  # .value для enum
-                        "cover_url": None,  # Thumbnail генерируется автоматически
+                        "cover_url": cover_url,  # URL сгенерированного thumbnail
                         "cover_icon": None,
                         "available_functions": [
                             {
