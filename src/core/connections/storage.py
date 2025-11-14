@@ -17,15 +17,16 @@ from botocore.exceptions import ClientError
 
 from src.core.settings import settings, Settings as AppConfig
 
+
 from .base import BaseClient, BaseContextManager
 
 
 class S3Client(BaseClient):
     """
-    Клиент для работы с Amazon S3/MinIO.
+    Клиент для работы с Amazon S3
 
     Реализует базовый класс BaseClient для установки и управления
-    подключением к S3-совместимому хранилищу (AWS S3, MinIO, и т.д.).
+    подключением к S3-совместимому хранилищу.
 
     Attributes:
         settings (AppConfig): Конфигурация приложения с параметрами подключения к S3
@@ -47,20 +48,18 @@ class S3Client(BaseClient):
         self.settings = settings
         self.session = None
         self.client = None
-        self.client_context = None
 
     async def connect(self) -> Any:
-        """
-        Создает клиент S3/MinIO.
+        """Создает клиент S3
 
         Устанавливает соединение с S3-совместимым хранилищем, используя параметры
-        из конфигурации приложения. Поддерживает как AWS S3, так и MinIO.
+        из конфигурации приложения.
 
         Returns:
             Any: Контекст клиента S3 для выполнения операций с хранилищем
 
         Raises:
-            ClientError: При ошибке подключения к S3/MinIO
+            ClientError: При ошибке подключения к S3
         """
         s3_config = BotocoreConfig(s3={"addressing_style": "virtual"})
         try:
@@ -89,7 +88,7 @@ class S3Client(BaseClient):
 
     async def close(self) -> None:
         """
-        Закрывает клиент S3.
+        Закрывает клиент S3
 
         Освобождает ресурсы, связанные с клиентом S3.
         Безопасно обрабатывает случай, когда клиент уже закрыт.
@@ -102,7 +101,7 @@ class S3Client(BaseClient):
 
 class S3ContextManager(BaseContextManager):
     """
-    Контекстный менеджер для S3.
+    Контекстный менеджер для S3
 
     Реализует контекстный менеджер для автоматического управления
     жизненным циклом подключения к S3-хранилищу.
@@ -112,10 +111,6 @@ class S3ContextManager(BaseContextManager):
         client (Any | None): Активный клиент S3
         client_context (Any | None): Контекст клиента S3
         logger (logging.Logger): Логгер для записи событий
-
-    Example:
-        async with S3ContextManager() as s3_client:
-            await s3_client.upload_file(...)
     """
 
     def __init__(self) -> None:
@@ -136,6 +131,7 @@ class S3ContextManager(BaseContextManager):
             Any: Активный клиент S3 для работы с хранилищем
         """
         self.client_context = await self.s3_client.connect()
+
         self.client = await self.client_context.__aenter__()
         return self.client
 
