@@ -49,9 +49,16 @@ async def get_s3_client_optional() -> AsyncGenerator[Optional[Any], None]:
             logger.debug("S3 подключение успешно установлено")
             yield s3
     except ValueError as e:
-        # Credentials не заданы - это OK для опционального клиента
-        logger.info("✨ S3 клиент недоступен (credentials не заданы): %s", e)
-        yield None
+        error_msg = str(e)
+        # Различаем отсутствие credentials от других ValueError (например, от ClientError в storage)
+        if "AWS_ACCESS_KEY_ID" in error_msg or "AWS_SECRET_ACCESS_KEY" in error_msg:
+            # Credentials не заданы - это OK для опционального клиента
+            logger.info("✨ S3 клиент недоступен (credentials не заданы)")
+            yield None
+        else:
+            # Другие ValueError (например, ошибки S3 API) - логируем и возвращаем None
+            logger.warning("⚠️  S3 клиент недоступен: %s", e)
+            yield None
     except Exception as e:
         # Другие ошибки подключения также логируем, но не падаем
         logger.warning("⚠️  S3 клиент недоступен: %s", e)

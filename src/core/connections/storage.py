@@ -148,25 +148,6 @@ class S3ContextManager(BaseContextManager):
         self.client = None
         self.client_context = None
 
-    async def connect(self) -> Any:
-        """
-        Создает подключение к S3.
-
-        Returns:
-            Any: Активный клиент S3
-        """
-        self.client_context = await self.s3_client.connect()
-        self.client = await self.client_context.__aenter__()
-        return self.client
-
-    async def close(self) -> None:
-        """
-        Закрывает подключение к S3.
-        """
-        if self.client_context:
-            await self.client_context.__aexit__(None, None, None)
-        await self.s3_client.close()
-
     async def __aenter__(self):
         """
         Асинхронный вход в контекст.
@@ -174,7 +155,9 @@ class S3ContextManager(BaseContextManager):
         Returns:
             Any: Активный клиент S3 для работы с хранилищем
         """
-        return await self.connect()
+        self.client_context = await self.s3_client.connect()
+        self.client = await self.client_context.__aenter__()
+        return self.client
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """
@@ -185,4 +168,6 @@ class S3ContextManager(BaseContextManager):
             exc_val: Экземпляр исключения, если оно произошло
             exc_tb: Трейсбек исключения, если оно произошло
         """
-        await self.close()
+        if self.client_context:
+            await self.client_context.__aexit__(exc_type, exc_val, exc_tb)
+        await self.s3_client.close()
