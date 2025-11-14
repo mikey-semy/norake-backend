@@ -276,7 +276,8 @@ class DocumentServiceRepository(BaseRepository[DocumentServiceModel]):
                 stmt = stmt.where(self.model.tags.contains(tags))
             else:
                 # && оператор: массивы имеют общие элементы (OR)
-                stmt = stmt.where(self.model.tags.overlap(tags))
+                # Используем .op() для кастомного PostgreSQL оператора
+                stmt = stmt.where(self.model.tags.op("&&")(tags))
 
             stmt = stmt.order_by(self.model.created_at.desc())
 
