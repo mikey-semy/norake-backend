@@ -330,11 +330,24 @@ class DocumentServiceService:
         # Удаление файлов из S3 (если storage доступен)
         if self.storage:
             try:
-                # Извлекаем ключ из URL для delete_document_files
-                document_key = service.file_url.split("/")[-1] if service.file_url else ""
+                # Извлекаем S3 ключи из URL
+                # URL формат: https://storage.yandexcloud.net/bucket/documents/public/uuid_file.pdf
+                # Нужен ключ: documents/public/uuid_file.pdf
+                if service.file_url:
+                    # Получаем путь после bucket_name
+                    url_path = service.file_url.split(f"{self.storage.bucket_name}/")[-1]
+                    document_key = url_path
+                else:
+                    document_key = ""
+
+                thumbnail_key = None
+                if service.cover_url:
+                    url_path = service.cover_url.split(f"{self.storage.bucket_name}/")[-1]
+                    thumbnail_key = url_path
+
                 await self.storage.delete_document_files(
                     document_key=document_key,
-                    thumbnail_key=service.cover_url.split("/")[-1] if service.cover_url else None,
+                    thumbnail_key=thumbnail_key,
                 )
             except (OSError, RuntimeError) as e:
                 # Ошибка S3 - логируем warning, но продолжаем
