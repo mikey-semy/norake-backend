@@ -655,24 +655,33 @@ class DocumentServiceService:
 
     async def get_most_viewed(
         self,
-        file_type: Optional[DocumentFileType] = None,
+        file_type: Optional[str] = None,
         limit: int = 10,
     ) -> List[DocumentServiceModel]:
         """
         Получить самые просматриваемые сервисы.
 
         Args:
-            file_type: Фильтр по типу файла (опционально).
+            file_type: Фильтр по типу файла (опционально, lowercase).
             limit: Количество результатов (по умолчанию 10).
 
         Returns:
             Список самых просматриваемых DocumentServiceModel.
 
         Example:
-            >>> top_services = await service.get_most_viewed(limit=5)
+            >>> top_services = await service.get_most_viewed(file_type="pdf", limit=5)
         """
+        # Нормализация file_type к lowercase и преобразование в enum
+        file_type_enum = None
+        if file_type:
+            try:
+                file_type_enum = DocumentFileType(file_type.lower())
+            except ValueError:
+                self.logger.warning("Некорректный file_type: %s", file_type)
+                file_type_enum = None
+        
         services = await self.repository.get_most_viewed(
-            file_type=file_type,
+            file_type=file_type_enum,
             limit=limit,
         )
 

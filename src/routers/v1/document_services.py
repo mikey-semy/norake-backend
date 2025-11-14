@@ -120,7 +120,7 @@ class DocumentServiceProtectedRouter(ProtectedRouter):
             document_service: DocumentServiceServiceDep = None,
             file: UploadFile = File(..., description="Файл документа"),
             title: str = Form(..., min_length=3, max_length=200, description="Название"),
-            file_type: DocumentFileType = Form(..., description="Тип файла"),
+            file_type: str = Form(..., description="Тип файла (pdf/doc/docx/txt/md/spreadsheet/text/image)"),
             description: Optional[str] = Form(None, description="Описание"),
             tags: Optional[str] = Form(None, description="Теги через запятую"),
             workspace_id: Optional[UUID] = Form(None, description="UUID workspace"),
@@ -130,12 +130,12 @@ class DocumentServiceProtectedRouter(ProtectedRouter):
             # Парсинг тегов
             tags_list = [tag.strip() for tag in tags.split(",")] if tags else []
 
-            # Подготовка метаданных - передаём .value для совместимости с валидатором схемы
+            # Подготовка метаданных - file_type автоматически нормализуется через field_validator
             metadata = DocumentServiceCreateRequestSchema(
                 title=title,
                 description=description,
                 tags=tags_list,
-                file_type=file_type.value,  # Извлекаем lowercase строку
+                file_type=file_type,  # Валидатор схемы приведёт к lowercase
                 workspace_id=workspace_id,
                 is_public=is_public,
             )
@@ -201,8 +201,8 @@ class DocumentServiceProtectedRouter(ProtectedRouter):
             tags: Optional[str] = Query(None, description="Теги через запятую"),
             author_id: Optional[UUID] = Query(None, description="UUID автора"),
             workspace_id: Optional[UUID] = Query(None, description="UUID workspace"),
-            file_type: Optional[DocumentFileType] = Query(
-                None, description="Тип файла"
+            file_type: Optional[str] = Query(
+                None, description="Тип файла (pdf/doc/docx/txt/md/spreadsheet/text/image)"
             ),
             is_public: Optional[bool] = Query(None, description="Публичность"),
             limit: int = Query(20, ge=1, le=100, description="Количество результатов"),
@@ -266,8 +266,8 @@ class DocumentServiceProtectedRouter(ProtectedRouter):
         )
         async def get_most_viewed(
             document_service: DocumentServiceServiceDep = None,
-            file_type: Optional[DocumentFileType] = Query(
-                None, description="Тип файла"
+            file_type: Optional[str] = Query(
+                None, description="Тип файла (pdf/doc/docx/txt/md/spreadsheet/text/image)"
             ),
             limit: int = Query(10, ge=1, le=50, description="Количество результатов"),
         ) -> DocumentServiceListResponseSchema:

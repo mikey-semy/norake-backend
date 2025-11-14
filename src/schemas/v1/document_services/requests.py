@@ -118,7 +118,7 @@ class DocumentServiceCreateRequestSchema(BaseRequestSchema):
 
     file_type: str = Field(
         default="pdf",
-        description="Тип файла документа (pdf/spreadsheet/text/image)",
+        description="Тип файла документа (pdf/doc/docx/txt/md/spreadsheet/text/image)",
     )
 
     cover_type: str = Field(
@@ -310,10 +310,18 @@ class DocumentServiceQueryRequestSchema(BaseRequestSchema):
         description="Фильтр по тегам (AND логика)",
     )
 
-    file_type: Optional[DocumentFileType] = Field(
+    file_type: Optional[str] = Field(
         default=None,
-        description="Фильтр по типу файла",
+        description="Фильтр по типу файла (pdf/doc/docx/txt/md/spreadsheet/text/image)",
     )
+    
+    @field_validator("file_type", mode="before")
+    @classmethod
+    def normalize_query_file_type(cls, v: Optional[str]) -> Optional[str]:
+        """Приводит file_type к lowercase для корректной валидации."""
+        if v is not None and isinstance(v, str):
+            return v.lower()
+        return v
 
     author_id: Optional[uuid.UUID] = Field(
         default=None,

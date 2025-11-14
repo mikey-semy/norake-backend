@@ -11,11 +11,11 @@ Example:
     >>> repository = DocumentServiceRepository(session=session)
     >>> public_services = await repository.get_public_services()
     >>> user_services = await repository.get_by_author(user_id)
-    >>> pdf_services = await repository.get_by_file_type(DocumentFileType.PDF)
+    >>> pdf_services = await repository.get_by_file_type("pdf")
 """
 
 import logging
-from typing import List, Optional
+from typing import List, Optional, Union
 from uuid import UUID
 
 from sqlalchemy import or_, select
@@ -184,7 +184,7 @@ class DocumentServiceRepository(BaseRepository[DocumentServiceModel]):
 
     async def get_by_file_type(
         self,
-        file_type: DocumentFileType,
+        file_type: Union[str, DocumentFileType],
         is_public: Optional[bool] = None,
         limit: int = 50,
         offset: int = 0,
@@ -193,7 +193,7 @@ class DocumentServiceRepository(BaseRepository[DocumentServiceModel]):
         Получает сервисы по типу файла.
 
         Args:
-            file_type: Тип файла (PDF, SPREADSHEET, TEXT, IMAGE).
+            file_type: Тип файла (строка или enum: 'pdf', 'spreadsheet', 'text', 'image').
             is_public: Фильтр по публичности (опционально).
             limit: Количество результатов.
             offset: Смещение для пагинации.
@@ -203,12 +203,18 @@ class DocumentServiceRepository(BaseRepository[DocumentServiceModel]):
 
         Example:
             >>> # Все PDF сервисы
-            >>> pdfs = await repository.get_by_file_type(DocumentFileType.PDF)
+            >>> pdfs = await repository.get_by_file_type("pdf")
             >>> # Только публичные PDF
-            >>> public_pdfs = await repository.get_by_file_type(
-            ...     DocumentFileType.PDF, is_public=True
-            ... )
+            >>> public_pdfs = await repository.get_by_file_type("pdf", is_public=True)
         """
+        # Нормализация file_type к enum
+        if isinstance(file_type, str):
+            try:
+                file_type = DocumentFileType(file_type.lower())
+            except ValueError:
+                self.logger.warning("Некорректный file_type: %s", file_type)
+                return []
+        
         filters = {"file_type": file_type, "limit": limit, "offset": offset}
         if is_public is not None:
             filters["is_public"] = is_public
@@ -350,14 +356,14 @@ class DocumentServiceRepository(BaseRepository[DocumentServiceModel]):
 
     async def get_most_viewed(
         self,
-        file_type: Optional[DocumentFileType] = None,
+        file_type: Optional[Union[str, DocumentFileType]] = None,
         limit: int = 10,
     ) -> List[DocumentServiceModel]:
         """
         Получает самые просматриваемые сервисы.
 
         Args:
-            file_type: Фильтр по типу файла (опционально).
+            file_type: Фильтр по типу файла (строка или enum, опционально).
             limit: Количество результатов (по умолчанию 10).
 
         Returns:
@@ -367,13 +373,22 @@ class DocumentServiceRepository(BaseRepository[DocumentServiceModel]):
             >>> # Топ-10 самых просматриваемых
             >>> top = await repository.get_most_viewed()
             >>> # Топ-5 PDF по просмотрам
-            >>> top_pdfs = await repository.get_most_viewed(
-            ...     file_type=DocumentFileType.PDF, limit=5
-            ... )
+            >>> top_pdfs = await repository.get_most_viewed(file_type="pdf", limit=5)
         """
-        filters = {"limit": limit}
+        # Нормализация file_type к enum
+        file_type_enum = None
         if file_type:
-            filters["file_type"] = file_type
+            if isinstance(file_type, str):
+                try:
+                    file_type_enum = DocumentFileType(file_type.lower())
+                except ValueError:
+                    self.logger.warning("Некорректный file_type: %s", file_type)
+            else:
+                file_type_enum = file_type
+        
+        filters = {"limit": limit}
+        if file_type_enum:
+            filters["file_type"] = file_type_enum
 
         services = await self.filter_by_ordered(
             "view_count", ascending=False, **filters
@@ -382,7 +397,7 @@ class DocumentServiceRepository(BaseRepository[DocumentServiceModel]):
         self.logger.info(
             "Получено %d самых просматриваемых сервисов (file_type=%s)",
             len(services),
-            file_type.value if file_type else "any",
+            file_type_enum.value if file_type_enum else "any",
         )
         return services
 

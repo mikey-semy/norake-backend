@@ -54,9 +54,13 @@ class DocumentFileType(str, enum.Enum):
 
     Attributes:
         PDF: PDF документ.
-        SPREADSHEET: Excel/Google Sheets таблица (future feature).
-        TEXT: Текстовый документ (future feature).
-        IMAGE: Изображение (future feature).
+        DOC: Microsoft Word документ (.doc).
+        DOCX: Microsoft Word документ (.docx).
+        TXT: Простой текстовый файл (.txt).
+        MD: Markdown документ (.md).
+        SPREADSHEET: Excel/Google Sheets таблица.
+        TEXT: Общий текстовый документ.
+        IMAGE: Изображение.
 
     Example:
         >>> doc = DocumentServiceModel(file_type=DocumentFileType.PDF)
@@ -65,6 +69,10 @@ class DocumentFileType(str, enum.Enum):
     """
 
     PDF = "pdf"
+    DOC = "doc"
+    DOCX = "docx"
+    TXT = "txt"
+    MD = "md"
     SPREADSHEET = "spreadsheet"
     TEXT = "text"
     IMAGE = "image"
