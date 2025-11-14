@@ -61,7 +61,8 @@ class S3Client(BaseClient):
         Raises:
             ClientError: При ошибке подключения к S3
         """
-        s3_config = BotocoreConfig(s3={"addressing_style": "virtual"})
+        # Yandex Cloud с кастомным endpoint требует path-style addressing
+        s3_config = BotocoreConfig(s3={"addressing_style": "path"})
         try:
             self.logger.debug("Создание клиента S3...")
             self.session = Session(
