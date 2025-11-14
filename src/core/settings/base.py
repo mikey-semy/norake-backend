@@ -495,22 +495,25 @@ class Settings(BaseSettings):
             "exchange": self.RABBITMQ_EXCHANGE,
         }
 
-    # Настройки S3/MinIO Storage
+    # Настройки S3/MinIO Storage (опциональные)
     AWS_SERVICE_NAME: str = "s3"
     AWS_REGION: str = "us-east-1"
     AWS_ENDPOINT: Optional[str] = None  # MinIO endpoint для локальной разработки
     AWS_BUCKET_NAME: str = "norake-documents"
-    AWS_ACCESS_KEY_ID: SecretStr
-    AWS_SECRET_ACCESS_KEY: SecretStr
+    AWS_ACCESS_KEY_ID: Optional[SecretStr] = None  # Опционально для работы без S3
+    AWS_SECRET_ACCESS_KEY: Optional[SecretStr] = None  # Опционально для работы без S3
 
     @property
-    def s3_params(self) -> Dict[str, Any]:
+    def s3_params(self) -> Optional[Dict[str, Any]]:
         """
         Формирует параметры подключения к S3/MinIO.
 
         Returns:
-            Dict с параметрами подключения к S3
+            Dict с параметрами подключения к S3 или None если credentials не заданы
         """
+        if not self.AWS_ACCESS_KEY_ID or not self.AWS_SECRET_ACCESS_KEY:
+            return None
+        
         params = {
             "service_name": self.AWS_SERVICE_NAME,
             "region_name": self.AWS_REGION,

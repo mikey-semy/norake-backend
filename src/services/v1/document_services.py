@@ -65,17 +65,17 @@ class DocumentServiceService:
         get_most_viewed: Получить самые просматриваемые сервисы.
     """
 
-    def __init__(self, session: AsyncSession, s3_client: Any, settings: Settings):
+    def __init__(self, session: AsyncSession, s3_client: Optional[Any], settings: Settings):
         """
         Инициализирует сервис документов.
 
         Args:
             session: Асинхронная сессия SQLAlchemy.
-            s3_client: S3 клиент для работы с хранилищем.
+            s3_client: S3 клиент для работы с хранилищем (опционально).
             settings: Настройки приложения.
         """
         self.repository = DocumentServiceRepository(session)
-        self.storage = DocumentS3Storage(s3_client)
+        self.storage = DocumentS3Storage(s3_client) if s3_client else None
         self.settings = settings
         self.logger = logging.getLogger(__name__)
 
@@ -119,6 +119,11 @@ class DocumentServiceService:
 
         # Валидация MIME типа
         self._validate_file_type(file.content_type, metadata.file_type)
+
+        # Проверка наличия S3 storage
+        if not self.storage:
+            self.logger.error("S3 storage недоступен - невозможно загрузить файл")
+            raise ValueError("S3 storage не настроен. Установите AWS_ACCESS_KEY_ID и AWS_SECRET_ACCESS_KEY")
 
         # Загрузка файла в S3 (пересоздаём UploadFile для storage)
         await file.seek(0)  # Вернуть указатель в начало
@@ -324,17 +329,20 @@ class DocumentServiceService:
         # Проверка прав (только владелец)
         self._check_permission(service, user_id, "delete")
 
-        # Удаление файлов из S3
-        try:
-            # Извлекаем ключ из URL для delete_document_files
-            document_key = service.file_url.split("/")[-1] if service.file_url else ""
-            await self.storage.delete_document_files(
-                document_key=document_key,
-                thumbnail_key=service.cover_url.split("/")[-1] if service.cover_url else None,
-            )
-        except (OSError, RuntimeError) as e:
-            # Ошибка S3 - логируем warning, но продолжаем
-            self.logger.warning("Не удалось удалить файлы из S3: %s", e)
+        # Удаление файлов из S3 (если storage доступен)
+        if self.storage:
+            try:
+                # Извлекаем ключ из URL для delete_document_files
+                document_key = service.file_url.split("/")[-1] if service.file_url else ""
+                await self.storage.delete_document_files(
+                    document_key=document_key,
+                    thumbnail_key=service.cover_url.split("/")[-1] if service.cover_url else None,
+                )
+            except (OSError, RuntimeError) as e:
+                # Ошибка S3 - логируем warning, но продолжаем
+                self.logger.warning("Не удалось удалить файлы из S3: %s", e)
+        else:
+            self.logger.warning("S3 storage недоступен - файлы не удалены")
 
         # Удаление записи из БД
         deleted = await self.repository.delete_item(service_id)
@@ -619,6 +627,13 @@ class DocumentServiceService:
 
         # Формирование URL для QR-кода
         document_url = f"{base_url}/documents/{service_id}"
+
+        # Проверка доступности S3 storage
+        if not self.storage:
+            self.logger.error("S3 storage недоступен - невозможно сгенерировать QR-код")
+            raise ValueError(
+                "S3 storage не настроен. Установите AWS_ACCESS_KEY_ID и AWS_SECRET_ACCESS_KEY"
+            )
 
         # Генерация QR-кода
         try:

@@ -3,7 +3,7 @@
 """
 
 import logging
-from typing import Annotated, Any, AsyncGenerator
+from typing import Annotated, Any, AsyncGenerator, Optional
 
 from fastapi import Depends
 
@@ -33,5 +33,31 @@ async def get_s3_client() -> AsyncGenerator[Any, None]:
         raise ServiceUnavailableException("Storage (S3/MinIO)") from e
 
 
+async def get_s3_client_optional() -> AsyncGenerator[Optional[Any], None]:
+    """
+    Опциональная зависимость для получения S3 клиента.
+    
+    Возвращает None если credentials не заданы, вместо исключения.
+    Используется когда S3 не обязателен для работы сервиса.
+
+    Yields:
+        Optional[Any]: aioboto3 S3 client или None если подключение невозможно
+    """
+    try:
+        logger.debug("Попытка создания подключения к S3 (optional)")
+        async with S3ContextManager() as s3:
+            logger.debug("S3 подключение успешно установлено")
+            yield s3
+    except ValueError as e:
+        # Credentials не заданы - это OK для опционального клиента
+        logger.info("S3 клиент недоступен (credentials не заданы): %s", e)
+        yield None
+    except Exception as e:
+        # Другие ошибки также логируем, но не падаем
+        logger.warning("S3 клиент недоступен: %s", e)
+        yield None
+
+
 # Типизированная зависимость для использования в роутерах и сервисах
 S3ClientDep = Annotated[Any, Depends(get_s3_client)]
+S3ClientOptionalDep = Annotated[Optional[Any], Depends(get_s3_client_optional)]
