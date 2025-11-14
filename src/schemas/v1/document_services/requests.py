@@ -314,7 +314,7 @@ class DocumentServiceQueryRequestSchema(BaseRequestSchema):
         default=None,
         description="Фильтр по типу файла (pdf/doc/docx/txt/md/spreadsheet/text/image)",
     )
-    
+
     @field_validator("file_type", mode="before")
     @classmethod
     def normalize_query_file_type(cls, v: Optional[str]) -> Optional[str]:

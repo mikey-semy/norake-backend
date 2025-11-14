@@ -679,7 +679,7 @@ class DocumentServiceService:
             except ValueError:
                 self.logger.warning("Некорректный file_type: %s", file_type)
                 file_type_enum = None
-        
+
         services = await self.repository.get_most_viewed(
             file_type=file_type_enum,
             limit=limit,

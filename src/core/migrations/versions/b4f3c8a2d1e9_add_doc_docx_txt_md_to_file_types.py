@@ -19,7 +19,7 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """
     Добавляет новые типы файлов в enum DocumentFileType.
-    
+
     Расширяет существующий enum 'documentfiletype' новыми значениями:
     - 'doc' - Microsoft Word (.doc)
     - 'docx' - Microsoft Word (.docx)
@@ -37,7 +37,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     """
     Откат миграции невозможен для PostgreSQL enum.
-    
+
     PostgreSQL не поддерживает удаление значений из enum типа.
     Если необходим откат, нужно пересоздать тип с нуля.
     """

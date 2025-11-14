@@ -214,7 +214,7 @@ class DocumentServiceRepository(BaseRepository[DocumentServiceModel]):
             except ValueError:
                 self.logger.warning("Некорректный file_type: %s", file_type)
                 return []
-        
+
         filters = {"file_type": file_type, "limit": limit, "offset": offset}
         if is_public is not None:
             filters["is_public"] = is_public
@@ -385,7 +385,7 @@ class DocumentServiceRepository(BaseRepository[DocumentServiceModel]):
                     self.logger.warning("Некорректный file_type: %s", file_type)
             else:
                 file_type_enum = file_type
-        
+
         filters = {"limit": limit}
         if file_type_enum:
             filters["file_type"] = file_type_enum
