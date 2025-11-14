@@ -211,6 +211,7 @@ class BaseS3Storage(AbstractStorageBackend):
                 Key=full_file_key,
                 Body=file_content,
                 ContentType=file.content_type,
+                ACL="public-read",
                 CacheControl="max-age=31536000",  # Кеширование на 1 год
             )
 
