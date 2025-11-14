@@ -165,3 +165,18 @@ class S3ContextManager(BaseContextManager):
         if self.client_context:
             await self.client_context.__aexit__(exc_type, exc_val, exc_tb)
         await self.s3_client.close()
+
+    async def connect(self) -> Any:
+        """
+        Устанавливает подключение к S3.
+
+        Returns:
+            Any: Контекст клиента S3
+        """
+        return await self.s3_client.connect()
+
+    async def close(self) -> None:
+        """
+        Закрывает подключение к S3.
+        """
+        await self.s3_client.close()
