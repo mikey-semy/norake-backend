@@ -199,6 +199,11 @@ class DocumentServiceCreateRequestSchema(BaseRequestSchema):
         description="UUID workspace (NULL для публичных документов)",
     )
 
+    is_public: bool = Field(
+        default=True,
+        description="Публичный ли документ (доступен всем пользователям)",
+    )
+
 
 class DocumentCoverUpdateRequestSchema(BaseRequestSchema):
     """
