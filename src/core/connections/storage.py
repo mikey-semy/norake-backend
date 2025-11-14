@@ -78,11 +78,6 @@ class S3Client(BaseClient):
 
         s3_config = BotocoreConfig(s3={"addressing_style": addressing_style})
         try:
-            # Проверка наличия credentials
-            if not self.settings.AWS_ACCESS_KEY_ID or not self.settings.AWS_SECRET_ACCESS_KEY:
-                self.logger.warning("AWS credentials не заданы, S3 клиент недоступен")
-                raise ValueError("AWS_ACCESS_KEY_ID и AWS_SECRET_ACCESS_KEY обязательны для работы с S3")
-
             self.logger.debug("Создание клиента S3...")
             self.session = Session(
                 aws_access_key_id=self.settings.AWS_ACCESS_KEY_ID.get_secret_value(),
@@ -113,10 +108,9 @@ class S3Client(BaseClient):
         Освобождает ресурсы, связанные с клиентом S3.
         Безопасно обрабатывает случай, когда клиент уже закрыт.
         """
-        if self.client_context:
+        if self.client:
             self.logger.debug("Закрытие клиента S3...")
             self.client = None
-            self.client_context = None
             self.logger.info("Клиент S3 закрыт")
 
 
