@@ -72,8 +72,8 @@ class DocumentServiceCreateRequestSchema(BaseRequestSchema):
             "title": "Техническая документация",
             "description": "Руководство по эксплуатации оборудования XYZ",
             "tags": ["технический", "оборудование"],
-            "file_type": "PDF",
-            "cover_type": "GENERATED",
+            "file_type": "pdf",
+            "cover_type": "generated",
             "available_functions": [
                 {
                     "name": "view_pdf",
@@ -125,6 +125,22 @@ class DocumentServiceCreateRequestSchema(BaseRequestSchema):
         default="generated",
         description="Тип обложки (generated/icon/image)",
     )
+    
+    @field_validator("file_type", mode="before")
+    @classmethod
+    def normalize_file_type(cls, v: str) -> str:
+        """Приводит file_type к lowercase для корректной валидации enum."""
+        if isinstance(v, str):
+            return v.lower()
+        return v
+    
+    @field_validator("cover_type", mode="before")
+    @classmethod
+    def normalize_cover_type(cls, v: str) -> str:
+        """Приводит cover_type к lowercase для корректной валидации enum."""
+        if isinstance(v, str):
+            return v.lower()
+        return v
 
     cover_icon: Optional[str] = Field(
         default=None,

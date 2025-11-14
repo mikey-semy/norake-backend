@@ -43,17 +43,35 @@ async def get_s3_client_optional() -> AsyncGenerator[Optional[Any], None]:
     Yields:
         Optional[Any]: aioboto3 S3 client или None если подключение невозможно
     """
+    s3_manager = None
+    s3_client = None
+    
     try:
         logger.debug("Попытка создания подключения к S3 (optional)")
-        async with S3ContextManager() as s3:
-            logger.debug("S3 подключение успешно установлено")
-            yield s3
+        s3_manager = S3ContextManager()
+        s3_client = await s3_manager.__aenter__()
+        logger.debug("S3 подключение успешно установлено")
+        
+        try:
+            yield s3_client
+        except GeneratorExit:
+            # Нормальное завершение генератора - просто выходим
+            pass
+        except Exception:
+            # Исключение из downstream кода (например, ValidationError)
+            # Пробрасываем дальше, но сначала корректно закрываем S3
+            raise
+        finally:
+            # Всегда закрываем S3, даже если было исключение
+            if s3_manager:
+                await s3_manager.__aexit__(None, None, None)
+                
     except ValueError as e:
         # Credentials не заданы - это OK для опционального клиента
         logger.info("S3 клиент недоступен (credentials не заданы): %s", e)
         yield None
     except Exception as e:
-        # Другие ошибки также логируем, но не падаем
+        # Другие ошибки подключения также логируем, но не падаем
         logger.warning("S3 клиент недоступен: %s", e)
         yield None
 
