@@ -61,8 +61,19 @@ class S3Client(BaseClient):
         Raises:
             ClientError: При ошибке подключения к S3
         """
-        # Yandex Cloud с кастомным endpoint требует path-style addressing
-        s3_config = BotocoreConfig(s3={"addressing_style": "path"})
+        # [DEBUG] Показываем ЧТО РЕАЛЬНО видит Settings при создании клиента
+        self.logger.info("[S3 CONFIG] AWS_ENDPOINT=%s", self.settings.AWS_ENDPOINT)
+        self.logger.info("[S3 CONFIG] AWS_REGION=%s", self.settings.AWS_REGION)
+        self.logger.info("[S3 CONFIG] AWS_BUCKET_NAME=%s", self.settings.AWS_BUCKET_NAME)
+        self.logger.info("[S3 CONFIG] AWS_SERVICE_NAME=%s", self.settings.AWS_SERVICE_NAME)
+        self.logger.info(
+            "[S3 CONFIG] AWS_ACCESS_KEY_ID=%s",
+            self.settings.AWS_ACCESS_KEY_ID.get_secret_value()[:10] + "...",
+        )
+
+        # КРИТИЧНО: virtual-hosted для подписи (без bucket в CanonicalRequest path)
+        # Yandex Cloud ожидает подпись БЕЗ /bucket/ в пути, даже если URL path-style!
+        s3_config = BotocoreConfig(s3={"addressing_style": "virtual"})
         try:
             self.logger.debug("Создание клиента S3...")
             self.session = Session(
