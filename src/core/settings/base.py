@@ -513,7 +513,7 @@ class Settings(BaseSettings):
         """
         if not self.AWS_ACCESS_KEY_ID or not self.AWS_SECRET_ACCESS_KEY:
             return None
-        
+
         params = {
             "service_name": self.AWS_SERVICE_NAME,
             "region_name": self.AWS_REGION,

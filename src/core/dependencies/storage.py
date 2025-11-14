@@ -36,7 +36,7 @@ async def get_s3_client() -> AsyncGenerator[Any, None]:
 async def get_s3_client_optional() -> AsyncGenerator[Optional[Any], None]:
     """
     Опциональная зависимость для получения S3 клиента.
-    
+
     Возвращает None если credentials не заданы, вместо исключения.
     Используется когда S3 не обязателен для работы сервиса.
 

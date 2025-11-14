@@ -71,7 +71,7 @@ class S3Client(BaseClient):
             if not self.settings.AWS_ACCESS_KEY_ID or not self.settings.AWS_SECRET_ACCESS_KEY:
                 self.logger.warning("AWS credentials не заданы, S3 клиент недоступен")
                 raise ValueError("AWS_ACCESS_KEY_ID и AWS_SECRET_ACCESS_KEY обязательны для работы с S3")
-            
+
             self.logger.debug("Создание клиента S3...")
             self.session = Session(
                 aws_access_key_id=self.settings.AWS_ACCESS_KEY_ID.get_secret_value(),
