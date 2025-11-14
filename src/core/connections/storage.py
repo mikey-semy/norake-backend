@@ -62,9 +62,20 @@ class S3Client(BaseClient):
         Raises:
             ClientError: При ошибке подключения к S3/MinIO
         """
-        # Для MinIO (локальная разработка) используем path-style addressing
-        # Для AWS S3 (production) используем virtual-hosted-style addressing
-        addressing_style = "path" if self.settings.AWS_ENDPOINT else "virtual"
+        # Определяем addressing style на основе настроек:
+        # - "auto": автоматически по endpoint (localhost/127.0.0.1 -> path, остальное -> virtual)
+        # - "path": явно для MinIO
+        # - "virtual": явно для AWS S3 / Yandex Cloud
+        if self.settings.AWS_ADDRESSING_STYLE == "auto":
+            is_minio = (
+                self.settings.AWS_ENDPOINT 
+                and ("localhost" in self.settings.AWS_ENDPOINT 
+                     or "127.0.0.1" in self.settings.AWS_ENDPOINT)
+            )
+            addressing_style = "path" if is_minio else "virtual"
+        else:
+            addressing_style = self.settings.AWS_ADDRESSING_STYLE
+        
         s3_config = BotocoreConfig(s3={"addressing_style": addressing_style})
         try:
             # Проверка наличия credentials

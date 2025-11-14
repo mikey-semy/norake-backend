@@ -497,11 +497,12 @@ class Settings(BaseSettings):
 
     # Настройки S3/MinIO Storage (опциональные)
     AWS_SERVICE_NAME: str = "s3"
-    AWS_REGION: str = "us-east-1"
+    AWS_REGION: str = "us-east-1" # ru-central1 для Yandex.Cloud
     AWS_ENDPOINT: Optional[str] = None  # MinIO endpoint для локальной разработки
-    AWS_BUCKET_NAME: str = "equiply-documents"
+    AWS_BUCKET_NAME: str = "documents"
     AWS_ACCESS_KEY_ID: Optional[SecretStr] = None  # Опционально для работы без S3
     AWS_SECRET_ACCESS_KEY: Optional[SecretStr] = None  # Опционально для работы без S3
+    AWS_ADDRESSING_STYLE: str = "auto"  # "auto" (определяет по endpoint), "path" (MinIO), "virtual" (AWS/Yandex)
 
     @property
     def s3_params(self) -> Optional[Dict[str, Any]]:
