@@ -943,7 +943,7 @@ class DocumentServiceService:
         if query.search:
             services = await self.repository.search_by_text(query.search)
             return len(services)
-        
+
         # Если есть tags - используем специальный метод с тегами
         if query.tags:
             services = await self.repository.get_by_tags(
@@ -951,7 +951,7 @@ class DocumentServiceService:
                 match_all=False  # OR logic как в list_document_services
             )
             return len(services)
-        
+
         # Иначе используем count_items с базовыми фильтрами
         filters: Dict[str, Any] = {}
 
