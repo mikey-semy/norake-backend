@@ -24,33 +24,17 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     Raises:
         ServiceUnavailableException: Если не удается подключиться к Postgres.
     """
-    session = None
-    session_gen = None
-
     try:
         logger.debug("Создание сессии базы данных")
-        session_gen = get_db_session()
-        session = await session_gen.__anext__()
-
-        try:
+        async for session in get_db_session():
             yield session
-        except GeneratorExit:
-            # Нормальное завершение генератора
-            pass
-        except Exception:
-            # Исключение из downstream кода - пробрасываем дальше
-            raise
-        finally:
-            # Всегда закрываем сессию
-            try:
-                await session_gen.__anext__()
-            except StopAsyncIteration:
-                pass
-
     except RuntimeError as e:
         # Ловим только ошибки инициализации/подключения к базе
         logger.error("Ошибка подключения к базе данных: %s", e)
-        raise ServiceUnavailableException("Database (Postgres)")
+        raise ServiceUnavailableException("Database (Postgres)") from e
+    except Exception:
+        # Все остальные ошибки пробрасываем дальше!
+        raise
 
 
 # Типизированная зависимость
