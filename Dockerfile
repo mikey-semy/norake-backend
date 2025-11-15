@@ -3,12 +3,18 @@ FROM python:3.12-alpine AS builder
 
 WORKDIR /build
 
-# Устанавливаем только необходимые пакеты для сборки
+# Устанавливаем только необходимые пакеты для сборки (включая g++ для PyMuPDF)
 RUN apk add --no-cache \
     gcc \
+    g++ \
     musl-dev \
     postgresql-dev \
-    libffi-dev
+    libffi-dev \
+    freetype-dev \
+    harfbuzz-dev \
+    openjpeg-dev \
+    jpeg-dev \
+    zlib-dev
 
 # Копируем uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
