@@ -92,12 +92,27 @@ async def main():
                 desc = model["description"][:200]
                 print(f"  Description: {desc}...")
 
+    # Подготавливаем структуру для сохранения
+    from datetime import datetime
+    
+    output_data = {
+        "models": models,
+        "metadata": {
+            "source": "OpenRouter API",
+            "fetched_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "endpoint": "https://openrouter.ai/api/v1/embeddings/models",
+            "total_count": len(models),
+            "current_backend": "Ollama (mxbai-embed-large, nomic-embed-text)",
+        }
+    }
+
     # Сохраняем в JSON
     output_file = "fixtures_data/openrouter_embedding_models.json"
     with open(output_file, "w", encoding="utf-8") as f:
-        json.dump(models, f, indent=2, ensure_ascii=False)
+        json.dump(output_data, f, indent=2, ensure_ascii=False)
 
     print(f"\n\n💾 Данные сохранены в: {output_file}")
+    print(f"📊 Всего моделей: {len(models)}")
 
 
 if __name__ == "__main__":

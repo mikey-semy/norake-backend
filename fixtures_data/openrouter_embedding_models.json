@@ -2,137 +2,428 @@
   "models": [
     {
       "id": "qwen/qwen3-embedding-0.6b",
-      "name": "Qwen3 Embedding 0.6B",
-      "provider": "Qwen",
-      "context_length": 33000,
+      "canonical_slug": "qwen/qwen3-embedding-0.6b",
+      "hugging_face_id": "Qwen/Qwen3-Embedding-0.6B",
+      "name": "Qwen: Qwen3 Embedding 0.6B",
+      "created": 1762346520,
+      "description": "The Qwen3 Embedding model series is the latest proprietary model of the Qwen family, specifically designed for text embedding and ranking tasks. This series inherits the exceptional multilingual capabilities, long-text understanding, and reasoning skills of its foundational model. The Qwen3 Embedding series represents significant advancements in multiple text embedding and ranking tasks, including text retrieval, code retrieval, text classification, text clustering, and bitext mining.",
+      "context_length": 32768,
+      "architecture": {
+        "modality": "text->embeddings",
+        "input_modalities": [
+          "text"
+        ],
+        "output_modalities": [
+          "embeddings"
+        ],
+        "tokenizer": "Other",
+        "instruct_type": null
+      },
       "pricing": {
         "prompt": "0.00000001",
-        "completion": "0"
+        "completion": "0",
+        "request": "0",
+        "image": "0",
+        "web_search": "0",
+        "internal_reasoning": "0"
       },
-      "dimensions": null,
-      "usage_tokens": 1400000000,
-      "description": "Самая компактная модель embeddings от Qwen. Оптимальна для больших объёмов данных при ограниченном бюджете.",
-      "specializations": [
-        "semantic-search",
-        "document-retrieval",
-        "clustering"
+      "top_provider": {
+        "context_length": 32768,
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null,
+      "supported_parameters": [
+        "frequency_penalty",
+        "max_tokens",
+        "min_p",
+        "presence_penalty",
+        "repetition_penalty",
+        "response_format",
+        "seed",
+        "stop",
+        "temperature",
+        "top_k",
+        "top_p"
       ],
-      "supported": true
+      "default_parameters": {
+        "temperature": null,
+        "top_p": null,
+        "frequency_penalty": null
+      }
     },
     {
-      "id": "mistralai/mistral-embed",
-      "name": "Mistral Embed 2312",
-      "provider": "Mistral AI",
-      "context_length": 8000,
+      "id": "mistralai/mistral-embed-2312",
+      "canonical_slug": "mistralai/mistral-embed-2312",
+      "hugging_face_id": null,
+      "name": "Mistral: Mistral Embed 2312",
+      "created": 1761944622,
+      "description": "Mistral Embed is a specialized embedding model for text data, optimized for semantic search and RAG applications. Developed by Mistral AI in late 2023, it produces 1024-dimensional vectors that effectively capture semantic relationships in text.",
+      "context_length": 8192,
+      "architecture": {
+        "modality": "text->embeddings",
+        "input_modalities": [
+          "text"
+        ],
+        "output_modalities": [
+          "embeddings"
+        ],
+        "tokenizer": "Mistral",
+        "instruct_type": null
+      },
       "pricing": {
         "prompt": "0.0000001",
-        "completion": "0"
+        "completion": "0",
+        "request": "0",
+        "image": "0",
+        "web_search": "0",
+        "internal_reasoning": "0"
       },
-      "dimensions": 1024,
-      "usage_tokens": 115000000,
-      "description": "Специализированная модель embeddings от Mistral AI. Оптимизирована для RAG и семантического поиска.",
-      "specializations": [
-        "rag",
-        "semantic-search",
-        "document-analysis"
+      "top_provider": {
+        "context_length": 8192,
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null,
+      "supported_parameters": [
+        "frequency_penalty",
+        "max_tokens",
+        "presence_penalty",
+        "response_format",
+        "seed",
+        "stop",
+        "structured_outputs",
+        "temperature",
+        "top_p"
       ],
-      "supported": true
+      "default_parameters": {
+        "temperature": null,
+        "top_p": null,
+        "frequency_penalty": null
+      }
     },
     {
       "id": "openai/text-embedding-ada-002",
-      "name": "OpenAI Text Embedding Ada 002",
-      "provider": "OpenAI",
-      "context_length": 8000,
+      "canonical_slug": "openai/text-embedding-ada-002",
+      "hugging_face_id": "",
+      "name": "OpenAI: Text Embedding Ada 002",
+      "created": 1761865798,
+      "description": "text-embedding-ada-002 is OpenAI's legacy text embedding model.",
+      "context_length": 8192,
+      "architecture": {
+        "modality": "text->embeddings",
+        "input_modalities": [
+          "text"
+        ],
+        "output_modalities": [
+          "embeddings"
+        ],
+        "tokenizer": "Other",
+        "instruct_type": null
+      },
       "pricing": {
         "prompt": "0.0000001",
-        "completion": "0"
+        "completion": "0",
+        "request": "0",
+        "image": "0",
+        "web_search": "0",
+        "internal_reasoning": "0"
       },
-      "dimensions": 1536,
-      "usage_tokens": 190000000,
-      "description": "Легаси модель embeddings от OpenAI. Проверенная временем, но заменена на text-embedding-3.",
-      "specializations": [
-        "semantic-search",
-        "document-retrieval",
-        "general-purpose"
+      "top_provider": {
+        "context_length": 8192,
+        "max_completion_tokens": null,
+        "is_moderated": true
+      },
+      "per_request_limits": null,
+      "supported_parameters": [
+        "frequency_penalty",
+        "logit_bias",
+        "logprobs",
+        "max_tokens",
+        "presence_penalty",
+        "response_format",
+        "seed",
+        "stop",
+        "structured_outputs",
+        "temperature",
+        "top_logprobs",
+        "top_p"
       ],
-      "supported": true,
-      "deprecated": true,
-      "replacement": "openai/text-embedding-3-small"
+      "default_parameters": {
+        "temperature": null,
+        "top_p": null,
+        "frequency_penalty": null
+      }
+    },
+    {
+      "id": "mistralai/codestral-embed-2505",
+      "canonical_slug": "mistralai/codestral-embed-2505",
+      "hugging_face_id": "",
+      "name": "Mistral: Codestral Embed 2505",
+      "created": 1761864460,
+      "description": "Mistral Codestral Embed is specially designed for code, perfect for embedding code databases, repositories, and powering coding assistants with state-of-the-art retrieval.",
+      "context_length": 8192,
+      "architecture": {
+        "modality": "text->embeddings",
+        "input_modalities": [
+          "text"
+        ],
+        "output_modalities": [
+          "embeddings"
+        ],
+        "tokenizer": "Mistral",
+        "instruct_type": null
+      },
+      "pricing": {
+        "prompt": "0.00000015",
+        "completion": "0",
+        "request": "0",
+        "image": "0",
+        "web_search": "0",
+        "internal_reasoning": "0"
+      },
+      "top_provider": {
+        "context_length": 8192,
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null,
+      "supported_parameters": [
+        "frequency_penalty",
+        "max_tokens",
+        "presence_penalty",
+        "response_format",
+        "seed",
+        "stop",
+        "structured_outputs",
+        "temperature",
+        "top_p"
+      ],
+      "default_parameters": {
+        "temperature": null,
+        "top_p": null,
+        "frequency_penalty": null
+      }
+    },
+    {
+      "id": "openai/text-embedding-3-large",
+      "canonical_slug": "openai/text-embedding-3-large",
+      "hugging_face_id": "",
+      "name": "OpenAI: Text Embedding 3 Large",
+      "created": 1761862866,
+      "description": "text-embedding-3-large is OpenAI's most capable embedding model for both english and non-english tasks. Embeddings are a numerical representation of text that can be used to measure the relatedness between two pieces of text. Embeddings are useful for search, clustering, recommendations, anomaly detection, and classification tasks.",
+      "context_length": 8192,
+      "architecture": {
+        "modality": "text->embeddings",
+        "input_modalities": [
+          "text"
+        ],
+        "output_modalities": [
+          "embeddings"
+        ],
+        "tokenizer": "Other",
+        "instruct_type": null
+      },
+      "pricing": {
+        "prompt": "0.00000013",
+        "completion": "0",
+        "request": "0",
+        "image": "0",
+        "web_search": "0",
+        "internal_reasoning": "0"
+      },
+      "top_provider": {
+        "context_length": 8192,
+        "max_completion_tokens": null,
+        "is_moderated": true
+      },
+      "per_request_limits": null,
+      "supported_parameters": [
+        "frequency_penalty",
+        "logit_bias",
+        "logprobs",
+        "max_tokens",
+        "presence_penalty",
+        "response_format",
+        "seed",
+        "stop",
+        "structured_outputs",
+        "temperature",
+        "top_logprobs",
+        "top_p"
+      ],
+      "default_parameters": {
+        "temperature": null,
+        "top_p": null,
+        "frequency_penalty": null
+      }
     },
     {
       "id": "openai/text-embedding-3-small",
-      "name": "OpenAI Text Embedding 3 Small",
-      "provider": "OpenAI",
-      "context_length": 8000,
+      "canonical_slug": "openai/text-embedding-3-small",
+      "hugging_face_id": "",
+      "name": "OpenAI: Text Embedding 3 Small",
+      "created": 1761857455,
+      "description": " text-embedding-3-small is OpenAI's improved, more performant version of the ada embedding model. Embeddings are a numerical representation of text that can be used to measure the relatedness between two pieces of text. Embeddings are useful for search, clustering, recommendations, anomaly detection, and classification tasks.",
+      "context_length": 8192,
+      "architecture": {
+        "modality": "text->embeddings",
+        "input_modalities": [
+          "text"
+        ],
+        "output_modalities": [
+          "embeddings"
+        ],
+        "tokenizer": "Other",
+        "instruct_type": null
+      },
       "pricing": {
         "prompt": "0.00000002",
-        "completion": "0"
+        "completion": "0",
+        "request": "0",
+        "image": "0",
+        "web_search": "0",
+        "internal_reasoning": "0"
       },
-      "dimensions": 1536,
-      "usage_tokens": 3530000000,
-      "description": "Улучшенная версия Ada 002. Лучшее качество при меньшей стоимости. Рекомендуемая модель для большинства задач.",
-      "specializations": [
-        "semantic-search",
-        "document-retrieval",
-        "clustering",
-        "recommendations"
+      "top_provider": {
+        "context_length": 8192,
+        "max_completion_tokens": null,
+        "is_moderated": true
+      },
+      "per_request_limits": null,
+      "supported_parameters": [
+        "frequency_penalty",
+        "logit_bias",
+        "logprobs",
+        "max_tokens",
+        "presence_penalty",
+        "response_format",
+        "seed",
+        "stop",
+        "structured_outputs",
+        "temperature",
+        "top_logprobs",
+        "top_p"
       ],
-      "supported": true
+      "default_parameters": {
+        "temperature": null,
+        "top_p": null,
+        "frequency_penalty": null
+      }
     },
     {
       "id": "qwen/qwen3-embedding-8b",
-      "name": "Qwen3 Embedding 8B",
-      "provider": "Qwen",
+      "canonical_slug": "qwen/qwen3-embedding-8b",
+      "hugging_face_id": "Qwen/Qwen3-Embedding-8B",
+      "name": "Qwen: Qwen3 Embedding 8B",
+      "created": 1761680622,
+      "description": "The Qwen3 Embedding model series is the latest proprietary model of the Qwen family, specifically designed for text embedding and ranking tasks. This series inherits the exceptional multilingual capabilities, long-text understanding, and reasoning skills of its foundational model. The Qwen3 Embedding series represents significant advancements in multiple text embedding and ranking tasks, including text retrieval, code retrieval, text classification, text clustering, and bitext mining.",
       "context_length": 32000,
+      "architecture": {
+        "modality": "text->embeddings",
+        "input_modalities": [
+          "text"
+        ],
+        "output_modalities": [
+          "embeddings"
+        ],
+        "tokenizer": "Other",
+        "instruct_type": null
+      },
       "pricing": {
         "prompt": "0.00000001",
-        "completion": "0"
+        "completion": "0",
+        "request": "0",
+        "image": "0",
+        "web_search": "0",
+        "internal_reasoning": "0"
       },
-      "dimensions": null,
-      "usage_tokens": 13100000000,
-      "description": "Наиболее мощная модель embeddings от Qwen. Максимальное качество при минимальной стоимости.",
-      "specializations": [
-        "semantic-search",
-        "document-retrieval",
-        "clustering",
-        "multilingual"
+      "top_provider": {
+        "context_length": 32000,
+        "max_completion_tokens": 32000,
+        "is_moderated": false
+      },
+      "per_request_limits": null,
+      "supported_parameters": [
+        "frequency_penalty",
+        "logit_bias",
+        "logprobs",
+        "max_tokens",
+        "min_p",
+        "presence_penalty",
+        "repetition_penalty",
+        "response_format",
+        "seed",
+        "stop",
+        "temperature",
+        "top_k",
+        "top_logprobs",
+        "top_p"
       ],
-      "supported": true
+      "default_parameters": {
+        "temperature": null,
+        "top_p": null,
+        "frequency_penalty": null
+      }
     },
     {
       "id": "qwen/qwen3-embedding-4b",
-      "name": "Qwen3 Embedding 4B",
-      "provider": "Qwen",
-      "context_length": 33000,
+      "canonical_slug": "qwen/qwen3-embedding-4b",
+      "hugging_face_id": "Qwen/Qwen3-Embedding-4B",
+      "name": "Qwen: Qwen3 Embedding 4B",
+      "created": 1761662922,
+      "description": "The Qwen3 Embedding model series is the latest proprietary model of the Qwen family, specifically designed for text embedding and ranking tasks. This series inherits the exceptional multilingual capabilities, long-text understanding, and reasoning skills of its foundational model. The Qwen3 Embedding series represents significant advancements in multiple text embedding and ranking tasks, including text retrieval, code retrieval, text classification, text clustering, and bitext mining.",
+      "context_length": 32768,
+      "architecture": {
+        "modality": "text->embeddings",
+        "input_modalities": [
+          "text"
+        ],
+        "output_modalities": [
+          "embeddings"
+        ],
+        "tokenizer": "Other",
+        "instruct_type": null
+      },
       "pricing": {
         "prompt": "0.00000002",
-        "completion": "0"
+        "completion": "0",
+        "request": "0",
+        "image": "0",
+        "web_search": "0",
+        "internal_reasoning": "0"
       },
-      "dimensions": null,
-      "usage_tokens": 570000000,
-      "description": "Средняя модель embeddings от Qwen. Баланс между производительностью и стоимостью.",
-      "specializations": [
-        "semantic-search",
-        "document-retrieval",
-        "clustering"
+      "top_provider": {
+        "context_length": 32768,
+        "max_completion_tokens": null,
+        "is_moderated": false
+      },
+      "per_request_limits": null,
+      "supported_parameters": [
+        "frequency_penalty",
+        "max_tokens",
+        "min_p",
+        "presence_penalty",
+        "repetition_penalty",
+        "response_format",
+        "seed",
+        "stop",
+        "temperature",
+        "top_k",
+        "top_p"
       ],
-      "supported": true
+      "default_parameters": {
+        "temperature": null,
+        "top_p": null,
+        "frequency_penalty": null
+      }
     }
   ],
   "metadata": {
-    "source": "OpenRouter",
-    "note": "OpenRouter API не предоставляет embeddings через endpoint /api/v1/models. Данные собраны вручную из веб-интерфейса.",
-    "created_at": "2025-06-09",
-    "current_backend": "Ollama (mxbai-embed-large, nomic-embed-text)",
-    "future_considerations": "Модели доступны для справки. Для использования потребуется интеграция с OpenRouter embeddings API (если появится)."
-  },
-  "pricing_comparison": {
-    "cheapest": [
-      "qwen/qwen3-embedding-0.6b",
-      "qwen/qwen3-embedding-8b"
-    ],
-    "most_used": "openai/text-embedding-3-small",
-    "recommended_for_rag": "mistralai/mistral-embed",
-    "legacy": "openai/text-embedding-ada-002"
+    "source": "OpenRouter API",
+    "fetched_at": "2025-11-15 22:38:40",
+    "endpoint": "https://openrouter.ai/api/v1/embeddings/models",
+    "total_count": 8,
+    "current_backend": "Ollama (mxbai-embed-large, nomic-embed-text)"
   }
 }
