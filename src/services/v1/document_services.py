@@ -591,7 +591,7 @@ class DocumentServiceService:
             try:
                 # Проверить существующую обработку
                 processing = await self.processing_repo.get_by_document_id(service_id)
-                
+
                 if not processing:
                     # Создать запись о начале обработки
                     processing = await self.processing_repo.create_processing_record(
@@ -602,7 +602,7 @@ class DocumentServiceService:
                         "Создана запись обработки для документа %s (status=PENDING)",
                         service_id,
                     )
-                
+
                 # Если обработка уже завершена - не запускать заново
                 if processing.status == ProcessingStatus.COMPLETED:
                     self.logger.info(
@@ -1372,7 +1372,7 @@ class DocumentServiceService:
             ... )
         """
         start_time = time.time()
-        
+
         try:
             # 1. Обновить статус на PROCESSING
             await self.processing_repo.update_status(
@@ -1393,21 +1393,21 @@ class DocumentServiceService:
             # 3. Скачать файл из S3
             file_key = service.file_url.split("/")[-1]
             self.logger.debug("Скачиваем файл из S3: %s", file_key)
-            
+
             file_content, content_type = await self.storage.get_file_stream(file_key)
-            
+
             # 4. Извлечь текст через PDFProcessor
             self.logger.debug("Извлекаем текст из PDF...")
             pdf_processor = PDFProcessor()
-            
+
             # Сохранить во временный файл для обработки
             import tempfile
             import os
-            
+
             with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
                 tmp.write(file_content)
                 tmp_path = tmp.name
-            
+
             try:
                 extracted_text = await pdf_processor.extract_text(tmp_path)
                 page_count = await pdf_processor.get_page_count(tmp_path)
@@ -1449,7 +1449,7 @@ class DocumentServiceService:
                 str(e),
                 exc_info=True,
             )
-            
+
             try:
                 await self.processing_repo.update_status(
                     processing_id,

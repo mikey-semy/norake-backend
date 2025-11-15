@@ -22,7 +22,7 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """
     Добавить knowledge_base_id FK в document_services для связи с KnowledgeBase.
-    
+
     Этот FK позволяет активировать RAG функцию для DocumentService,
     связывая документ с базой знаний и её векторным хранилищем.
     """

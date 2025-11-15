@@ -36,22 +36,22 @@
 export interface ChatMessage {
   /** Роль отправителя: 'user' или 'assistant' */
   role: 'user' | 'assistant';
-  
+
   /** Текстовое содержимое сообщения (поддерживает Markdown) */
   content: string;
-  
+
   /** Метаданные сообщения */
   metadata: {
     /** Количество токенов использованных для генерации (только для assistant) */
     tokens_used?: number;
-    
+
     /** Количество RAG чанков использованных из документов (только для assistant) */
     rag_chunks_used?: number;
-    
+
     /** Ключ модели использованной для ответа (только для assistant) */
     model_key?: string;
   };
-  
+
   /** ISO 8601 timestamp отправки */
   timestamp: string;
 }
@@ -62,10 +62,10 @@ export interface ChatMessage {
 export interface ChatModelSettings {
   /** Креативность ответов: 0.0 (точно) - 2.0 (креативно) */
   temperature: number;
-  
+
   /** Максимум токенов в ответе модели */
   max_tokens: number;
-  
+
   /** Системный промпт (опционально) */
   system_prompt?: string | null;
 }
@@ -76,13 +76,13 @@ export interface ChatModelSettings {
 export interface ChatMetadata {
   /** Общее количество токенов использованных в чате */
   tokens_used: number;
-  
+
   /** Количество сообщений в чате */
   messages_count: number;
-  
+
   /** Примерная стоимость в USD (для платных моделей) */
   estimated_cost: number;
-  
+
   /** Количество RAG запросов выполненных */
   rag_queries_count: number;
 }
@@ -93,28 +93,28 @@ export interface ChatMetadata {
 export interface ChatListItem {
   /** UUID чата в БД */
   id: string;
-  
+
   /** Читаемый идентификатор (например, "chat-abc123xyz") */
   chat_id: string;
-  
+
   /** Название чата */
   title: string;
-  
+
   /** Ключ текущей модели (qwen_coder, kimi_dev, и т.д.) */
   model_key: string;
-  
+
   /** Имя модели (computed field от backend) */
   model_name: string;
-  
+
   /** Количество сообщений в чате */
   messages_count: number;
-  
+
   /** UUID workspace (null для персональных чатов) */
   workspace_id: string | null;
-  
+
   /** ISO 8601 timestamp создания */
   created_at: string;
-  
+
   /** ISO 8601 timestamp последнего обновления */
   updated_at: string;
 }
@@ -125,43 +125,43 @@ export interface ChatListItem {
 export interface ChatDetail {
   /** UUID чата в БД */
   id: string;
-  
+
   /** Читаемый идентификатор */
   chat_id: string;
-  
+
   /** Название чата */
   title: string;
-  
+
   /** Ключ текущей модели */
   model_key: string;
-  
+
   /** Имя модели (computed field) */
   model_name: string;
-  
+
   /** UUID владельца чата */
   user_id: string;
-  
+
   /** UUID workspace (null для персональных) */
   workspace_id: string | null;
-  
+
   /** Список UUID документов добавленных в RAG контекст */
   document_service_ids: string[];
-  
+
   /** История сообщений */
   messages: ChatMessage[];
-  
+
   /** Настройки текущей модели */
   model_settings: ChatModelSettings;
-  
+
   /** Метаданные использования */
   metadata: ChatMetadata;
-  
+
   /** Активен ли чат (false = soft deleted) */
   is_active: boolean;
-  
+
   /** ISO 8601 timestamp создания */
   created_at: string;
-  
+
   /** ISO 8601 timestamp последнего обновления */
   updated_at: string;
 }
@@ -172,25 +172,25 @@ export interface ChatDetail {
 export interface ModelInfo {
   /** Ключ модели для API запросов */
   key: string;
-  
+
   /** OpenRouter ID модели */
   id: string;
-  
+
   /** Человекочитаемое имя */
   name: string;
-  
+
   /** Описание модели */
   description: string;
-  
+
   /** Специализация (код, исследования, и т.д.) */
   specialization: string;
-  
+
   /** Максимальный context window в токенах */
   context_window: number;
-  
+
   /** Дефолтная temperature */
   default_temperature: number;
-  
+
   /** Дефолтный max_tokens */
   default_max_tokens: number;
 }
@@ -269,12 +269,12 @@ apiClient.interceptors.response.use(
             { refresh_token: refreshToken }
           );
           const { access_token, refresh_token: new_refresh } = response.data.data;
-          
+
           localStorage.setItem('access_token', access_token);
           if (new_refresh) {
             localStorage.setItem('refresh_token', new_refresh);
           }
-          
+
           // Повторить оригинальный запрос
           error.config!.headers.Authorization = `Bearer ${access_token}`;
           return apiClient.request(error.config!);
@@ -518,10 +518,10 @@ import type { ModelInfo } from '../../types/chat';
 interface ModelSelectorProps {
   /** Текущий ключ модели */
   currentModel: string;
-  
+
   /** Callback при переключении модели */
   onSwitch: (modelKey: string) => Promise<void>;
-  
+
   /** Disabled state */
   disabled?: boolean;
 }
@@ -616,7 +616,7 @@ import type { ChatMessage } from '../../types/chat';
 interface ChatMessagesProps {
   /** Список сообщений для отображения */
   messages: ChatMessage[];
-  
+
   /** Флаг загрузки (показывать индикатор AI typing) */
   isLoading?: boolean;
 }
@@ -643,7 +643,7 @@ export const ChatMessages: React.FC<ChatMessagesProps> = ({
           <div className="message-avatar">
             {message.role === 'user' ? '👤' : '🤖'}
           </div>
-          
+
           <div className="message-content">
             <ReactMarkdown
               components={{
@@ -722,10 +722,10 @@ import React, { useState, useRef } from 'react';
 interface ChatInputProps {
   /** Callback отправки сообщения */
   onSendMessage: (content: string, file?: File) => Promise<void>;
-  
+
   /** Disabled state (во время загрузки) */
   disabled?: boolean;
-  
+
   /** Placeholder текст */
   placeholder?: string;
 }
@@ -748,7 +748,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     try {
       setUploadProgress(file ? 0 : null);
       await onSendMessage(message, file || undefined);
-      
+
       // Очистить форму после успешной отправки
       setMessage('');
       setFile(null);
@@ -859,7 +859,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           disabled={disabled}
           rows={3}
         />
-        
+
         <div className="input-actions">
           <input
             ref={fileInputRef}
@@ -868,7 +868,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             style={{ display: 'none' }}
             accept=".pdf,.doc,.docx,.txt,.md,.py,.js,.ts,.tsx,.jsx"
           />
-          
+
           <button
             type="button"
             className="attach-file"
@@ -878,7 +878,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           >
             📎
           </button>
-          
+
           <button
             type="button"
             className="send-message"
@@ -985,7 +985,7 @@ export const ChatView: React.FC = () => {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
-      
+
       // Удалить оптимистично добавленное user сообщение при ошибке
       setMessages((prev) => prev.slice(0, -1));
     } finally {
@@ -1455,7 +1455,7 @@ interface ChatContextValue {
   models: ModelInfo[];
   loading: boolean;
   error: string | null;
-  
+
   loadChats: () => Promise<void>;
   loadModels: () => Promise<void>;
   createChat: (params: {
@@ -1625,7 +1625,7 @@ import './FloatingChatWidget.css';
 interface FloatingChatWidgetProps {
   /** UUID текущего пользователя */
   userId: string;
-  
+
   /** UUID workspace (null для персонального чата) */
   workspaceId?: string | null;
 }
@@ -1646,7 +1646,7 @@ export const FloatingChatWidget: React.FC<FloatingChatWidgetProps> = ({
     if (savedState) {
       const { isOpen: savedIsOpen, chatId } = JSON.parse(savedState);
       setIsOpen(savedIsOpen);
-      
+
       if (chatId) {
         loadChat(chatId);
       }
@@ -1953,10 +1953,10 @@ import type { DocumentServiceListItem } from '../../types/document';
 interface DocumentSelectorProps {
   /** Список выбранных document_service_ids */
   selectedDocuments: string[];
-  
+
   /** Callback при изменении выбора */
   onSelectionChange: (documentIds: string[]) => void;
-  
+
   /** UUID workspace для фильтрации (null = персональные) */
   workspaceId?: string | null;
 }
@@ -1983,11 +1983,11 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
         },
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to load documents');
       }
-      
+
       const data = await response.json();
       setDocuments(data.data || []);
     } catch (err) {
@@ -2001,7 +2001,7 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
     const newSelection = selectedDocuments.includes(documentId)
       ? selectedDocuments.filter(id => id !== documentId)
       : [...selectedDocuments, documentId];
-    
+
     onSelectionChange(newSelection);
   };
 
@@ -2031,7 +2031,7 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
         {documents.map((doc) => {
           const isSelected = selectedDocuments.includes(doc.id);
           const isReady = canUseDocument(doc);
-          
+
           return (
             <div
               key={doc.id}
@@ -2042,7 +2042,7 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
                 <FileText size={20} />
                 {isSelected && <CheckCircle size={16} className="check-icon" />}
               </div>
-              
+
               <div className="document-info">
                 <div className="document-title">{doc.title}</div>
                 <div className="document-meta">
@@ -2059,7 +2059,7 @@ export const DocumentSelector: React.FC<DocumentSelectorProps> = ({
           );
         })}
       </div>
-      
+
       {selectedDocuments.length > 0 && (
         <div className="selection-summary">
           {selectedDocuments.length} document(s) selected
@@ -2108,11 +2108,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         },
         body: JSON.stringify({ document_service_ids: documentIds }),
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to update documents');
       }
-      
+
       const data = await response.json();
       onChatUpdate(data.data);
     } catch (error) {
@@ -2134,7 +2134,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             <span className="badge">{chat.document_service_ids.length}</span>
           )}
         </button>
-        
+
         <button
           onClick={() => setShowSettings(!showSettings)}
           className={`toolbar-button ${showSettings ? 'active' : ''}`}
@@ -2179,7 +2179,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           const response = file
             ? await ChatAPI.sendMessageWithFile(chat.chat_id, content, file)
             : await ChatAPI.sendMessage(chat.chat_id, content);
-          
+
           onChatUpdate({
             ...chat,
             messages: [...chat.messages, response],

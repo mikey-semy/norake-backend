@@ -75,7 +75,7 @@ class TemplateProtectedRouter(ProtectedRouter):
             deprecated=True,
             description="""
             ## ⚠️ DEPRECATED: Используйте /document-services
-            
+
             ## 📋 Получить список шаблонов с фильтрацией
 
             **⚠️ УСТАРЕЛО**: Этот эндпоинт будет удалён.

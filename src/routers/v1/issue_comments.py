@@ -56,7 +56,7 @@ class IssueCommentPublicRouter(BaseRouter):
             deprecated=True,
             description="""
             ## ⚠️ DEPRECATED: Используйте /document-services
-            
+
             ## 💬 Получить список комментариев проблемы
 
             **⚠️ УСТАРЕЛО**: Этот эндпоинт будет удалён.
@@ -183,7 +183,7 @@ class IssueCommentProtectedRouter(ProtectedRouter):
             deprecated=True,
             description="""
             ## ⚠️ DEPRECATED: Используйте /document-services
-            
+
             ## ➕ Создать новый комментарий к проблеме
 
             **⚠️ УСТАРЕЛО**: Этот эндпоинт будет удалён.
