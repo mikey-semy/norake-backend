@@ -479,7 +479,7 @@ class ChatProtectedRouter(ProtectedRouter):
             message_response = MessageResponseSchema(
                 role="assistant",
                 content=ai_response["content"],
-                metadata={
+                chat_metadata={
                     "tokens_used": ai_response.get("tokens_used", 0),
                     "rag_chunks_used": ai_response.get("rag_chunks_used", 0),
                     "model_key": chat.model_key,
