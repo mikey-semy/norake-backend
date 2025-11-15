@@ -3,7 +3,7 @@
 ## ✅ Исправленные проблемы (2025-11-15)
 
 ### 1. ❌ 400 Bad Request
-**Причина**: Неправильные ID моделей в конфигурации  
+**Причина**: Неправильные ID моделей в конфигурации
 **Решение**: Все 5 моделей заменены на валидные бесплатные версии
 
 **До**:
@@ -21,7 +21,7 @@
 ```
 
 ### 2. ❌ S3: BaseAPIException.__init__() got unexpected keyword argument 'error_code'
-**Причина**: Попытка передать `error_code` в BaseAPIException (такого параметра нет)  
+**Причина**: Попытка передать `error_code` в BaseAPIException (такого параметра нет)
 **Решение**: Убрано пробрасывание BaseAPIException, используется только ServiceUnavailableException
 
 **До**:
@@ -42,7 +42,7 @@ except Exception as e:
 ```
 
 ### 3. ❌ 503 Service Unavailable на фронтенде
-**Причина**: Cascade ошибок - S3 exception → OpenRouter 400 → 503 на клиенте  
+**Причина**: Cascade ошибок - S3 exception → OpenRouter 400 → 503 на клиенте
 **Решение**: Раздельная обработка ошибок + детальное логирование
 
 ## 🔍 Как диагностировать новые проблемы
@@ -165,8 +165,8 @@ Get-Content logs/*.log -Tail 100 | Select-String "ERROR"
 Get-Content logs/*.log -Tail 100 | Select-String "Отправка запроса к OpenRouter"
 
 # Статистика по моделям (если есть)
-Get-Content logs/*.log | Select-String "model=" | 
-  ForEach-Object { $_ -replace '.*model=([^\s,]+).*', '$1' } | 
+Get-Content logs/*.log | Select-String "model=" |
+  ForEach-Object { $_ -replace '.*model=([^\s,]+).*', '$1' } |
   Group-Object | Sort-Object Count -Descending
 ```
 
@@ -192,13 +192,13 @@ from src.core.settings.base import settings
 async def test_model(model_key: str):
     model_config = settings.OPENROUTER_CHAT_MODELS[model_key]
     url = "https://openrouter.ai/api/v1/chat/completions"
-    
+
     payload = {
         "model": model_config["id"],
         "messages": [{"role": "user", "content": "Hi"}],
         "max_tokens": 10,
     }
-    
+
     async with httpx.AsyncClient() as client:
         response = await client.post(
             url,
@@ -208,7 +208,7 @@ async def test_model(model_key: str):
                 "Content-Type": "application/json",
             },
         )
-        
+
         if response.status_code == 200:
             print(f"✅ {model_key}: OK")
         else:

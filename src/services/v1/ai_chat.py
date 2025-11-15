@@ -257,10 +257,10 @@ class AIChatService(BaseService):
         model_config = self.settings.OPENROUTER_CHAT_MODELS.get(chat.model_key)
         if not model_config:
             raise ValueError(f"Модель '{chat.model_key}' не найдена в конфигурации")
-        
+
         model_id = model_config["id"]
         self.logger.debug("Отправка запроса к OpenRouter: model=%s", model_id)
-        
+
         ai_response = await self._call_openrouter(
             model_id=model_id,
             messages=messages,
@@ -620,7 +620,7 @@ class AIChatService(BaseService):
             except (ValueError, KeyError):
                 # Если не удалось распарсить JSON или извлечь message
                 error_detail = e.response.text or str(e)
-            
+
             self.logger.error(
                 "Ошибка OpenRouter API [%d]: model=%s, error=%s",
                 e.response.status_code,
