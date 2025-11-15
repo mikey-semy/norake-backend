@@ -38,6 +38,7 @@ from fastapi import Depends
 from src.core.dependencies.cache import RedisDep
 from src.core.dependencies.database import AsyncSessionDep
 from src.core.integrations.ai.embeddings.openrouter import OpenRouterEmbeddings
+from src.core.exceptions.base import BaseAPIException
 from src.services.v1.rag_search import RAGSearchService
 from src.services.v1.search import SearchService
 
@@ -80,6 +81,9 @@ async def get_rag_search_service(
         # Создаём OpenRouter embeddings клиент
         openrouter_client = OpenRouterEmbeddings()
         return RAGSearchService(session=session, openrouter_client=openrouter_client)
+    except BaseAPIException:
+        # Пробрасываем бизнес-исключения (например, OpenRouterConfigError)
+        raise
     except Exception as e:
         logger.error(
             "Ошибка при создании RAGSearchService: %s", str(e), exc_info=True
@@ -139,6 +143,9 @@ async def get_search_service(
             redis=redis,
             rag_service=rag_service,
         )
+    except BaseAPIException:
+        # Пробрасываем бизнес-исключения (например, OpenRouterConfigError)
+        raise
     except Exception as e:
         logger.error(
             "Ошибка при создании SearchService: %s", str(e), exc_info=True

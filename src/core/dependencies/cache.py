@@ -13,6 +13,7 @@ from redis.asyncio import Redis
 
 from src.core.connections.cache import get_redis_client
 from src.core.exceptions import ServiceUnavailableException
+from src.core.exceptions.base import BaseAPIException
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,7 @@ async def get_redis_dependency() -> Redis:
 
     Raises:
         ServiceUnavailableException: Если не удается подключиться к Redis (503 Service Unavailable).
+        BaseAPIException: Пробрасывает бизнес-исключения без изменений.
 
     Usage:
         ```python
@@ -41,6 +43,9 @@ async def get_redis_dependency() -> Redis:
     try:
         logger.debug("Создание экземпляра Redis")
         return await get_redis_client()
+    except BaseAPIException:
+        # Пробрасываем бизнес-исключения (например, OpenRouterAPIError 429)
+        raise
     except Exception as e:
         logger.error(
             "Ошибка при создании Redis клиента: %s", str(e),

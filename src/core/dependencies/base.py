@@ -17,6 +17,7 @@ import logging
 from abc import ABC, abstractmethod
 
 from src.core.exceptions import ServiceUnavailableException
+from src.core.exceptions.base import BaseAPIException
 
 
 class BaseDependency(ABC):
@@ -64,13 +65,21 @@ class BaseDependency(ABC):
         ServiceUnavailableException, если возникает ошибка при получении
         зависимости.
 
+        ВАЖНО: Если исключение является BaseAPIException (бизнес-логика),
+        оно пробрасывается без изменений.
+
         Args:
             e (Exception): Исключение, которое нужно обработать.
             service_name (str): Имя сервиса, для которого возникла ошибка.
 
         Raises:
-            ServiceUnavailableException: Если возникает ошибка при получении зависимости.
+            BaseAPIException: Пробрасывает бизнес-исключения без изменений.
+            ServiceUnavailableException: Если возникает ошибка инфраструктуры при получении зависимости.
         """
+        # Пробрасываем бизнес-исключения (например, OpenRouterAPIError 429)
+        if isinstance(e, BaseAPIException):
+            raise
+        
         self.logger.error(
             "Ошибка получения зависимости %s: %s", service_name, e, exc_info=True
         )

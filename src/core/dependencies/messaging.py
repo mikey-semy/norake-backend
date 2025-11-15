@@ -9,6 +9,7 @@ from aio_pika.abc import AbstractRobustConnection
 
 from src.core.connections.messaging import RabbitMQClient, RabbitMQContextManager
 from src.core.dependencies.base import BaseDependency
+from src.core.exceptions.base import BaseAPIException
 from src.core.exceptions.dependencies import ServiceUnavailableException
 
 logger = logging.getLogger("src.dependencies.messaging")
@@ -52,12 +53,16 @@ async def get_rabbitmq_connection() -> AsyncGenerator[AbstractRobustConnection, 
 
     Raises:
         ServiceUnavailableException: Если не удается подключиться к RabbitMQ.
+        BaseAPIException: Пробрасывает бизнес-исключения без изменений.
     """
     dependency = MessagingDependency()
     try:
         logger.debug("Создание подключения к RabbitMQ")
         connection = await dependency.get_dependency()
         yield connection
+    except BaseAPIException:
+        # Пробрасываем бизнес-исключения (например, OpenRouterAPIError 429)
+        raise
     except Exception as e:
         logger.error("Ошибка подключения к RabbitMQ: %s", e)
         raise ServiceUnavailableException("Messaging (RabbitMQ)")
@@ -72,11 +77,15 @@ async def get_rabbitmq_context() -> AsyncGenerator[AbstractRobustConnection, Non
 
     Raises:
         ServiceUnavailableException: Если не удается подключиться к RabbitMQ.
+        BaseAPIException: Пробрасывает бизнес-исключения без изменений.
     """
     try:
         logger.debug("Создание подключения к RabbitMQ через контекстный менеджер")
         async with RabbitMQContextManager() as connection:
             yield connection
+    except BaseAPIException:
+        # Пробрасываем бизнес-исключения (например, OpenRouterAPIError 429)
+        raise
     except Exception as e:
         logger.error("Ошибка подключения к RabbitMQ через контекстный менеджер: %s", e)
         raise ServiceUnavailableException("Messaging (RabbitMQ)")
