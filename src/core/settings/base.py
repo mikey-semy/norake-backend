@@ -726,18 +726,13 @@ class Settings(BaseSettings):
 
     # Embeddings Configuration
     # NOTE: OpenRouter не поддерживает embedding модели!
-    # Используй OpenAI API напрямую или локальные модели (sentence-transformers)
+    # Используется Ollama Docker с локальными моделями embeddings
 
-    # OpenAI Embeddings (рекомендуется для production)
-    OPENAI_EMBEDDINGS_API_KEY: Optional[str] = None
-    OPENAI_EMBEDDINGS_BASE_URL: str = "https://api.openai.com/v1"
-    OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"  # $0.02 за 1M токенов
-    OPENAI_EMBEDDING_DIMENSIONS: int = 1536
-
-    # Local Embeddings (бесплатно, работает оффлайн)
-    USE_LOCAL_EMBEDDINGS: bool = False  # Если True - используется sentence-transformers
-    LOCAL_EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
-    LOCAL_EMBEDDING_DIMENSIONS: int = 384
+    # Ollama Embeddings (локальный Docker, бесплатно)
+    OLLAMA_EMBEDDINGS_BASE_URL: Optional[str] = None
+    OLLAMA_EMBEDDINGS_API_KEY: Optional[str] = None
+    OLLAMA_EMBEDDING_MODEL: str = "mxbai-embed-large"  # mxbai-embed-large (669MB, 1024 dims) или nomic-embed-text (274MB, 768 dims)
+    OLLAMA_EMBEDDING_DIMENSIONS: int = 1024  # mxbai-embed-large: 1024, nomic-embed-text: 768
 
     # Настройки OpenRouter Chat Models (NORAK-41)
     # ✅ Все модели БЕСПЛАТНЫЕ (pricing.prompt = "0") согласно fixtures_data/openrouter_models.json
@@ -884,6 +879,7 @@ class Settings(BaseSettings):
     # Настройки CORS
     ALLOW_ORIGINS: List[str] = [
         "https://equiply.ru",
+        "https://api.equiply.ru",  # API subdomain для CORS
         "http://localhost:3000",
         "http://localhost:5173",
     ]

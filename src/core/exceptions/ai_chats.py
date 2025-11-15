@@ -26,7 +26,7 @@ class ChatNotFoundError(BaseAPIException):
         super().__init__(
             status_code=404,
             detail=detail,
-            error_code="CHAT_NOT_FOUND",
+            error_type="CHAT_NOT_FOUND",
             extra=extra,
         )
 
@@ -46,7 +46,7 @@ class InvalidModelKeyError(BaseAPIException):
         super().__init__(
             status_code=400,
             detail=detail,
-            error_code="INVALID_MODEL_KEY",
+            error_type="INVALID_MODEL_KEY",
             extra=extra,
         )
 
@@ -66,7 +66,7 @@ class OpenRouterAPIError(BaseAPIException):
         super().__init__(
             status_code=503,
             detail=detail,
-            error_code="OPENROUTER_API_ERROR",
+            error_type="OPENROUTER_API_ERROR",
             extra=extra,
         )
 
@@ -86,6 +86,6 @@ class DocumentProcessingError(BaseAPIException):
         super().__init__(
             status_code=500,
             detail=detail,
-            error_code="DOCUMENT_PROCESSING_ERROR",
+            error_type="DOCUMENT_PROCESSING_ERROR",
             extra=extra,
         )

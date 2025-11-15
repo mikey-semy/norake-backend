@@ -1,0 +1,138 @@
+{
+  "models": [
+    {
+      "id": "qwen/qwen3-embedding-0.6b",
+      "name": "Qwen3 Embedding 0.6B",
+      "provider": "Qwen",
+      "context_length": 33000,
+      "pricing": {
+        "prompt": "0.00000001",
+        "completion": "0"
+      },
+      "dimensions": null,
+      "usage_tokens": 1400000000,
+      "description": "Самая компактная модель embeddings от Qwen. Оптимальна для больших объёмов данных при ограниченном бюджете.",
+      "specializations": [
+        "semantic-search",
+        "document-retrieval",
+        "clustering"
+      ],
+      "supported": true
+    },
+    {
+      "id": "mistralai/mistral-embed",
+      "name": "Mistral Embed 2312",
+      "provider": "Mistral AI",
+      "context_length": 8000,
+      "pricing": {
+        "prompt": "0.0000001",
+        "completion": "0"
+      },
+      "dimensions": 1024,
+      "usage_tokens": 115000000,
+      "description": "Специализированная модель embeddings от Mistral AI. Оптимизирована для RAG и семантического поиска.",
+      "specializations": [
+        "rag",
+        "semantic-search",
+        "document-analysis"
+      ],
+      "supported": true
+    },
+    {
+      "id": "openai/text-embedding-ada-002",
+      "name": "OpenAI Text Embedding Ada 002",
+      "provider": "OpenAI",
+      "context_length": 8000,
+      "pricing": {
+        "prompt": "0.0000001",
+        "completion": "0"
+      },
+      "dimensions": 1536,
+      "usage_tokens": 190000000,
+      "description": "Легаси модель embeddings от OpenAI. Проверенная временем, но заменена на text-embedding-3.",
+      "specializations": [
+        "semantic-search",
+        "document-retrieval",
+        "general-purpose"
+      ],
+      "supported": true,
+      "deprecated": true,
+      "replacement": "openai/text-embedding-3-small"
+    },
+    {
+      "id": "openai/text-embedding-3-small",
+      "name": "OpenAI Text Embedding 3 Small",
+      "provider": "OpenAI",
+      "context_length": 8000,
+      "pricing": {
+        "prompt": "0.00000002",
+        "completion": "0"
+      },
+      "dimensions": 1536,
+      "usage_tokens": 3530000000,
+      "description": "Улучшенная версия Ada 002. Лучшее качество при меньшей стоимости. Рекомендуемая модель для большинства задач.",
+      "specializations": [
+        "semantic-search",
+        "document-retrieval",
+        "clustering",
+        "recommendations"
+      ],
+      "supported": true
+    },
+    {
+      "id": "qwen/qwen3-embedding-8b",
+      "name": "Qwen3 Embedding 8B",
+      "provider": "Qwen",
+      "context_length": 32000,
+      "pricing": {
+        "prompt": "0.00000001",
+        "completion": "0"
+      },
+      "dimensions": null,
+      "usage_tokens": 13100000000,
+      "description": "Наиболее мощная модель embeddings от Qwen. Максимальное качество при минимальной стоимости.",
+      "specializations": [
+        "semantic-search",
+        "document-retrieval",
+        "clustering",
+        "multilingual"
+      ],
+      "supported": true
+    },
+    {
+      "id": "qwen/qwen3-embedding-4b",
+      "name": "Qwen3 Embedding 4B",
+      "provider": "Qwen",
+      "context_length": 33000,
+      "pricing": {
+        "prompt": "0.00000002",
+        "completion": "0"
+      },
+      "dimensions": null,
+      "usage_tokens": 570000000,
+      "description": "Средняя модель embeddings от Qwen. Баланс между производительностью и стоимостью.",
+      "specializations": [
+        "semantic-search",
+        "document-retrieval",
+        "clustering"
+      ],
+      "supported": true
+    }
+  ],
+  "metadata": {
+    "source": "OpenRouter",
+    "note": "OpenRouter API не предоставляет embeddings через endpoint /api/v1/models. Данные собраны вручную из веб-интерфейса.",
+    "created_at": "2025-06-09",
+    "current_backend": "Ollama (mxbai-embed-large, nomic-embed-text)",
+    "future_considerations": "Модели доступны для справки. Для использования потребуется интеграция с OpenRouter embeddings API (если появится)."
+  },
+  "pricing_comparison": {
+    "cheapest": [
+      "qwen/qwen3-embedding-0.6b",
+      "qwen/qwen3-embedding-8b"
+    ],
+    "most_used": "openai/text-embedding-3-small",
+    "recommended_for_rag": "mistralai/mistral-embed",
+    "legacy": "openai/text-embedding-ada-002"
+  }
+}
