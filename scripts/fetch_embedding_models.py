@@ -94,7 +94,7 @@ async def main():
 
     # Подготавливаем структуру для сохранения
     from datetime import datetime
-    
+
     output_data = {
         "models": models,
         "metadata": {
