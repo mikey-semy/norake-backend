@@ -13,7 +13,7 @@
 
 from typing import Optional
 
-from fastapi import Cookie, Depends, Header, Query, Response, status
+from fastapi import Cookie, Depends, Header, Query, Request, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from src.routers.base import BaseRouter
@@ -161,6 +161,7 @@ class AuthRouter(BaseRouter):
             },
         )
         async def refresh_token(
+            request: Request,
             response: Response,
             use_cookies: bool = Query(
                 False,
@@ -182,6 +183,7 @@ class AuthRouter(BaseRouter):
             Обновление токена доступа с использованием refresh токена.
 
             Args:
+                request: Запрос FastAPI для доступа к cookies.
                 response: Ответ FastAPI для установки cookies.
                 use_cookies: Использовать ли cookies для хранения токенов.
                 refresh_token_header: Refresh токен из заголовка запроса.
@@ -197,8 +199,12 @@ class AuthRouter(BaseRouter):
                 TokenInvalidError: Токен недействителен (обрабатывается глобально).
                 RateLimitExceededError: Превышен лимит запросов (обрабатывается глобально).
             """
-            # Приоритет: заголовок -> cookie
-            refresh_token = refresh_token_header or refresh_token_cookie
+            # Приоритет: заголовок -> Cookie() параметр -> request.cookies (fallback)
+            refresh_token = (
+                refresh_token_header 
+                or refresh_token_cookie 
+                or request.cookies.get("refresh_token")
+            )
 
             return await auth_service.refresh_token(
                 refresh_token=refresh_token,

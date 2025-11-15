@@ -42,9 +42,10 @@ from src.core.connections.database import DatabaseClient
 from src.core.connections.storage import S3ContextManager
 from src.core.integrations.storages.documents import DocumentS3Storage
 from src.core.settings.base import settings
-from src.models.v1.document_services import CoverType, DocumentFileType
+from src.models.v1.document_services import DocumentFileType
 from src.models.v1.users import UserModel
 from src.models.v1.workspaces import WorkspaceModel
+from src.schemas.v1.document_services import DocumentServiceCreateRequestSchema
 from src.services.v1.document_services import DocumentServiceService
 
 logging.basicConfig(
@@ -422,81 +423,46 @@ class ManualImporter:
                     headers={"content-type": "application/pdf"},
                 )
 
-                # Загружаем через DocumentS3Storage (теперь возвращает file_content)
-                file_url, unique_filename, file_size, uploaded_content = await self.storage.upload_document(
-                    file=upload_file,
-                    workspace_id=None,  # Публичные документы
-                )
-
-                # Генерируем thumbnail (обложка) из первой страницы PDF
-                # Используем uploaded_content вместо file_content для консистентности
-                cover_url = await self.storage.generate_pdf_thumbnail(
-                    file_content=uploaded_content,
-                    filename=unique_filename,
-                    workspace_id=None,  # Публичные документы
-                )
-
-                if cover_url:
-                    logger.info("Сгенерирована обложка: %s", cover_url)
-                else:
-                    logger.warning("Не удалось сгенерировать обложку для %s", manual_name)
-
                 # Извлекаем теги и создаём description
                 tags = self.extract_tags(manual_name, category_name, group_name)
                 description = self.create_description(
                     manual_name, category_name, group_name
                 )
 
-                # Создаём Document Service напрямую через repository
-                document = await self.service.repository.create_item(
-                    {
-                        "title": manual_name,
-                        "description": description,
-                        "tags": tags,
-                        "file_url": file_url,
-                        "file_size": file_size,
-                        "file_type": DocumentFileType.PDF.value,  # .value для enum
-                        "cover_type": CoverType.GENERATED.value,  # .value для enum
-                        "cover_url": cover_url,  # URL сгенерированного thumbnail
-                        "cover_icon": None,
-                        "available_functions": [
-                            {
-                                "name": "view_pdf",
-                                "enabled": True,
-                                "label": "Открыть PDF",
-                                "icon": "📄",
-                            },
-                            {
-                                "name": "download",
-                                "enabled": True,
-                                "label": "Скачать",
-                                "icon": "📥",
-                            },
-                            {
-                                "name": "qr_code",
-                                "enabled": True,
-                                "label": "QR-код",
-                                "icon": "📱",
-                            },
-                        ],
-                        "author_id": self.default_user.id,
-                        "workspace_id": self.default_workspace.id
-                        if self.default_workspace
-                        else None,
-                        "is_public": True,  # Публичные инструкции
-                        "view_count": 0,
-                    }
+                # Создаём метаданные (как с фронта)
+                metadata = DocumentServiceCreateRequestSchema(
+                    title=manual_name,
+                    description=description,
+                    tags=tags,
+                    file_type=DocumentFileType.PDF,
+                    workspace_id=None,  # Публичные документы без workspace
+                    is_public=True,  # Все документы публичные
                 )
 
-                await self.session.commit()
+                # Пересоздаём UploadFile для сервиса (т.к. уже прочитан)
+                file_obj_for_service = io.BytesIO(uploaded_content)
+                upload_file_for_service = UploadFile(
+                    file=file_obj_for_service,
+                    filename=filename,
+                    size=len(uploaded_content),
+                    headers={"content-type": "application/pdf"},
+                )
+
+                # Создаём через сервис (как через API endpoint)
+                document = await self.service.create_document_service(
+                    file=upload_file_for_service,
+                    metadata=metadata,
+                    author_id=self.default_user.id,
+                )
+
                 logger.info(
                     "✅ Создан Document Service: %s (id=%s)", manual_name, document.id
                 )
                 self.stats["success"] += 1
 
-                # Коммит каждые 10 документов
+                # Прогресс каждые 10 документов
                 if idx % 10 == 0:
-                    logger.info("Промежуточный коммит: %d документов", idx)
+                    logger.info("Прогресс: %d/%d документов", idx, self.stats["total"])
 
             except Exception as error:
                 logger.error(

@@ -184,5 +184,46 @@ class AuthenticationManager:
 # Для удобства использования создаем алиас функции
 get_current_user = AuthenticationManager.get_current_user
 
+
+async def get_current_user_optional(
+    request: Request,
+    token: str = Depends(oauth2_scheme),
+) -> UserCurrentSchema | None:
+    """
+    Получает данные текущего пользователя БЕЗ обязательной аутентификации.
+
+    Используется для публичных endpoints с опциональной авторизацией:
+    - Если токен валиден → возвращает UserCurrentSchema
+    - Если токена нет или невалиден → возвращает None (НЕ выбрасывает исключение)
+
+    Args:
+        request: Запрос FastAPI
+        token: Токен доступа из заголовка Authorization или cookies (опционально)
+
+    Returns:
+        UserCurrentSchema | None: Данные пользователя или None
+
+    Example:
+        >>> @router.get("/documents")
+        >>> async def list_documents(current_user: OptionalUserDep = None):
+        >>>     # Публичные документы доступны всем
+        >>>     # Приватные - только авторизованным
+        >>>     user_id = current_user.id if current_user else None
+        >>>     return await service.list_documents(user_id)
+    """
+    try:
+        # Пробуем получить пользователя обычным способом
+        return await AuthenticationManager.get_current_user(request, token)
+    except (TokenMissingError, TokenInvalidError):
+        # Если токена нет или он невалиден - возвращаем None
+        logger.debug("Опциональная аутентификация: токен отсутствует или невалиден")
+        return None
+    except Exception as e:
+        # Любые другие ошибки (например, пользователь не найден) - тоже None
+        logger.debug("Опциональная аутентификация: ошибка %s", str(e))
+        return None
+
+
 # Type annotation для dependency injection
 CurrentUserDep = Annotated[UserCurrentSchema, Depends(get_current_user)]
+OptionalUserDep = Annotated[UserCurrentSchema | None, Depends(get_current_user_optional)]

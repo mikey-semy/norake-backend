@@ -1,0 +1,1607 @@
+{
+  "metadata": {
+    "export_type": "document_services",
+    "export_date": "2025-11-15T00:00:00",
+    "count": 133,
+    "description": "PDF мануалы по оборудованию из work-aedb",
+    "source": "work-aedb/app/data/manuals/"
+  },
+  "data": [
+    {
+      "title": "ASC800 Руководство по микропрограммному обеспечению 1209 Ru",
+      "description": "ABB (Швейцария) - ASC",
+      "tags": [
+        "ABB (Швейцария)",
+        "ASC"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/abb/asc800-m-1209-ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "DC51 Краткое руководство 1214 Ru",
+      "description": "Danfoss (Дания) - DC, FC, MCD",
+      "tags": [
+        "Danfoss (Дания)",
+        "DC, FC, MCD"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/danfoss/dc51-sm-1214_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "FC51 Руководство по программированию 1111 Ru",
+      "description": "Danfoss (Дания) - DC, FC, MCD",
+      "tags": [
+        "Danfoss (Дания)",
+        "DC, FC, MCD"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/danfoss/fc51-pm-1111_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "MCD3000 Инструкция по эксплуатации 1003 Ru",
+      "description": "Danfoss (Дания) - DC, FC, MCD",
+      "tags": [
+        "Danfoss (Дания)",
+        "DC, FC, MCD"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/danfoss/mcd3000-m-1003_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Datasheet LS14500",
+      "description": "Общее - LoRaWan",
+      "tags": [
+        "Общее",
+        "LoRaWan"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/devices/lorawan/LS14500.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "ВЕГА ТД 11 Руководство по эксплуатации Rev 06",
+      "description": "Общее - LoRaWan",
+      "tags": [
+        "Общее",
+        "LoRaWan"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/devices/lorawan/%D0%92%D0%95%D0%93%D0%90%20%D0%A2%D0%94-11%20%D0%A0%D0%9F_rev%2006.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Инструкция по депассивации батареек литий-тионилхлорид (LiSOCl2)",
+      "description": "Общее - LoRaWan",
+      "tags": [
+        "Общее",
+        "LoRaWan"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/devices/lorawan/%D0%94%D0%B5%D0%BF%D0%B0%D1%81%D1%81%D0%B8%D0%B2%D0%B0%D1%86%D0%B8%D1%8F%20%D0%BB%D0%B8%D1%82%D0%B8%D0%B9-%D1%82%D0%B8%D0%BE%D0%BD%D0%B8%D0%BB%D1%85%D0%BB%D0%BE%D1%80%D0%B8%D0%B4.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство пользователя ETD 790P (Привод постоянного тока) V2.0 Ru",
+      "description": "ETD (Китай) - Привод постоянного тока",
+      "tags": [
+        "ETD (Китай)",
+        "Привод постоянного тока"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/etd/ETD%20790P%20DC%20DRIVE%20MANUAL%20V11_RU.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Braking Unit User Guide MD880 MDBUN Braking Module 202201 En 19011140 A01",
+      "description": "Inovance (Китай) - Общее",
+      "tags": [
+        "Inovance (Китай)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/19011140_A01_MD880_MDBUN%20braking%20module_202201_EN.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19012241 Sc A00 MD880-40D Active Line Module User Guide 20191220 En",
+      "description": "Inovance (Китай) - Общее",
+      "tags": [
+        "Inovance (Китай)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/19012241-SC_A00_MD880-40D%20Active%20Line%20Module%20User%20Guide_20191220_EN.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19120064 MD880 Series High Performance Engineering Ac Drive R Каталог",
+      "description": "Inovance (Китай) - Общее",
+      "tags": [
+        "Inovance (Китай)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/19120064%20MD880%20Series%20High-Performance%20Engineering%20AC%20Drive_R%20%D0%9A%D0%90%D0%A2%D0%90%D0%9B%D0%9E%D0%93.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19011400 A01 MD880-01S Single Drive Ac Hardware User Guide 202103 En",
+      "description": "Inovance (Китай) - MD880-01S",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-01S"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-01S/19011400_A01_MD880-01S%20Single%20Drive%20AC%20Hardware%20User%20Guide_202103_EN.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19011400 A01 MD880-01S Single Drive Ac Hardware User Guide 202103 Ru",
+      "description": "Inovance (Китай) - MD880-01S",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-01S"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-01S/19011400_A01_MD880-01S%20Single%20Drive%20AC%20Hardware%20User%20Guide_202103_RU.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19011542 A01 MD880-01S Single Drive Hardware User Guide 690Vac 202111 En",
+      "description": "Inovance (Китай) - MD880-01S",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-01S"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-01S/19011542_A01_MD880-01S%20Single%20Drive%20Hardware%20User%20Guide%20690VAC_202111_EN.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19010982 SC B02 MD880-20 Cn",
+      "description": "Inovance (Китай) - MD880-20",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-20"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-20/19010982-SC_B02%E3%80%8AMD880-20%E7%B3%BB%E5%88%97%E5%9F%BA%E6%9C%AC%E6%95%B4%E6%B5%81%E8%BD%AF%E4%BB%B6%E6%89%8B%E5%86%8C%E3%80%8B.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19011491 A00 MD880-20 Basic Rectifier Hardware User Guide 202105 En",
+      "description": "Inovance (Китай) - MD880-20",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-20"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-20/19011491_A00_MD880-20%20Basic%20Rectifier%20Hardware%20User%20Guide_202105_EN.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19011491 A00 MD880-20 Basic Rectifier Hardware User Guide 202105 Ru",
+      "description": "Inovance (Китай) - MD880-20",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-20"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-20/19011491_A00_MD880-20%20Basic%20Rectifier%20Hardware%20User%20Guide_202105_RU.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19011080 A01 MD880-30 Regenerative Rectiﬁer Hardware User Guide 202011 Ru",
+      "description": "Inovance (Китай) - MD880-30",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-30"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-30/19011080_A01_MD880-30%20Regenerative%20Recti%EF%AC%81er%20Hardware%20User%20Guide_202011_RU.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19011313 A00 MD880-30 Regenerative Rectifier Hardware User Guide 202004 En",
+      "description": "Inovance (Китай) - MD880-30",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-30"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-30/19011313_A00_MD880-30%20Regenerative%20Rectifier%20Hardware%20User%20Guide_202004_EN.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19011313 A01 MD880-30 Regenerative Rectifier Hardware User Guide 20201119 En",
+      "description": "Inovance (Китай) - MD880-30",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-30"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-30/19011313_A01_MD880-30%20Regenerative%20Rectifier%20Hardware%20User%20Guide_20201119_EN.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19011081 A00 MD880-40 Active Rectifier Hardware User Guide 201909 En",
+      "description": "Inovance (Китай) - MD880-40",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-40"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-40/19011081_A00_MD880-40%20Active%20Rectifier%20Hardware%20User%20Guide_201909_EN.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19011081 A00 MD880-40 Active Rectiﬁer Hardware User Guide 202011 Ru",
+      "description": "Inovance (Китай) - MD880-40",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-40"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-40/19011081_A00_MD880-40%20Active%20Recti%EF%AC%81er%20Hardware%20User%20Guide_202011_RU.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19011311 SC A01 MD880-40 Active Rectifier Hardware User Guide 20201119 En",
+      "description": "Inovance (Китай) - MD880-40",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-40"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-40/19011311-SC_A01_MD880-40%20Active%20Rectifier%20Hardware%20User%20Guide_20201119_EN.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19011980 A03 MD880-40 AFE Rectifier Software User Guide 202205 En",
+      "description": "Inovance (Китай) - MD880-40",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-40"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-40/19011980_A03_MD880-40%20AFE%20Rectifier%20Software%20User%20Guide_202205_EN.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19012241 SC A00 MD880-40D Active Line Module User Guide 20191220 En",
+      "description": "Inovance (Китай) - MD880-40",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-40"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-40/19012241-SC_A00_MD880-40D%20Active%20Line%20Module%20User%20Guide_20191220_EN.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19010593 MD880-50M Series Inverter Hardware User Guide R",
+      "description": "Inovance (Китай) - MD880-50",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-50"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-50/19010593%20MD880-50M%20Series%20Inverter%20Hardware%20User%20Guide_R.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19010593 A01 MD880-50 Inverter Hardware User Manual 202011 Ru",
+      "description": "Inovance (Китай) - MD880-50",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-50"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-50/19010593_A01_MD880-50%20Inverter%20Hardware%20User%20Manual_202011_RU.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19010988 A00 MD880-50 Inverter Software Manual User Guide 202104 En",
+      "description": "Inovance (Китай) - MD880-50",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-50"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-50/19010988_A00_MD880-50%20Inverter%20Software%20Manual%20User%20Guide_202104_EN.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19011312 Scy A01 MD880-50 Inverter Hardware User Guide 20201119 En",
+      "description": "Inovance (Китай) - MD880-50",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-50"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-50/19011312-SCY_A01_MD880-50%20Inverter%20Hardware%20User%20Guide_20201119_EN.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19012019 A00 MD880-50 Inverter Software Manual User Guide 202210 Ru",
+      "description": "Inovance (Китай) - MD880-50",
+      "tags": [
+        "Inovance (Китай)",
+        "MD880-50"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-50/19012019_A00_MD880-50%20Inverter%20Software%20Manual%20User%20Guide_202210_RU.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19010593 A00 MD880-50 Inverter Hardware User Manual 201708 En",
+      "description": "Inovance (Китай) - Архив",
+      "tags": [
+        "Inovance (Китай)",
+        "Архив"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-50/archive/19010593_A00_MD880-50%20Inverter%20Hardware%20User%20Manual_201708_EN.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "MD880-60M Braking Module En",
+      "description": "Inovance (Китай) - Архив",
+      "tags": [
+        "Inovance (Китай)",
+        "Архив"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-60M%20braking%20module_EN.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "MD880-80 DCDC User Guide 20200310 En",
+      "description": "Inovance (Китай) - Архив",
+      "tags": [
+        "Inovance (Китай)",
+        "Архив"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/MD880-80%20DCDC%20User%20Guide_20200310_EN.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19010611 A00 SOP-20-880 Smart Operation Panel User Guide 201703 En",
+      "description": "Inovance (Китай) - Прочее",
+      "tags": [
+        "Inovance (Китай)",
+        "Прочее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/Other/19010611_A00_SOP-20-880%20Smart%20Operation%20Panel%20User%20Guide_201703_EN.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "19010611 A00 SOP-20-880 Smart Operation Panel User Guide 202011 Ru",
+      "description": "Inovance (Китай) - Прочее",
+      "tags": [
+        "Inovance (Китай)",
+        "Прочее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/Other/19010611_A00_SOP-20-880%20Smart%20Operation%20Panel%20User%20Guide_202011_RU.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "HPG-10-HTL 20201104 Ch",
+      "description": "Inovance (Китай) - Прочее",
+      "tags": [
+        "Inovance (Китай)",
+        "Прочее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/Other/HPG-10%20HTL%2020201104_CH.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Каталог Inovance MD880",
+      "description": "Inovance (Китай) - Информация",
+      "tags": [
+        "Inovance (Китай)",
+        "Информация"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/info/inovance-md880-catalog.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Краткое руководство пользователя по монтажу и вводу в эксплуатацию MD800 (Модуль инвертора переменного тока)",
+      "description": "Inovance (Китай) - Информация",
+      "tags": [
+        "Inovance (Китай)",
+        "Информация"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/md800-quick-setup.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": " Руководство пользователя MD880-20 (Модуль базового выпрямителя)",
+      "description": "Inovance (Китай) - Информация",
+      "tags": [
+        "Inovance (Китай)",
+        "Информация"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/md880-20-manual.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство пользователя MD880-30 (Рекуперативный выпрямитель)",
+      "description": "Inovance (Китай) - Информация",
+      "tags": [
+        "Inovance (Китай)",
+        "Информация"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/md880-30-manual.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство пользователя MD880-40 (Активный выпрямитель)",
+      "description": "Inovance (Китай) - Информация",
+      "tags": [
+        "Inovance (Китай)",
+        "Информация"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/md880-40-manual.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство пользователя MD880-50 (Инвертор)",
+      "description": "Inovance (Китай) - Информация",
+      "tags": [
+        "Inovance (Китай)",
+        "Информация"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/md880-50-manual.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по программированию MD880-50 (Инвертор)",
+      "description": "Inovance (Китай) - Информация",
+      "tags": [
+        "Inovance (Китай)",
+        "Информация"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/md880-50-programming.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по аппаратному обеспечению MD880 (Высокопроизводительный привод переменного тока)",
+      "description": "Inovance (Китай) - Информация",
+      "tags": [
+        "Inovance (Китай)",
+        "Информация"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/inovance/md880-hardware-manual.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации INVT Goodrive350",
+      "description": "INVT (Китай) - Goodrive",
+      "tags": [
+        "INVT (Китай)",
+        "Goodrive"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/invt/invt-gd350-m.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство пользователя 3G3FV Ru",
+      "description": "Omron (Япония) - Общее",
+      "tags": [
+        "Omron (Япония)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/3g3fv_m_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство пользователя 3G3HV Ru",
+      "description": "Omron (Япония) - Общее",
+      "tags": [
+        "Omron (Япония)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/3g3hv_m_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство пользователя 3G3MV Ru",
+      "description": "Omron (Япония) - Общее",
+      "tags": [
+        "Omron (Япония)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/3g3mv_m_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство пользователя 3G3PV Ru",
+      "description": "Omron (Япония) - Общее",
+      "tags": [
+        "Omron (Япония)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/3g3pv_m_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство пользователя 3G3RV Ru",
+      "description": "Omron (Япония) - Общее",
+      "tags": [
+        "Omron (Япония)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/3g3rv_m_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство пользователя 3G3RX Ru",
+      "description": "Omron (Япония) - Общее",
+      "tags": [
+        "Omron (Япония)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/3g3rx_m_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Краткое руководство A1000 En",
+      "description": "Omron (Япония) - A1000",
+      "tags": [
+        "Omron (Япония)",
+        "A1000"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/a1000/A1000.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Datasheet A1000 En",
+      "description": "Omron (Япония) - A1000",
+      "tags": [
+        "Omron (Япония)",
+        "A1000"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/a1000/A1000_Datasheet.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Запчасти Yaskawa (Наименования)",
+      "description": "Omron (Япония) - A1000",
+      "tags": [
+        "Omron (Япония)",
+        "A1000"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/a1000/Yaskawa%20%D0%B7%D0%B0%D0%BF%D1%87%D0%B0%D1%81%D1%82%D0%B8.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Каталог Yaskawa A1000 Ru",
+      "description": "Omron (Япония) - A1000",
+      "tags": [
+        "Omron (Япония)",
+        "A1000"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/a1000/Yaskawa_A1000_katalog.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Инструкция по установке A1000 En",
+      "description": "Omron (Япония) - A1000",
+      "tags": [
+        "Omron (Япония)",
+        "A1000"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/a1000/pb%20A1000.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Техническое руководство Profibus-DP SI-P3",
+      "description": "Omron (Япония) - A1000",
+      "tags": [
+        "Omron (Япония)",
+        "A1000"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/a1000/si-p3_profibus-dp_siepc73060042.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Техническое руководство A1000 Ru",
+      "description": "Omron (Япония) - A1000",
+      "tags": [
+        "Omron (Япония)",
+        "A1000"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/a1000_m_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации CIMR F7 VARISPEED Ru",
+      "description": "Omron (Япония) - F7",
+      "tags": [
+        "Omron (Япония)",
+        "F7"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/cimr-f7_m_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство пользователя CIMR E7 VARISPEED Ru",
+      "description": "Omron (Япония) - E7",
+      "tags": [
+        "Omron (Япония)",
+        "E7"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/e7/e7_ip54_man_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Краткое руководство E7 VARISPEED En",
+      "description": "Omron (Япония) - E7",
+      "tags": [
+        "Omron (Япония)",
+        "E7"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/e7/e7_quick.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации PROFIBUS-DP EI-SI-P1 для Omron F7",
+      "description": "Omron (Япония) - F7",
+      "tags": [
+        "Omron (Япония)",
+        "F7"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/f7/Profibus_SI_P1%20%D0%B4%D0%BB%D1%8F%20Omron%20F7.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Краткое руководство 3G3RV Ru",
+      "description": "Omron (Япония) - F7",
+      "tags": [
+        "Omron (Япония)",
+        "F7"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/f7/cimr-f7.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Краткое руководство CIMR F7 En",
+      "description": "Omron (Япония) - F7",
+      "tags": [
+        "Omron (Япония)",
+        "F7"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/f7/cimr-f7_data.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Краткое руководство CIMR F7 En",
+      "description": "Omron (Япония) - F7",
+      "tags": [
+        "Omron (Япония)",
+        "F7"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/f7/cimr-f7_get_start.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Инструкция USB-RS422 Hitachi",
+      "description": "Omron (Япония) - RX",
+      "tags": [
+        "Omron (Япония)",
+        "RX"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/rx/Hitachi_Manual_USB_RS422.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Краткое руководство RX Ru",
+      "description": "Omron (Япония) - RX",
+      "tags": [
+        "Omron (Япония)",
+        "RX"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/omron/rx/I116E-RU-05_RX_Datasheet_INSTRUKCIYA_RU.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по программированию ATV212 (Altivar) 0811 Ru",
+      "description": "Schneider Electric (Франция) - Altivar",
+      "tags": [
+        "Schneider Electric (Франция)",
+        "Altivar"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/se/atv212-mp-0811_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации G130 AOP30 0311 Ru",
+      "description": "Siemens (Германия) - Оборудование",
+      "tags": [
+        "Siemens (Германия)",
+        "Оборудование"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/devices/g130-aop30-0311-rus.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации G130 BOP20 0311 Ru",
+      "description": "Siemens (Германия) - Оборудование",
+      "tags": [
+        "Siemens (Германия)",
+        "Оборудование"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/devices/%D0%91%D0%B0%D0%B7%D0%BE%D0%B2%D0%B0%D1%8F%20%D0%BF%D0%B0%D0%BD%D0%B5%D0%BB%D1%8C%20%D0%BE%D0%BF%D0%B5%D1%80%D0%B0%D1%82%D0%BE%D1%80%D0%B0%2020%20%28BOP20%29.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации 440 1006 Ru",
+      "description": "Siemens (Германия) - Micromaster",
+      "tags": [
+        "Siemens (Германия)",
+        "Micromaster"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/micromaster/440_m_1006_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Список параметров 440 0106 Ru",
+      "description": "Siemens (Германия) - Micromaster",
+      "tags": [
+        "Siemens (Германия)",
+        "Micromaster"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/micromaster/440_pfm_0106_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации AOP 0901 Ru",
+      "description": "Siemens (Германия) - Micromaster",
+      "tags": [
+        "Siemens (Германия)",
+        "Micromaster"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/micromaster/AOP.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Инструкция по эксплуатации Profibus 440 (Дополнительный модуль связи) 0101 Ru",
+      "description": "Siemens (Германия) - Micromaster",
+      "tags": [
+        "Siemens (Германия)",
+        "Micromaster"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/micromaster/MM4xx_Profibus_A1_ru_V.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации DC Master (6RA70) FW3.1 0507 Ru",
+      "description": "Siemens (Германия) - Simoreg",
+      "tags": [
+        "Siemens (Германия)",
+        "Simoreg"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/simoreg/dc-master_m_0507_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Инструкция по эксплуатации DC Master (6RA70) FW2.0 2009 Ru",
+      "description": "Siemens (Германия) - Simoreg",
+      "tags": [
+        "Siemens (Германия)",
+        "Simoreg"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/simoreg/dc-master_mf_2009.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Operating Instructions Masterdrives Rectifier/Regenerating Unit 1295 En",
+      "description": "Siemens (Германия) - Simovert",
+      "tags": [
+        "Siemens (Германия)",
+        "Simovert"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/simovert/masterdrives-rru_m_en.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Подробное параметрирование Masterdrives Vector Control FW3.32 0503 Ru",
+      "description": "Siemens (Германия) - Simovert",
+      "tags": [
+        "Siemens (Германия)",
+        "Simovert"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/simovert/masterdrives-vc_m_0503_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "FAQ DCM (6RA80) 0118 En",
+      "description": "Siemens (Германия) - DCM",
+      "tags": [
+        "Siemens (Германия)",
+        "DCM"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/dcm/FAQ%20for%20SINAMICS%20DCM.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "FAQ (Параллельное подключение моторов) DCM (6RA80) 0210 En",
+      "description": "Siemens (Германия) - DCM",
+      "tags": [
+        "Siemens (Германия)",
+        "DCM"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/dcm/FAQ%20for%20Sinamics%20DCM2.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Cвободные функциональные блоки (Описание функций) DCM FW1.2 на основе 4.3 SP2 (4.4 SP1) 0111 Ru",
+      "description": "Siemens (Германия) - DCM",
+      "tags": [
+        "Siemens (Германия)",
+        "DCM"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/dcm/SINAMICS%20DCM%20C%D0%B2%D0%BE%D0%B1%D0%BE%D0%B4%D0%BD%D1%8B%D0%B5%20%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%BE%D0%BD%D0%B0%D0%BB%D1%8C%D0%BD%D1%8B%D0%B5%20%D0%B1%D0%BB%D0%BE%D0%BA%D0%B8%20v1.2%20%2801.2011%29%20starter%204.4%20SP1.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации DCM FW1.1 1109 Ru",
+      "description": "Siemens (Германия) - DCM",
+      "tags": [
+        "Siemens (Германия)",
+        "DCM"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/dcm/SINAMICS%20DCM%20%D0%A0%D1%83%D0%BA%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE%20%D0%BF%D0%BE%20%D1%8D%D0%BA%D1%81%D0%BF%D0%BB%D1%83%D0%B0%D1%82%D0%B0%D1%86%D0%B8%D0%B8%20v1.1%20%28%2011.2009%29.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации DCM FW1.3 1011 RU",
+      "description": "Siemens (Германия) - DCM",
+      "tags": [
+        "Siemens (Германия)",
+        "DCM"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/dcm/SINAMICS%20DCM%20%D0%A0%D1%83%D0%BA%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE%20%D0%BF%D0%BE%20%D1%8D%D0%BA%D1%81%D0%BF%D0%BB%D1%83%D0%B0%D1%82%D0%B0%D1%86%D0%B8%D0%B8%20v1.3%20%28%2010.2011%29%20.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по параметрированию DCM FW1.3 (на базе 4.4) 1011 Ru",
+      "description": "Siemens (Германия) - DCM",
+      "tags": [
+        "Siemens (Германия)",
+        "DCM"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/dcm/SINAMICS%20DCM%20%D0%A1%D0%BF%D1%80%D0%B0%D0%B2%D0%BE%D1%87%D0%BD%D0%B8%D0%BA%20%D0%BF%D0%BE%20%D0%BF%D0%B0%D1%80%D0%B0%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8E%20v1.3%20%2810.2011%29%20starter%204.4.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Описание функций DCM - Описание светодиодов на модуле CUD 1218 Ru",
+      "description": "Siemens (Германия) - DCM",
+      "tags": [
+        "Siemens (Германия)",
+        "DCM"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/dcm/SINAMICS_DCM%20%D0%B4%D0%B8%D0%B0%D0%B3%D0%BD%D0%BE%D1%81%D1%82%D0%B8%D0%BA%D0%B0%20%D1%81%D0%B2%D0%B5%D1%82%D0%BE%D0%B4%D0%B8%D0%BE%D0%B4%D0%BE%D0%B2%20%D0%BD%D0%B0%20CUD.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Каталог DCM Cabinet 13 De",
+      "description": "Siemens (Германия) - Cabinet",
+      "tags": [
+        "Siemens (Германия)",
+        "Cabinet"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/dcm/cabinet/SINAMICS%20DCM%20Cabinet%202013%20.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Свободные функциональные блоки DCM S120 FW1.3 на основе 4.4 (4.5) 0112 Ru",
+      "description": "Siemens (Германия) - Cabinet",
+      "tags": [
+        "Siemens (Германия)",
+        "Cabinet"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/dcm/dcm_ffb_0215_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации DCM FW1.4.1 0215 Ru",
+      "description": "Siemens (Германия) - Cabinet",
+      "tags": [
+        "Siemens (Германия)",
+        "Cabinet"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/dcm/dcm_m_0215_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по параметрированию DCM FW1.3 (на базе 4.4) 1011 En",
+      "description": "Siemens (Германия) - Cabinet",
+      "tags": [
+        "Siemens (Германия)",
+        "Cabinet"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/dcm/dcm_pm_1011_en.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по параметрированию DCM FW1.3 (на базе 4.4) 1011 Ru",
+      "description": "Siemens (Германия) - Cabinet",
+      "tags": [
+        "Siemens (Германия)",
+        "Cabinet"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/dcm/dcm_pm_1011_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по параметрированию DCM FW1.5 (на основе 5.1 SP1) 1218 Ru",
+      "description": "Siemens (Германия) - Cabinet",
+      "tags": [
+        "Siemens (Германия)",
+        "Cabinet"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/dcm/dcm_pm_1218_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Статья Системы управления - DCM 3.11",
+      "description": "Siemens (Германия) - Cabinet",
+      "tags": [
+        "Siemens (Германия)",
+        "Cabinet"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/dcm/%D0%9E%D0%BF%D0%B8%D1%81%D0%B0%D0%BD%D0%B8%D0%B5%20Sinamics%20DCM.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Ошибки и предупреждения - DCM 0613 Ru",
+      "description": "Siemens (Германия) - Cabinet",
+      "tags": [
+        "Siemens (Германия)",
+        "Cabinet"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/dcm/%D0%9E%D1%88%D0%B8%D0%B1%D0%BA%D0%B8%20%D0%B8%20%D0%BF%D1%80%D0%B5%D0%B4%D1%83%D0%BF%D1%80%D0%B5%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D1%8F%20SINAMICS%20DCM.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по параметрированию DCM FW1.5 (на основе 5.1 SP1) 1218 Ru",
+      "description": "Siemens (Германия) - Cabinet",
+      "tags": [
+        "Siemens (Германия)",
+        "Cabinet"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/dcm/%D0%A1%D0%BF%D1%80%D0%B0%D0%B2%D0%BE%D1%87%D0%BD%D0%B8%D0%BA%20%D0%BF%D0%BE%20%D0%BF%D0%B0%D1%80%D0%B0%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8E%20DCM%201.5%20%28%D0%BD%D0%B0%20%D0%B1%D0%B0%D0%B7%D0%B5%205.2%29%2012_2018.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации G120 (CU230P-2) FW4.7 0414 Ru",
+      "description": "Siemens (Германия) - G120",
+      "tags": [
+        "Siemens (Германия)",
+        "G120"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/g120/SINAMICS%20G120%20%D0%9F%D0%A7%20%D1%81%20%D1%83%D0%BF%D1%80.%D0%BC%D0%BE%D0%B4.%20CU230P-2%2804.2014%29v4.7.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации G120 (CU240B-2, CU240E-2) FW4.4 0111 Ru",
+      "description": "Siemens (Германия) - G120",
+      "tags": [
+        "Siemens (Германия)",
+        "G120"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/g120/SINAMICS%20G120%20%D0%9F%D0%A7%20%D1%81%20%D1%83%D0%BF%D1%80.%D0%BC%D0%BE%D0%B4.%20CU240B-2%20%D0%B8%20CU240E-2%2801.2011%29.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации G120 (CU240B-2, CU240E-2) FW4.6 0113 Ru",
+      "description": "Siemens (Германия) - G120",
+      "tags": [
+        "Siemens (Германия)",
+        "G120"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/g120/SINAMICS%20G120%20%D0%9F%D0%A7%20%D1%81%20%D1%83%D0%BF%D1%80.%D0%BC%D0%BE%D0%B4.%20CU240B-2%20%D0%B8%20CU240E-2%2801.2013%29.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по установке оборудования G120 PM240 0709 Ru",
+      "description": "Siemens (Германия) - G120",
+      "tags": [
+        "Siemens (Германия)",
+        "G120"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/g120/SINAMICS%20G120%20%D0%A1%D0%B8%D0%BB%D0%BE%D0%B2%D0%BE%D0%B9%20%D0%BC%D0%BE%D0%B4%D1%83%D0%BB%D1%8C%20PM240%2807.2009%29.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по параметрированию G120 (CU240B-2, CU240E-2) FW4.6 0113 Ru",
+      "description": "Siemens (Германия) - G120",
+      "tags": [
+        "Siemens (Германия)",
+        "G120"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/g120/SINAMICS%20G120%20%D0%A1%D0%BF%D1%80%D0%B0%D0%B2%D0%BE%D1%87%D0%BD%D0%B8%D0%BA%20%D0%BF%D0%BE%20%D0%BF%D0%B0%D1%80%D0%B0%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D1%8E%20%D1%83%D0%BF%D1%80%D0%B0%D0%B2%D0%BB%D1%8F%D1%8E%D1%89%D0%B8%D0%B5%20%D0%BC%D0%BE%D0%B4%D1%83%D0%BB%D0%B8%20CU240B-2%20%D0%B8%20CU240E-2%2801.2013%29%20v4.6.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации G120 (CU240E, CU240S) FW3.2 0309 Ru",
+      "description": "Siemens (Германия) - G120",
+      "tags": [
+        "Siemens (Германия)",
+        "G120"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/g120/g120_cu240s_m_0309_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Каталог G120 16 Ru",
+      "description": "Siemens (Германия) - G120",
+      "tags": [
+        "Siemens (Германия)",
+        "G120"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/g120/%D0%9A%D0%B0%D1%82%D0%B0%D0%BB%D0%BE%D0%B3%20SINAMICS%20G120.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по параметрированию G120C FW4.7 0414 Ru",
+      "description": "Siemens (Германия) - G120c",
+      "tags": [
+        "Siemens (Германия)",
+        "G120c"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/g120c/G120C_List_Manual_LH13_0414_rus.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по параметрированию G120C FW4.7 SP3 0415 Ru",
+      "description": "Siemens (Германия) - G120c",
+      "tags": [
+        "Siemens (Германия)",
+        "G120c"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/g120c/G120C_List_Manual_LH13_0415_rus.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Советы по началу работы G120C FW4.4 0111 Ru",
+      "description": "Siemens (Германия) - G120c",
+      "tags": [
+        "Siemens (Германия)",
+        "G120c"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/g120c/GSG_SINAMICS_G120C_ru-RU.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации G120C FW4.4 0111 Ru",
+      "description": "Siemens (Германия) - G120c",
+      "tags": [
+        "Siemens (Германия)",
+        "G120c"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/g120c/SINAMICS%20G120C%20%D0%BF%D1%80%D0%B5%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2%D0%B0%D1%82%D0%B5%D0%BB%D1%8C%20%D1%87%D0%B0%D1%81%D1%82%D0%BE%D1%82%D1%8B%20%2801.2011%29.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по параметрированию G130, G150 FW4.5 0112 Ru",
+      "description": "Siemens (Германия) - G130",
+      "tags": [
+        "Siemens (Германия)",
+        "G130"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/g130/G130_G150_Listenhandbuch_LH2_0112_rus.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации G130 0311 Ru",
+      "description": "Siemens (Германия) - G130",
+      "tags": [
+        "Siemens (Германия)",
+        "G130"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/g130/SINAMICS%20G130%20%D0%A0%D1%83%D0%BA%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE%20%D0%BF%D0%BE%20%D1%8D%D0%BA%D1%81%D0%BF%D0%BB%D1%83%D0%B0%D1%82%D0%B0%D1%86%D0%B8%D0%B8%2003.2011.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по функциям S120 FW4.5 0112 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/FH1_01_2012%20%D0%9E%D0%BF%D0%B8%D1%81%D0%B0%D0%BD%D0%B8%D0%B5%20%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B9.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по функциям S120 FW4.8 0716 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/FH1_072016%20%D0%9E%D0%BF%D0%B8%D1%81%D0%B0%D0%BD%D0%B8%D0%B5%20%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B9.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Свободные функциональные блоки S120 FW4.5 DCM FW1.3 (на основе 4.4) 0112 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/FH2_01_2012%20%D0%A1%D0%B2%D0%BE%D0%B1%D0%BE%D0%B4%D0%BD%D1%8B%D0%B5%20%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%BE%D0%BD%D0%B0%D0%BB%D1%8C%D0%BD%D1%8B%D0%B5%20%D0%B1%D0%BB%D0%BE%D0%BA%D0%B8.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по функциям (Safety Integrated) S120, G130, G150 FW4.5 0312 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/FHS-03_2012%20Safety%20Integrated%20%D0%9E%D0%BF%D0%B8%D1%81%D0%B0%D0%BD%D0%B8%D0%B5%20%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B9.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по функциям (Safety Integrated) FW4.5 S120 0112 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/FHS_01_2012%20Safety%20Integrated%20%D0%9E%D0%BF%D0%B8%D1%81%D0%B0%D0%BD%D0%B8%D0%B5%20%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B9.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по оборудованию (Управляющие модули и дополнительные системные компоненты) S120 0112 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/GH1_01_2012%20%D0%A3%D0%BF%D1%80%D0%B0%D0%B2%D0%BB%D1%8F%D1%8E%D1%89%D0%B8%D0%B5%20%D0%BC%D0%BE%D0%B4%D1%83%D0%BB%D0%B8%20%D0%B8%20%D0%B4%D0%BE%D0%BF%D0%BE%D0%BB%D0%BD%D0%B8%D1%82%D0%B5%D0%BB%D1%8C%D0%BD%D1%8B%D0%B5%20%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%BD%D1%8B%D0%B5.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по оборудованию (силовые части книжного формата) S120 0111 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/GH2_01_2011%20%D0%A1%D0%B8%D0%BB%D0%BE%D0%B2%D1%8B%D0%B5%20%D1%87%D0%B0%D1%81%D1%82%D0%B8%20%D0%BA%D0%BD%D0%B8%D0%B6%D0%BD%D0%BE%D0%B3%D0%BE%20%D1%84%D0%BE%D1%80%D0%BC%D0%B0%D1%82%D0%B0.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по оборудованию (Силовые части формата «шасси») S120 0112 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/GH3_01_2012%20%D0%A1%D0%B8%D0%BB%D0%BE%D0%B2%D1%8B%D0%B5%20%D1%87%D0%B0%D1%81%D1%82%D0%B8%20%D0%BA%D0%BE%D0%BD%D1%81%D1%82%D1%80%D1%83%D0%BA%D1%86%D0%B8%D0%B8%20%D1%82%D0%B8%D0%BF%D0%B0%20%C2%AB%D1%88%D0%B0%D1%81%D1%81%D0%B8%C2%BB.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство (приводы AC/AC) S120 0306 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/GH6_03_2006%20%D0%BF%D1%80%D0%B8%D0%B2%D0%BE%D0%B4%D1%8B%20AC-AC.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Советы по началу работы S120 FW4.3 SP1 1109 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/GS1_11_2009%20%D0%A1%D0%BE%D0%B2%D0%B5%D1%82%D1%8B%20%D0%BF%D0%BE%20%D0%BD%D0%B0%D1%87%D0%B0%D0%BB%D1%83%20%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%8B.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по вводу в эксплуатацию S120 FW4.5 0112 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/IH1_01_2012%20%D0%A0%D1%83%D0%BA%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE%20%D0%BF%D0%BE%20%D0%B2%D0%B2%D0%BE%D0%B4%D1%83%20%D0%B2%20%D1%8D%D0%BA%D1%81%D0%BF%D0%BB%D1%83%D0%B0%D1%82%D0%B0%D1%86%D0%B8%D1%8E.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по параметрированию S120, S150 FW4.6 0113 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/LH1_0113%20%D0%A1%D0%BF%D0%B8%D1%81%D0%BE%D0%BA%20%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%20%D0%B8%20%D0%BF%D0%B0%D1%80%D0%B0%D0%BC%D0%B5%D1%82%D1%80%D0%BE%D0%B2.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник таблиц S120, S150 FW4.5 0112 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/LH1_01_2012%20%D0%A1%D0%BF%D0%B8%D1%81%D0%BE%D0%BA%20%D1%82%D0%B0%D0%B1%D0%BB%D0%B8%D1%86%20%D0%B8%20%D0%BF%D0%B0%D1%80%D0%B0%D0%BC%D0%B5%D1%82%D1%80%D0%BE%D0%B2.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Списки параметров и функциональные схемы Sinamics S FW2.3 0605 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/LH1_06_2005%20%D0%A1%D0%BF%D0%B8%D1%81%D0%BA%D0%B8%20%D0%BF%D0%B0%D1%80%D0%B0%D0%BC%D0%B5%D1%82%D1%80%D0%BE%D0%B2%20%D0%B8%20%D1%84%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%BE%D0%BD%D0%B0%D0%BB%D1%8C%D0%BD%D1%8B%D0%B5%20%D1%81%D1%85%D0%B5%D0%BC%D1%8B.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник параметров G130, G150 FW2.6 SP1 1008 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/LH2_Sinamics_G130-G150%20%D0%A1%D0%BF%D1%80%D0%B0%D0%B2%D0%BE%D1%87%D0%BD%D0%B8%D0%BA%20%D0%BF%D0%B0%D1%80%D0%B0%D0%BC%D0%B5%D1%82%D1%80%D0%BE%D0%B2.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по функциям S120 (Starter) FW5.1 SP1 0718 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/S120_%D0%A4%D1%83%D0%BD%D0%BA%D1%86%D0%B8%D0%B8%20%D0%BF%D1%80%D0%B8%D0%B2%D0%BE%D0%B4%D0%B0%20Starter.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации (Преобразователи шкафного типа) S150 FW4.5 0312 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/SINAMICS_S150%20%D0%A0%D1%83%D0%BA%D0%BE%D0%B2%D0%BE%D0%B4%D1%81%D1%82%D0%B2%D0%BE%20%D0%BF%D0%BE%20%D1%8D%D0%BA%D1%81%D0%BF%D0%BB%D1%83%D0%B0%D1%82%D0%B0%D1%86%D0%B8%D0%B8.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Каталог PM 21 2011 Ru",
+      "description": "Siemens (Германия) - Общее",
+      "tags": [
+        "Siemens (Германия)",
+        "Общее"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/all/%D0%A0%D0%9C_21_2011%20%D0%9A%D0%B0%D1%82%D0%B0%D0%BB%D0%BE%D0%B3%20%D0%A0%D0%9C21-2011.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Советы по началу работы S120 FW4.5 0112 Ru",
+      "description": "Siemens (Германия) - S120",
+      "tags": [
+        "Siemens (Германия)",
+        "S120"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/s120_gs_0112_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по вводу в эксплуатацию S120 FW4.5 0112 Ru",
+      "description": "Siemens (Германия) - S120",
+      "tags": [
+        "Siemens (Германия)",
+        "S120"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/s120_m_0112_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по функциям S120 FW5.1 1117 Ru",
+      "description": "Siemens (Германия) - S120",
+      "tags": [
+        "Siemens (Германия)",
+        "S120"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/s120_mf_1117_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по функциям (Safety Integrated) S120 FW4.7 0414 Ru",
+      "description": "Siemens (Германия) - S120",
+      "tags": [
+        "Siemens (Германия)",
+        "S120"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s120/s120_si_0414_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по эксплуатации S150 FW4.8 0716 Ru",
+      "description": "Siemens (Германия) - S150",
+      "tags": [
+        "Siemens (Германия)",
+        "S150"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sinamics/s150/Sinamics%20S150.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по аппарату Sirius 3RW50 0919 Ru",
+      "description": "Siemens (Германия) - Sirius",
+      "tags": [
+        "Siemens (Германия)",
+        "Sirius"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sirius/manual_softstarter_3RW50_ru-RU.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Справочник по аппарату Sirius 3RW55 (Failsafe) 0420 Ru",
+      "description": "Siemens (Германия) - Sirius",
+      "tags": [
+        "Siemens (Германия)",
+        "Sirius"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/siemens/sirius/manual_softstarter_3RW55_and_3RW55_Failsafe_ru-RU.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    },
+    {
+      "title": "Руководство по наладке и монтажу TG910 Ru",
+      "description": "TG (Китай) - TG",
+      "tags": [
+        "TG (Китай)",
+        "TG"
+      ],
+      "file_url": "https://storage.yandexcloud.net/drivers.data/docs/tg/910_mm_ru.pdf",
+      "file_type": "pdf",
+      "cover_type": "generated",
+      "is_public": true
+    }
+  ]
+}

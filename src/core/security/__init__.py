@@ -8,7 +8,13 @@
 - Аутентификации (защита роутеров)
 """
 
-from .auth import AuthenticationManager, get_current_user, CurrentUserDep
+from .auth import (
+    AuthenticationManager,
+    get_current_user,
+    get_current_user_optional,
+    CurrentUserDep,
+    OptionalUserDep,
+)
 from .cookie_manager import CookieManager, TokenCookieKey
 from .password_manager import PasswordManager
 from .token_manager import TokenManager, TokenType
@@ -21,5 +27,7 @@ __all__ = [
     "TokenCookieKey",
     "AuthenticationManager",
     "get_current_user",
+    "get_current_user_optional",
     "CurrentUserDep",
+    "OptionalUserDep",
 ]

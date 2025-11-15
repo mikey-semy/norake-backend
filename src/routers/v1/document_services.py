@@ -28,8 +28,9 @@ import io
 
 from src.core.dependencies.document_services import DocumentServiceServiceDep
 from src.core.security import CurrentUserDep
+from src.core.security.auth import OptionalUserDep
 from src.core.settings.base import settings
-from src.routers.base import ProtectedRouter
+from src.routers.base import BaseRouter
 from src.schemas.v1.document_services import (
     DocumentServiceCreateRequestSchema,
     DocumentServiceDetailSchema,
@@ -43,30 +44,34 @@ from src.schemas.v1.document_services import (
 )
 
 
-class DocumentServiceProtectedRouter(ProtectedRouter):
+class DocumentServiceProtectedRouter(BaseRouter):
     """
-    Защищённый роутер для управления сервисами документов.
+    Роутер для управления сервисами документов с selective authentication.
 
     Предоставляет HTTP API для CRUD операций с сервисами документов.
-    Все endpoints требуют JWT авторизации.
+    Публичные операции (GET) доступны без JWT, приватные требуют авторизации.
 
-    Protected Endpoints (требуется JWT):
-        POST   /document-services              - Загрузить документ
+    Public Endpoints (опциональный JWT):
         GET    /document-services              - Список с фильтрацией
         GET    /document-services/most-viewed  - Топ по просмотрам
         GET    /document-services/{id}         - Детали сервиса
+        GET    /document-services/{id}/qr      - Сгенерировать QR
+        GET    /document-services/{id}/file    - Стриминг файла документа
+
+    Protected Endpoints (требуется JWT):
+        POST   /document-services              - Загрузить документ
         PUT    /document-services/{id}         - Обновить сервис
         DELETE /document-services/{id}         - Удалить сервис
         POST   /document-services/{id}/functions        - Добавить функцию
         DELETE /document-services/{id}/functions/{name} - Удалить функцию
-        GET    /document-services/{id}/qr      - Сгенерировать QR
-        GET    /document-services/{id}/file    - Стриминг файла документа
 
     Архитектурные особенности:
         - Роутер преобразует DocumentServiceModel → Schema
         - Бизнес-логика и права доступа в DocumentServiceService
         - NO try-catch: глобальный exception handler обрабатывает ошибки
         - Multipart/form-data для загрузки файлов
+        - Публичные документы (is_public=True) доступны без авторизации
+        - Приватные документы требуют JWT и проверку прав владельца
     """
 
     def __init__(self):
@@ -165,12 +170,14 @@ class DocumentServiceProtectedRouter(ProtectedRouter):
             ## 📋 Получить список сервисов с фильтрацией
 
             Возвращает список сервисов с опциональными фильтрами:
-            - Публичные сервисы доступны всем
-            - Приватные сервисы видны только владельцу
+            - Публичные сервисы доступны всем (без JWT)
+            - Приватные сервисы видны только владельцу (требуется JWT)
             - Поддержка полнотекстового поиска
             - Фильтрация по тегам, автору, workspace, типу файла
 
-            ### 🔒 Требуется JWT токен
+            ### 🔓 JWT токен ОПЦИОНАЛЕН
+            * БЕЗ токена: возвращаются только публичные документы
+            * С токеном: публичные + ваши приватные документы
 
             ### Query параметры:
             * **search**: Полнотекстовый поиск по title/description
@@ -193,11 +200,10 @@ class DocumentServiceProtectedRouter(ProtectedRouter):
             """,
             responses={
                 200: {"description": "Список сервисов успешно получен"},
-                401: {"description": "Не авторизован"},
             },
         )
         async def list_document_services(
-            current_user: CurrentUserDep = None,
+            current_user: OptionalUserDep = None,
             document_service: DocumentServiceServiceDep = None,
             search: Optional[str] = Query(None, description="Полнотекстовый поиск"),
             tags: Optional[str] = Query(None, description="Теги через запятую"),
@@ -226,9 +232,10 @@ class DocumentServiceProtectedRouter(ProtectedRouter):
                 offset=offset,
             )
 
-            # Получение через сервис
+            # Получение через сервис (передаём user_id = None если не авторизован)
+            user_id = current_user.id if current_user else None
             services, total = await document_service.list_document_services(
-                query, current_user.id
+                query, user_id
             )
 
             # Преобразование в схемы
@@ -248,7 +255,8 @@ class DocumentServiceProtectedRouter(ProtectedRouter):
 
             Возвращает топ сервисов по количеству просмотров.
 
-            ### 🔒 Требуется JWT токен
+            ### 🔓 JWT токен НЕ требуется
+            * Возвращаются только публичные документы
 
             ### Query параметры:
             * **file_type**: Фильтр по типу файла (опционально)
@@ -263,7 +271,6 @@ class DocumentServiceProtectedRouter(ProtectedRouter):
             """,
             responses={
                 200: {"description": "Топ сервисов получен"},
-                401: {"description": "Не авторизован"},
             },
         )
         async def get_most_viewed(
@@ -295,7 +302,9 @@ class DocumentServiceProtectedRouter(ProtectedRouter):
             Приватные сервисы доступны только владельцу.
             Автоматически увеличивает счётчик просмотров.
 
-            ### 🔒 Требуется JWT токен
+            ### 🔓 JWT токен ОПЦИОНАЛЕН
+            * БЕЗ токена: доступны только публичные документы
+            * С токеном: публичные + ваши приватные документы
 
             ### Path параметры:
             * **service_id**: UUID сервиса
@@ -314,21 +323,21 @@ class DocumentServiceProtectedRouter(ProtectedRouter):
                 200: {"description": "Сервис найден"},
                 404: {"description": "Сервис не найден"},
                 403: {"description": "Нет прав доступа"},
-                401: {"description": "Не авторизован"},
             },
         )
         async def get_document_service(
             service_id: UUID,
-            current_user: CurrentUserDep = None,
+            current_user: OptionalUserDep = None,
             document_service: DocumentServiceServiceDep = None,
             increment_views: bool = Query(
                 True, description="Увеличить счётчик просмотров"
             ),
         ) -> DocumentServiceResponseSchema:
             """Получить сервис по ID."""
+            user_id = current_user.id if current_user else None
             service = await document_service.get_document_service(
                 service_id=service_id,
-                user_id=current_user.id,
+                user_id=user_id,
                 increment_views=increment_views,
             )
             schema = DocumentServiceDetailSchema.model_validate(service)
