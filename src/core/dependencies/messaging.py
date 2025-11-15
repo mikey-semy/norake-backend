@@ -18,22 +18,22 @@ logger = logging.getLogger("src.dependencies.messaging")
 class MessagingDependency(BaseDependency):
     """
     Зависимость для работы с системой обмена сообщениями.
-    
+
     Наследует BaseDependency и предоставляет методы для получения
     подключений к RabbitMQ с обработкой ошибок.
     """
-    
+
     def __init__(self) -> None:
         super().__init__()
         self._client = RabbitMQClient()
-    
+
     async def get_dependency(self) -> AbstractRobustConnection:
         """
         Получает подключение к RabbitMQ.
-        
+
         Returns:
             AbstractRobustConnection: Подключение к RabbitMQ
-            
+
         Raises:
             ServiceUnavailableException: Если не удается подключиться к RabbitMQ
         """

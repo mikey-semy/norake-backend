@@ -77,7 +77,7 @@ class BaseDependency:
         # ✅ Пробрасываем бизнес-исключения
         if isinstance(e, BaseAPIException):
             raise
-        
+
         self.logger.error("Ошибка получения зависимости %s: %s", service_name, e)
         raise ServiceUnavailableException(service_name=service_name)
 ```

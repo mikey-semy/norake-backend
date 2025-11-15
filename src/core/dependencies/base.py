@@ -79,7 +79,7 @@ class BaseDependency(ABC):
         # Пробрасываем бизнес-исключения (например, OpenRouterAPIError 429)
         if isinstance(e, BaseAPIException):
             raise
-        
+
         self.logger.error(
             "Ошибка получения зависимости %s: %s", service_name, e, exc_info=True
         )
