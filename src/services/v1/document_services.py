@@ -8,7 +8,9 @@ Classes:
     DocumentServiceService: Сервис с методами create, get, update, delete, upload.
 """
 
+import asyncio
 import logging
+import time
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
@@ -24,12 +26,17 @@ from src.core.exceptions import (
     FileTypeValidationError,
     QRCodeGenerationError,
 )
+from src.core.integrations.processors import PDFProcessor
 from src.core.integrations.storages.documents import DocumentS3Storage
 from src.core.settings.base import Settings
+from src.models.v1 import ExtractionMethod, ProcessingStatus
 from src.models.v1.document_services import (
     CoverType,
     DocumentFileType,
     DocumentServiceModel,
+)
+from src.repository.v1.document_processing import (
+    DocumentProcessingRepository,
 )
 from src.repository.v1.document_services import DocumentServiceRepository
 from src.schemas.v1.document_services import (
@@ -75,7 +82,9 @@ class DocumentServiceService:
             settings: Настройки приложения.
         """
         self.repository = DocumentServiceRepository(session)
+        self.processing_repository = DocumentProcessingRepository(session)
         self.storage = DocumentS3Storage(s3_client)
+        self.pdf_processor = PDFProcessor()
         self.settings = settings
         self.logger = logging.getLogger(__name__)
 
@@ -179,6 +188,30 @@ class DocumentServiceService:
             author_id,
             file_size,
         )
+
+        # Создать запись обработки и запустить обработку для PDF
+        if metadata.file_type == "pdf":
+            await self.processing_repository.create_processing_record(
+                document_service_id=document_service.id,
+                status=ProcessingStatus.PENDING,
+            )
+            self.logger.info(
+                "📝 Создана запись обработки для PDF документа %s",
+                document_service.id,
+            )
+
+            # Запустить фоновую обработку PDF
+            asyncio.create_task(
+                self._process_pdf_background(
+                    document_service.id,
+                    file_content_from_storage,
+                )
+            )
+            self.logger.info(
+                "🚀 Запущена фоновая обработка PDF документа %s",
+                document_service.id,
+            )
+
         return document_service
 
     async def get_document_service(
@@ -1032,3 +1065,207 @@ class DocumentServiceService:
         except Exception as e:
             self.logger.error("❌ Ошибка получения файла из S3: %s", str(e))
             raise
+
+    async def _process_pdf_background(
+        self,
+        document_service_id: UUID,
+        file_content: bytes,
+    ) -> None:
+        """
+        Фоновая обработка PDF документа.
+
+        Извлекает текст из PDF, сохраняет результаты в DocumentProcessingModel.
+        Запускается асинхронно через asyncio.create_task при создании документа.
+
+        Args:
+            document_service_id: UUID документа для обработки.
+            file_content: Содержимое PDF файла в байтах.
+
+        Note:
+            Метод намеренно не пробрасывает исключения - все ошибки логируются
+            и сохраняются в processing.error_message со статусом FAILED.
+        """
+        start_time = time.time()
+        self.logger.info(
+            "🔄 Начало обработки PDF документа %s",
+            document_service_id,
+        )
+
+        try:
+            # Обновить статус на PROCESSING
+            await self.processing_repository.update_status(
+                document_service_id=document_service_id,
+                status=ProcessingStatus.PROCESSING,
+            )
+
+            # Извлечь текст из PDF
+            extracted_text, page_count, method_str = await self.pdf_processor.extract_text(
+                file_content=file_content,
+                use_pymupdf=False,  # Сначала pdfplumber
+            )
+
+            # Конвертировать строку метода в enum
+            extraction_method = ExtractionMethod[method_str.upper()]
+
+            # Вычислить время обработки
+            processing_time = time.time() - start_time
+
+            # Сохранить результаты
+            await self.processing_repository.save_extracted_text(
+                document_service_id=document_service_id,
+                extracted_text=extracted_text,
+                page_count=page_count,
+                extraction_method=extraction_method,
+                language="ru",
+                processing_time_seconds=processing_time,
+            )
+
+            self.logger.info(
+                "✅ Обработка PDF документа %s завершена: %d страниц, %d символов, %.2f сек",
+                document_service_id,
+                page_count,
+                len(extracted_text),
+                processing_time,
+            )
+
+        except ValueError as e:
+            # PDF не содержит текста (скан без OCR)
+            error_msg = f"Документ не содержит извлекаемого текста: {str(e)}"
+            self.logger.warning(
+                "⚠️ Невозможно обработать PDF %s: %s",
+                document_service_id,
+                error_msg,
+            )
+            await self.processing_repository.update_status(
+                document_service_id=document_service_id,
+                status=ProcessingStatus.FAILED,
+                error_message=error_msg,
+            )
+
+        except Exception as e:
+            # Непредвиденная ошибка обработки
+            error_msg = f"Ошибка при обработке PDF: {str(e)}"
+            self.logger.error(
+                "❌ Ошибка обработки PDF %s: %s",
+                document_service_id,
+                error_msg,
+                exc_info=True,
+            )
+            await self.processing_repository.update_status(
+                document_service_id=document_service_id,
+                status=ProcessingStatus.FAILED,
+                error_message=error_msg,
+            )
+
+    async def get_ai_functions(
+        self,
+        service_id: UUID,
+        user_id: Optional[UUID] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        Получить статусы AI функций документа.
+
+        Возвращает информацию о доступности умного поиска, RAG, чата и т.д.
+        Проверяет обработку PDF и текущие настройки документа.
+
+        Args:
+            service_id: UUID сервиса документа.
+            user_id: UUID текущего пользователя (для проверки прав).
+
+        Returns:
+            Список словарей с информацией о функциях:
+            [
+                {
+                    "name": "smart_search",
+                    "enabled": True/False,
+                    "status": "ready" | "processing" | "inactive" | "failed",
+                    "progress": 0-100 (для processing),
+                    "error_message": "..." (для failed)
+                }
+            ]
+
+        Raises:
+            DocumentServiceNotFoundError: Если сервис не найден.
+            DocumentAccessDeniedError: Если доступ запрещён.
+
+        Example:
+            >>> functions = await service.get_ai_functions(service_id, user_id)
+            >>> for func in functions:
+            ...     print(f"{func['name']}: {func['status']}")
+        """
+        # Получить документ с проверкой прав (без инкремента просмотров)
+        document = await self.get_document_service(
+            service_id=service_id,
+            user_id=user_id,
+            increment_views=False,
+        )
+
+        # Получить статус обработки
+        processing = await self.processing_repository.get_by_document_id(
+            service_id
+        )
+
+        # Определить базовый статус для всех функций
+        if not processing:
+            # Документ не PDF или обработка не запущена
+            base_status = "inactive"
+            error_msg = "Документ не является PDF или обработка не инициирована"
+        elif processing.status == ProcessingStatus.PENDING:
+            base_status = "inactive"
+            error_msg = "Обработка ожидает запуска"
+        elif processing.status == ProcessingStatus.PROCESSING:
+            base_status = "processing"
+            error_msg = None
+        elif processing.status == ProcessingStatus.COMPLETED:
+            base_status = "ready"
+            error_msg = None
+        else:  # FAILED
+            base_status = "failed"
+            error_msg = processing.error_message or "Ошибка обработки PDF"
+
+        # Список AI функций
+        ai_functions = [
+            {
+                "name": "smart_search",
+                "enabled": True,  # Всегда включен если есть текст
+                "status": base_status,
+                "progress": 100 if base_status == "processing" else None,
+                "error_message": error_msg if base_status == "failed" else None,
+            },
+            {
+                "name": "rag_search",
+                "enabled": False,  # Пока не реализовано
+                "status": "inactive",
+                "progress": None,
+                "error_message": "Функция RAG поиска не реализована",
+            },
+            {
+                "name": "document_chat",
+                "enabled": False,  # Пока не реализовано
+                "status": "inactive",
+                "progress": None,
+                "error_message": "Функция чата с документом не реализована",
+            },
+            {
+                "name": "summary",
+                "enabled": False,  # Пока не реализовано
+                "status": "inactive",
+                "progress": None,
+                "error_message": "Функция генерации саммари не реализована",
+            },
+            {
+                "name": "entity_extraction",
+                "enabled": False,  # Пока не реализовано
+                "status": "inactive",
+                "progress": None,
+                "error_message": "Функция извлечения сущностей не реализована",
+            },
+        ]
+
+        self.logger.info(
+            "📊 Получены AI функции для документа %s: smart_search=%s",
+            service_id,
+            base_status,
+        )
+
+        return ai_functions

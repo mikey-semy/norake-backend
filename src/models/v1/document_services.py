@@ -21,6 +21,7 @@ from ..base import BaseModel
 if TYPE_CHECKING:
     from .users import UserModel
     from .workspaces import WorkspaceModel
+    from .document_processing import DocumentProcessingModel
 
 
 class ServiceFunctionType(str, enum.Enum):
@@ -269,6 +270,14 @@ class DocumentServiceModel(BaseModel):
         back_populates="document_services",
         foreign_keys=[workspace_id],
         doc="Workspace документного сервиса (опционально)",
+    )
+
+    processing: Mapped[Optional["DocumentProcessingModel"]] = relationship(
+        "DocumentProcessingModel",
+        back_populates="document_service",
+        uselist=False,
+        cascade="all, delete-orphan",
+        doc="Метаданные обработки документа (1-to-1)",
     )
 
     @property

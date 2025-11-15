@@ -326,3 +326,87 @@ class DocumentServiceListResponseSchema(BaseResponseSchema):
         default=None,
         description="Общее количество результатов (для пагинации)"
     )
+
+
+class AIFunctionStatusSchema(CommonBaseSchema):
+    """
+    Статус доступности AI функции документа.
+
+    Схема описывает состояние конкретной AI функции:
+    включена ли она, готова ли к использованию, есть ли ошибки.
+
+    Attributes:
+        name: Код функции (smart_search, rag_search, document_chat и т.д.)
+        enabled: Включена ли функция в настройках документа
+        status: Текущий статус (ready, processing, inactive, failed)
+        progress: Процент выполнения для processing (0-100)
+        error_message: Сообщение об ошибке для failed
+
+    Example:
+        {
+            "name": "smart_search",
+            "enabled": true,
+            "status": "ready"
+        }
+    """
+
+    name: str = Field(
+        ...,
+        description="Код AI функции (smart_search, rag_search, document_chat, etc.)"
+    )
+    enabled: bool = Field(
+        ...,
+        description="Включена ли функция в настройках документа"
+    )
+    status: str = Field(
+        ...,
+        description="Статус функции: ready, processing, inactive, failed"
+    )
+    progress: Optional[int] = Field(
+        default=None,
+        ge=0,
+        le=100,
+        description="Процент выполнения обработки (для processing)"
+    )
+    error_message: Optional[str] = Field(
+        default=None,
+        description="Сообщение об ошибке (для failed)"
+    )
+
+
+class DocumentAIFunctionsResponseSchema(BaseResponseSchema):
+    """
+    Ответ со списком AI функций документа.
+
+    Возвращает информацию о доступности всех AI функций:
+    умный поиск, RAG, чат с документом и т.д.
+
+    Attributes:
+        success: Флаг успешности операции.
+        message: Сообщение о результате операции.
+        data: Список AI функций с их статусами.
+
+    Example:
+        {
+            "success": true,
+            "message": "AI функции документа получены",
+            "data": [
+                {
+                    "name": "smart_search",
+                    "enabled": true,
+                    "status": "ready"
+                },
+                {
+                    "name": "rag_search",
+                    "enabled": false,
+                    "status": "processing",
+                    "progress": 65
+                }
+            ]
+        }
+    """
+
+    data: List[AIFunctionStatusSchema] = Field(
+        default_factory=list,
+        description="Список AI функций с их статусами"
+    )

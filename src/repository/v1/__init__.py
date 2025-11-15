@@ -10,6 +10,7 @@
     - DocumentServiceRepository: Работа с сервисами документов
 """
 
+from .document_processing import DocumentProcessingRepository
 from .document_services import DocumentServiceRepository
 from .issue_comments import IssueCommentRepository
 from .issues import IssueRepository
@@ -23,4 +24,5 @@ __all__ = [
     "WorkspaceRepository",
     "WorkspaceMemberRepository",
     "DocumentServiceRepository",
+    "DocumentProcessingRepository",
 ]

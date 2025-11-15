@@ -14,6 +14,11 @@
 """
 
 from .ai_modules import AIModuleModel, AIModuleType, WorkspaceModuleModel
+from .document_processing import (
+    DocumentProcessingModel,
+    ExtractionMethod,
+    ProcessingStatus,
+)
 from .document_services import (
     CoverType,
     DocumentFileType,
@@ -76,4 +81,8 @@ __all__ = [
     "ServiceFunctionType",
     "DocumentFileType",
     "CoverType",
+    # Document Processing
+    "DocumentProcessingModel",
+    "ProcessingStatus",
+    "ExtractionMethod",
 ]

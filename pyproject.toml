@@ -26,6 +26,8 @@ dependencies = [
   "qrcode[pil]>=7.4.0", # Генерация QR-кодов для document services
   "pdf2image>=1.17.0", # Конвертация PDF в изображения для thumbnails
   "pillow>=11.3.0", # Обработка изображений
+  "pdfplumber>=0.11.0", # Извлечение текста из PDF
+  "PyMuPDF>=1.24.0", # Альтернативное извлечение текста и метаданных из PDF
 ]
 description = ""
 name = "equiply-backend"

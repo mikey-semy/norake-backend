@@ -71,8 +71,8 @@ class S3Client(BaseClient):
             self.settings.AWS_ACCESS_KEY_ID.get_secret_value()[:10] + "...",
         )
 
-        # КРИТИЧНО: virtual-hosted для подписи (без bucket в CanonicalRequest path)
-        # Yandex Cloud ожидает подпись БЕЗ /bucket/ в пути, даже если URL path-style!
+        # Конфигурация S3 для Yandex Cloud Storage
+        # virtual addressing style обязателен для корректной работы с Yandex Cloud
         s3_config = BotocoreConfig(s3={"addressing_style": "virtual"})
         try:
             self.logger.debug("Создание клиента S3...")
