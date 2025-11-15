@@ -4,6 +4,7 @@
 
 import asyncio
 import json
+import os
 from typing import Any, Dict, List
 
 import httpx
@@ -16,7 +17,13 @@ async def fetch_embedding_models() -> List[Dict[str, Any]]:
     Returns:
         List[Dict]: Список моделей с полной информацией
     """
-    api_key = "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"
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key:
+        raise ValueError(
+            "OPENROUTER_API_KEY не найден в переменных окружения. "
+            "Установите через: $env:OPENROUTER_API_KEY='your-key'"
+        )
+    
     url = "https://openrouter.ai/api/v1/models"
 
     async with httpx.AsyncClient(timeout=30.0) as client:
