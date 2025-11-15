@@ -65,19 +65,35 @@ class RAGSearchService:
     def __init__(
         self,
         session: AsyncSession,
-        openrouter_client: OpenRouterEmbeddings,
+        openrouter_client: OpenRouterEmbeddings | None = None,
     ):
         """
         Инициализация RAG Search Service.
 
         Args:
             session: Async SQLAlchemy сессия
-            openrouter_client: Клиент для OpenRouter API (embeddings)
+            openrouter_client: Клиент для OpenRouter API (embeddings).
+                Если None - будет создан лениво при первом использовании.
         """
         self.session = session
-        self.openrouter = openrouter_client
+        self._openrouter = openrouter_client  # Приватный атрибут для ленивой инициализации
         self.kb_repository = KnowledgeBaseRepository(session)
         self.chunk_repository = DocumentChunkRepository(session)
+
+    @property
+    def openrouter(self) -> OpenRouterEmbeddings:
+        """
+        Ленивая инициализация OpenRouter клиента.
+
+        Клиент создаётся только при первом обращении к embeddings,
+        что предотвращает лишние вызовы API и rate limit ошибки.
+
+        Returns:
+            OpenRouterEmbeddings: Инициализированный клиент.
+        """
+        if self._openrouter is None:
+            self._openrouter = OpenRouterEmbeddings()
+        return self._openrouter
 
     async def search(
         self,
@@ -109,7 +125,7 @@ class RAGSearchService:
         # Используем значения из settings если не переданы
         limit = limit if limit is not None else settings.RAG_SEARCH_LIMIT
         min_similarity = min_similarity if min_similarity is not None else settings.RAG_MIN_SIMILARITY
-        
+
         # Проверка существования KB
         kb = await self.kb_repository.get_item_by_id(kb_id)
         if not kb:

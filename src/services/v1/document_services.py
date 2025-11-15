@@ -1533,9 +1533,39 @@ class DocumentServiceService:
                 processing_id, {"progress_percent": 50}
             )
 
-            # 7. Генерация embeddings
-            self.logger.debug("Генерируем embeddings для %d чанков...", len(chunks))
-            embeddings_list = await self.embeddings.embed(chunks)
+            # 7. Генерация embeddings с батчингом (по 20 chunks за раз)
+            # Это предотвращает перегрузку OpenRouter API и 503 ошибки
+            batch_size = 20
+            embeddings_list = []
+            
+            self.logger.debug(
+                "Генерируем embeddings для %d чанков (батчами по %d)...",
+                len(chunks),
+                batch_size
+            )
+            
+            for i in range(0, len(chunks), batch_size):
+                batch = chunks[i:i + batch_size]
+                batch_embeddings = await self.embeddings.embed(batch)
+                embeddings_list.extend(batch_embeddings)
+                
+                # Обновляем прогресс (50-75%)
+                progress = 50 + int((i / len(chunks)) * 25)
+                await self.processing_repository.update_item(
+                    processing_id, {"progress_percent": progress}
+                )
+                
+                self.logger.debug(
+                    "Обработано %d/%d чанков (прогресс: %d%%)",
+                    min(i + batch_size, len(chunks)),
+                    len(chunks),
+                    progress
+                )
+                
+                # Небольшая задержка между батчами для rate limiting
+                if i + batch_size < len(chunks):
+                    await asyncio.sleep(0.5)
+            
             self.logger.info(
                 "Сгенерировано %d embeddings для документа %s",
                 len(embeddings_list),

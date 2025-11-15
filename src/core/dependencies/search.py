@@ -37,7 +37,6 @@ from fastapi import Depends
 
 from src.core.dependencies.cache import RedisDep
 from src.core.dependencies.database import AsyncSessionDep
-from src.core.integrations.ai.embeddings.openrouter import OpenRouterEmbeddings
 from src.core.exceptions.base import BaseAPIException
 from src.services.v1.rag_search import RAGSearchService
 from src.services.v1.search import SearchService
@@ -53,6 +52,7 @@ async def get_rag_search_service(
 
     Создаёт экземпляр RAGSearchService с внедрёнными зависимостями:
     - Сессия базы данных (для работы с Knowledge Base и Documents)
+    - OpenRouter клиент инициализируется ЛЕНИВО (при первом использовании)
 
     Args:
         session: Асинхронная сессия базы данных.
@@ -78,9 +78,8 @@ async def get_rag_search_service(
     """
     try:
         logger.debug("Создание экземпляра RAGSearchService")
-        # Создаём OpenRouter embeddings клиент
-        openrouter_client = OpenRouterEmbeddings()
-        return RAGSearchService(session=session, openrouter_client=openrouter_client)
+        # OpenRouter клиент НЕ создаём здесь - будет создан лениво при первом использовании
+        return RAGSearchService(session=session, openrouter_client=None)
     except BaseAPIException:
         # Пробрасываем бизнес-исключения (например, OpenRouterConfigError)
         raise

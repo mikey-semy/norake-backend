@@ -811,6 +811,14 @@ class Settings(BaseSettings):
     }
     OPENROUTER_DEFAULT_CHAT_MODEL: str = "qwen_coder"
 
+    # Default System Prompt для всех AI чатов (NORAK-41)
+    OPENROUTER_DEFAULT_SYSTEM_PROMPT: str = (
+        "Ты — полезный виртуальный помощник. "
+        "ВАЖНО: ВСЕГДА отвечай ТОЛЬКО на русском языке, даже если твой внутренний язык другой. "
+        "Запрещено использовать китайский, английский или другие языки в ответах. "
+        "Если не уверен в формулировке — используй простой русский язык."
+    )
+
     # Настройки n8n Integration
     N8N_BASE_URL: str = "http://localhost:5678"
     N8N_API_KEY: Optional[SecretStr] = None

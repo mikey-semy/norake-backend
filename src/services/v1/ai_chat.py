@@ -9,6 +9,7 @@
 - Получение доступных моделей
 """
 
+import asyncio
 import httpx
 from datetime import datetime
 from typing import Any
@@ -134,9 +135,12 @@ class AIChatService(BaseService):
             "max_tokens": model_config.get("max_tokens", 4000),
         }
 
-        # Добавляем system prompt если указан
+        # Добавляем system prompt (дефолтный или кастомный)
         if system_prompt:
             model_settings["system_prompt"] = system_prompt
+        else:
+            # Используем дефолтный prompt с требованием русского языка
+            model_settings["system_prompt"] = self.settings.OPENROUTER_DEFAULT_SYSTEM_PROMPT
 
         # Создаем чат
         chat_data = {
@@ -259,7 +263,7 @@ class AIChatService(BaseService):
             raise ValueError(f"Модель '{chat.model_key}' не найдена в конфигурации")
 
         model_id = model_config["id"]
-        self.logger.debug("Отправка запроса к OpenRouter: model=%s", model_id)
+        # Лог "Отправка запроса..." теперь внутри _call_openrouter с retry info
 
         ai_response = await self._call_openrouter(
             model_id=model_id,
@@ -268,8 +272,51 @@ class AIChatService(BaseService):
             max_tokens=chat.model_settings.get("max_tokens", 4000),
         )
 
+        # Валидация языка ответа
+        original_content = ai_response["content"]
+        cleaned_content, had_mixed_lang = self._sanitize_response(original_content)
+
+        # Если обнаружен смешанный язык - делаем повторный запрос с явным требованием
+        if had_mixed_lang:
+            self.logger.info(
+                "Отправка повторного запроса с требованием русского языка"
+            )
+            correction_messages = messages + [
+                {"role": "assistant", "content": original_content},
+                {
+                    "role": "user",
+                    "content": "ВАЖНО: Переведи свой предыдущий ответ ПОЛНОСТЬЮ на русский язык. "
+                    "Убери ВСЕ китайские, английские и другие символы. Используй ТОЛЬКО русский алфавит.",
+                },
+            ]
+
+            try:
+                correction_response = await self._call_openrouter(
+                    model_id=model_id,
+                    messages=correction_messages,
+                    temperature=0.3,  # Снижаем температуру для более точного перевода
+                    max_tokens=chat.model_settings.get("max_tokens", 4000),
+                )
+                # Используем исправленный ответ
+                final_content, still_mixed = self._sanitize_response(
+                    correction_response["content"]
+                )
+                if not still_mixed:
+                    ai_response["content"] = final_content
+                    ai_response["tokens_used"] += correction_response["tokens_used"]
+                else:
+                    # Если всё ещё смешанный - используем очищенную версию
+                    ai_response["content"] = cleaned_content
+            except Exception as e:
+                # При ошибке исправления - используем очищенную версию
+                self.logger.error(
+                    "Ошибка при исправлении смешанного языка: %s", str(e)
+                )
+                ai_response["content"] = cleaned_content
+
         # Сохраняем сообщения в историю
-        timestamp = datetime.utcnow().isoformat()
+        # ВАЖНО: Используем ISO 8601 с timezone (Z) для корректного парсинга в JS
+        timestamp = datetime.utcnow().isoformat() + "Z"
 
         user_message = {
             "role": "user",
@@ -527,6 +574,37 @@ class AIChatService(BaseService):
 
         return "\n".join(context_parts)
 
+    def _sanitize_response(self, content: str) -> tuple[str, bool]:
+        """
+        Проверяет и очищает ответ от нежелательных языков.
+
+        Обнаруживает китайские/японские иероглифы и другие нерусские скрипты.
+        Если найдены - возвращает предупреждение вместо смешанного текста.
+
+        Args:
+            content: Ответ от AI модели
+
+        Returns:
+            tuple[str, bool]: (очищенный_контент, был_ли_смешанный_язык)
+        """
+        import re
+
+        # Проверяем наличие китайских/японских символов (Unicode ranges)
+        cjk_pattern = re.compile(r'[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff]')
+        has_cjk = bool(cjk_pattern.search(content))
+
+        if has_cjk:
+            self.logger.warning(
+                "Обнаружен смешанный язык в ответе AI (CJK символы). Отправка запроса на исправление."
+            )
+            # Возвращаем только русскую часть + предупреждение
+            cleaned = cjk_pattern.sub('', content).strip()
+            if not cleaned:
+                cleaned = "Извините, произошла ошибка с языком ответа. Пожалуйста, повторите вопрос."
+            return cleaned, True
+
+        return content, False
+
     def _build_messages(
         self,
         chat_history: list[dict],
@@ -572,21 +650,23 @@ class AIChatService(BaseService):
         messages: list[dict],
         temperature: float,
         max_tokens: int,
+        max_retries: int = 3,
     ) -> dict[str, Any]:
         """
-        Выполняет запрос к OpenRouter API.
+        Выполняет запрос к OpenRouter API с retry логикой для rate limit.
 
         Args:
             model_id: ID модели OpenRouter
             messages: Массив сообщений
             temperature: Температура генерации
             max_tokens: Максимум токенов
+            max_retries: Максимальное количество повторных попыток при 429
 
         Returns:
             dict: Ответ с content и tokens_used
 
         Raises:
-            OpenRouterAPIError: Ошибка API
+            OpenRouterAPIError: Ошибка API (не rate limit)
         """
         url = "https://openrouter.ai/api/v1/chat/completions"
         headers = {
@@ -601,46 +681,93 @@ class AIChatService(BaseService):
             "max_tokens": max_tokens,
         }
 
-        try:
-            async with httpx.AsyncClient(timeout=60.0) as client:
-                response = await client.post(url, json=payload, headers=headers)
-                response.raise_for_status()
-                data = response.json()
+        last_exception = None
 
-                content = data["choices"][0]["message"]["content"]
-                tokens_used = data.get("usage", {}).get("total_tokens", 0)
-
-                return {"content": content, "tokens_used": tokens_used}
-
-        except httpx.HTTPStatusError as e:
-            # Получаем тело ошибки для детального логирования
+        for attempt in range(max_retries):
             try:
-                error_body = e.response.json()
-                error_detail = error_body.get("error", {}).get("message", str(e))
-            except (ValueError, KeyError):
-                # Если не удалось распарсить JSON или извлечь message
-                error_detail = e.response.text or str(e)
+                self.logger.debug(
+                    "Отправка запроса к OpenRouter: model=%s (попытка %d/%d)",
+                    model_id,
+                    attempt + 1,
+                    max_retries,
+                )
 
-            self.logger.error(
-                "Ошибка OpenRouter API [%d]: model=%s, error=%s",
-                e.response.status_code,
-                model_id,
-                error_detail,
-            )
-            raise OpenRouterAPIError(
-                detail=f"OpenRouter API error [{e.response.status_code}]: {error_detail}",
-                extra={
-                    "model": model_id,
-                    "status_code": e.response.status_code,
-                    "error": error_detail,
-                },
-            ) from e
-        except httpx.HTTPError as e:
-            self.logger.error("Ошибка сети OpenRouter: %s", str(e))
-            raise OpenRouterAPIError(
-                detail=f"Network error: {str(e)}",
-                extra={"model": model_id, "error": str(e)},
-            ) from e
+                async with httpx.AsyncClient(timeout=60.0) as client:
+                    response = await client.post(url, json=payload, headers=headers)
+
+                    # Если rate limit - делаем retry с экспоненциальным backoff
+                    if response.status_code == 429:
+                        if attempt < max_retries - 1:
+                            backoff = 2 ** attempt  # 1s, 2s, 4s...
+                            self.logger.warning(
+                                "Rate limit [429] от OpenRouter. Retry через %d сек (попытка %d/%d)",
+                                backoff,
+                                attempt + 1,
+                                max_retries,
+                            )
+                            await asyncio.sleep(backoff)
+                            continue
+                        # Последняя попытка - прокидываем ошибку
+                        self.logger.error(
+                            "Rate limit [429] превышен после %d попыток: model=%s",
+                            max_retries,
+                            model_id,
+                        )
+
+                    response.raise_for_status()
+                    data = response.json()
+
+                    content = data["choices"][0]["message"]["content"]
+                    tokens_used = data.get("usage", {}).get("total_tokens", 0)
+
+                    return {"content": content, "tokens_used": tokens_used}
+
+            except httpx.HTTPStatusError as e:
+                last_exception = e
+                # Если это не 429, или последняя попытка - выбрасываем ошибку
+                if e.response.status_code != 429 or attempt == max_retries - 1:
+                    # Получаем тело ошибки для детального логирования
+                    try:
+                        error_body = e.response.json()
+                        error_detail = error_body.get("error", {}).get("message", str(e))
+                    except (ValueError, KeyError):
+                        error_detail = e.response.text or str(e)
+
+                    self.logger.error(
+                        "Ошибка OpenRouter API [%d]: model=%s, error=%s",
+                        e.response.status_code,
+                        model_id,
+                        error_detail,
+                    )
+                    raise OpenRouterAPIError(
+                        detail=f"OpenRouter API error [{e.response.status_code}]: {error_detail}",
+                        extra={
+                            "model": model_id,
+                            "status_code": e.response.status_code,
+                            "error": error_detail,
+                        },
+                    ) from e
+
+            except httpx.HTTPError as e:
+                last_exception = e
+                self.logger.error("Ошибка сети OpenRouter: %s", str(e))
+                raise OpenRouterAPIError(
+                    detail=f"Network error: {str(e)}",
+                    extra={"model": model_id, "error": str(e)},
+                ) from e
+
+        # Если все попытки исчерпаны (не должно дойти сюда, но на всякий случай)
+        self.logger.error(
+            "Все %d попыток вызова OpenRouter исчерпаны: model=%s",
+            max_retries,
+            model_id,
+        )
+        if last_exception:
+            raise last_exception
+        raise OpenRouterAPIError(
+            detail="All retry attempts exhausted",
+            extra={"model": model_id, "max_retries": max_retries},
+        )
 
     async def _update_chat_stats(
         self,
