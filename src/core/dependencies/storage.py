@@ -5,7 +5,6 @@ from fastapi import Depends
 
 from src.core.connections.storage import S3ContextManager
 from src.core.exceptions.dependencies import ServiceUnavailableException
-from src.core.exceptions.base import BaseAPIException
 
 logger = logging.getLogger("src.dependencies.storage")
 
@@ -26,11 +25,11 @@ async def get_s3_client() -> AsyncGenerator[Any, None]:
         async with S3ContextManager() as s3:
             logger.debug("S3 подключение успешно установлено")
             yield s3
-    except BaseAPIException:
-        # Пробрасываем бизнес-исключения без изменений (404, 403 и т.д.)
+    except ServiceUnavailableException:
+        # Пробрасываем 503 без изменений
         raise
     except Exception as e:
-        logger.error("❌ Ошибка подключения к S3: %s", e)
+        logger.error("❌ Ошибка подключения к S3: %s", str(e))
         raise ServiceUnavailableException("Storage (S3)") from e
 
 

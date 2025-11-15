@@ -721,57 +721,96 @@ class Settings(BaseSettings):
     # Настройки OpenRouter AI Integration
     OPENROUTER_API_KEY: Optional[str] = None
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
-    OPENROUTER_EMBEDDING_MODEL: str = "openai/text-embedding-ada-002"
     OPENROUTER_TIMEOUT: int = 30
     OPENROUTER_MAX_RETRIES: int = 3
 
+    # Embeddings Configuration
+    # NOTE: OpenRouter не поддерживает embedding модели!
+    # Используй OpenAI API напрямую или локальные модели (sentence-transformers)
+
+    # OpenAI Embeddings (рекомендуется для production)
+    OPENAI_EMBEDDINGS_API_KEY: Optional[str] = None
+    OPENAI_EMBEDDINGS_BASE_URL: str = "https://api.openai.com/v1"
+    OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"  # $0.02 за 1M токенов
+    OPENAI_EMBEDDING_DIMENSIONS: int = 1536
+
+    # Local Embeddings (бесплатно, работает оффлайн)
+    USE_LOCAL_EMBEDDINGS: bool = False  # Если True - используется sentence-transformers
+    LOCAL_EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
+    LOCAL_EMBEDDING_DIMENSIONS: int = 384
+
     # Настройки OpenRouter Chat Models (NORAK-41)
-    # Конфигурация бесплатных моделей для AI чата с разными специализациями
+    # ✅ Все модели БЕСПЛАТНЫЕ (pricing.prompt = "0") согласно fixtures_data/openrouter_models.json
     OPENROUTER_CHAT_MODELS: Dict[str, Dict[str, Any]] = {
         "qwen_coder": {
-            "id": "qwen/qwen3-coder-480b",
-            "name": "Qwen3 Coder 480B",
-            "description": "Лучшая модель для работы с кодом, превосходит Claude Sonnet в кодогенерации",
+            "id": "qwen/qwen3-coder:free",
+            "name": "Qwen3 Coder 480B (Free)",
+            "description": "Бесплатная модель для работы с кодом",
             "specialization": "code",
-            "context_window": 32768,
+            "context_window": 262144,
             "temperature": 0.2,
             "max_tokens": 4096,
+            "supports_vision": False,
         },
-        "kimi_dev": {
-            "id": "moonshot/kimi-dev-72b",
-            "name": "Kimi Dev 72B",
-            "description": "Универсальная модель для общих задач и разработки",
-            "specialization": "general",
-            "context_window": 200000,
+        "qwen_vl": {
+            "id": "qwen/qwen2.5-vl-32b-instruct:free",
+            "name": "Qwen2.5 VL 32B (Free)",
+            "description": "Бесплатная multimodal модель с поддержкой изображений",
+            "specialization": "vision",
+            "context_window": 16384,
             "temperature": 0.7,
             "max_tokens": 4096,
+            "supports_vision": True,
         },
-        "deepseek_r1": {
-            "id": "deepseek/deepseek-r1-70b",
-            "name": "DeepSeek R1 70B",
-            "description": "Сбалансированная модель для рассуждений и анализа",
-            "specialization": "balanced",
-            "context_window": 65536,
-            "temperature": 0.5,
+        "gemini_flash": {
+            "id": "google/gemini-2.0-flash-exp:free",
+            "name": "Gemini 2.0 Flash (Free)",
+            "description": "Бесплатная быстрая модель Google с огромным контекстом и vision",
+            "specialization": "vision",
+            "context_window": 1048576,
+            "temperature": 0.7,
             "max_tokens": 8192,
+            "supports_vision": True,
         },
-        "tongyi_research": {
-            "id": "alibaba/tongyi-deepresearch-30b",
-            "name": "Tongyi DeepResearch 30B",
-            "description": "Специализация на научных исследованиях и глубоком анализе",
-            "specialization": "research",
+        "kimi_k2": {
+            "id": "moonshotai/kimi-k2:free",
+            "name": "Kimi K2 (Free)",
+            "description": "Бесплатная модель MoonshotAI для общих задач",
+            "specialization": "general",
             "context_window": 32768,
-            "temperature": 0.3,
+            "temperature": 0.7,
             "max_tokens": 4096,
+            "supports_vision": False,
         },
         "deepseek_v3": {
-            "id": "deepseek/deepseek-v3.1",
-            "name": "DeepSeek V3.1",
-            "description": "Быстрая модель для оперативных ответов и простых задач",
-            "specialization": "fast",
-            "context_window": 65536,
+            "id": "deepseek/deepseek-chat-v3.1:free",
+            "name": "DeepSeek V3.1 (Free)",
+            "description": "Бесплатная модель DeepSeek для рассуждений",
+            "specialization": "balanced",
+            "context_window": 163840,
+            "temperature": 0.5,
+            "max_tokens": 8192,
+            "supports_vision": False,
+        },
+        "tongyi_research": {
+            "id": "alibaba/tongyi-deepresearch-30b-a3b:free",
+            "name": "Tongyi DeepResearch (Free)",
+            "description": "Бесплатная модель для глубокого анализа",
+            "specialization": "research",
+            "context_window": 131072,
+            "temperature": 0.3,
+            "max_tokens": 4096,
+            "supports_vision": False,
+        },
+        "gemma_27b": {
+            "id": "google/gemma-3-27b-it:free",
+            "name": "Gemma 3 27B (Free)",
+            "description": "Бесплатная модель Google с vision поддержкой",
+            "specialization": "vision",
+            "context_window": 131072,
             "temperature": 0.7,
             "max_tokens": 4096,
+            "supports_vision": True,
         },
     }
     OPENROUTER_DEFAULT_CHAT_MODEL: str = "qwen_coder"

@@ -254,9 +254,15 @@ class AIChatService(BaseService):
         )
 
         # Запрос к OpenRouter
-        model_config = self.settings.OPENROUTER_CHAT_MODELS[chat.model_key]
+        model_config = self.settings.OPENROUTER_CHAT_MODELS.get(chat.model_key)
+        if not model_config:
+            raise ValueError(f"Модель '{chat.model_key}' не найдена в конфигурации")
+        
+        model_id = model_config["id"]
+        self.logger.debug("Отправка запроса к OpenRouter: model=%s", model_id)
+        
         ai_response = await self._call_openrouter(
-            model_id=model_config["id"],
+            model_id=model_id,
             messages=messages,
             temperature=chat.model_settings.get("temperature", 0.7),
             max_tokens=chat.model_settings.get("max_tokens", 4000),
@@ -606,10 +612,33 @@ class AIChatService(BaseService):
 
                 return {"content": content, "tokens_used": tokens_used}
 
-        except httpx.HTTPError as e:
-            self.logger.error("Ошибка OpenRouter API: %s", str(e))
+        except httpx.HTTPStatusError as e:
+            # Получаем тело ошибки для детального логирования
+            try:
+                error_body = e.response.json()
+                error_detail = error_body.get("error", {}).get("message", str(e))
+            except (ValueError, KeyError):
+                # Если не удалось распарсить JSON или извлечь message
+                error_detail = e.response.text or str(e)
+            
+            self.logger.error(
+                "Ошибка OpenRouter API [%d]: model=%s, error=%s",
+                e.response.status_code,
+                model_id,
+                error_detail,
+            )
             raise OpenRouterAPIError(
-                detail=f"Ошибка запроса к OpenRouter: {str(e)}",
+                detail=f"OpenRouter API error [{e.response.status_code}]: {error_detail}",
+                extra={
+                    "model": model_id,
+                    "status_code": e.response.status_code,
+                    "error": error_detail,
+                },
+            ) from e
+        except httpx.HTTPError as e:
+            self.logger.error("Ошибка сети OpenRouter: %s", str(e))
+            raise OpenRouterAPIError(
+                detail=f"Network error: {str(e)}",
                 extra={"model": model_id, "error": str(e)},
             ) from e
 
