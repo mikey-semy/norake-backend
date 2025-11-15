@@ -1,7 +1,7 @@
 # Cookie-Based Auth: Quick Reference
 
-**Статус**: ✅ Active Configuration  
-**Backend**: httpOnly Cookies + Optional JWT  
+**Статус**: ✅ Active Configuration
+**Backend**: httpOnly Cookies + Optional JWT
 **Дата**: 2025-11-15
 
 ---
@@ -62,7 +62,7 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       try {
         await api.post('/auth/refresh', {}, { withCredentials: true });
         return api(originalRequest);  // Повторить с новым токеном из cookie

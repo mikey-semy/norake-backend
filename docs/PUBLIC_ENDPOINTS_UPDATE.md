@@ -1,7 +1,7 @@
 # Обновление: Публичные Endpoints с Опциональной Авторизацией
 
-**Дата**: 2025-11-15  
-**Версия**: v1.0  
+**Дата**: 2025-11-15
+**Версия**: v1.0
 **Статус**: ✅ Реализовано
 
 ---
@@ -31,7 +31,7 @@ async def get_current_user_optional(
 ) -> UserCurrentSchema | None:
     """
     Получает данные текущего пользователя БЕЗ обязательной аутентификации.
-    
+
     - Если токен валиден → возвращает UserCurrentSchema
     - Если токена нет/невалиден → возвращает None (НЕ выбрасывает исключение)
     """
@@ -290,10 +290,10 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       try {
         // Попытка обновить токен
         const { accessToken } = await refreshTokens();
@@ -309,7 +309,7 @@ api.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
-    
+
     return Promise.reject(error);
   }
 );
@@ -355,7 +355,7 @@ function isPublicEndpoint(url: string): boolean {
 // errorHandler.ts
 export function handleApiError(error: AxiosError, navigate: NavigateFunction) {
   const status = error.response?.status;
-  
+
   switch (status) {
     case 401:
       // Если это GET запрос к публичному endpoint - повторить без токена
@@ -366,15 +366,15 @@ export function handleApiError(error: AxiosError, navigate: NavigateFunction) {
       toast.error('Необходимо войти в систему');
       navigate('/login');
       break;
-      
+
     case 403:
       toast.error('У вас нет доступа к этому ресурсу');
       break;
-      
+
     case 404:
       toast.error('Ресурс не найден');
       break;
-      
+
     default:
       toast.error('Произошла ошибка при загрузке данных');
   }
@@ -448,6 +448,6 @@ if workspace.visibility == WorkspaceVisibility.PUBLIC:
 
 ---
 
-**Автор**: AI Agent (GitHub Copilot)  
-**Дата создания**: 2025-11-15  
+**Автор**: AI Agent (GitHub Copilot)
+**Дата создания**: 2025-11-15
 **Статус**: ✅ Backend Ready for Testing

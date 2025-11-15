@@ -201,8 +201,8 @@ class AuthRouter(BaseRouter):
             """
             # Приоритет: заголовок -> Cookie() параметр -> request.cookies (fallback)
             refresh_token = (
-                refresh_token_header 
-                or refresh_token_cookie 
+                refresh_token_header
+                or refresh_token_cookie
                 or request.cookies.get("refresh_token")
             )
 

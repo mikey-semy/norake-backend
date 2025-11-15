@@ -1,7 +1,7 @@
 # Frontend Recommendations: httpOnly Cookies + Public Endpoints
 
-**Дата**: 2025-11-15  
-**Версия**: v2.0 (Cookie-Based Auth)  
+**Дата**: 2025-11-15
+**Версия**: v2.0 (Cookie-Based Auth)
 **Статус**: ✅ Backend Ready
 
 ---
@@ -99,7 +99,7 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         // Другой запрос уже обновляет токен - ждём
@@ -116,28 +116,28 @@ api.interceptors.response.use(
       try {
         // ✅ Refresh токен УЖЕ в cookies - просто вызываем endpoint
         await api.post('/auth/refresh', {}, { withCredentials: true });
-        
+
         // ✅ Новый access_token автоматически установлен в cookie через Set-Cookie
         processQueue(null);
         isRefreshing = false;
-        
+
         return api(originalRequest);  // Повторить с новым токеном из cookie
       } catch (refreshError) {
         // Refresh не удался - токены истекли окончательно
         processQueue(refreshError);
         isRefreshing = false;
-        
+
         // Если это публичный endpoint - повторить без авторизации
         if (isPublicEndpoint(originalRequest.url)) {
           return api(originalRequest);  // Cookies невалидны, backend вернёт публичные данные
         }
-        
+
         // Иначе - редирект на логин
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }
     }
-    
+
     return Promise.reject(error);
   }
 );
@@ -454,7 +454,7 @@ const handleDownload = () => {
     });
     return;
   }
-  
+
   // Proceed with download
   downloadDocument(document.id);
 };
@@ -474,13 +474,13 @@ def extract_token_from_request(request: Request, header_token: str = None) -> st
     if header_token:
         logger.debug("Токен найден в заголовке Authorization")
         return header_token
-    
+
     # 2️⃣ Если нет - проверяет cookies
     access_token_cookie = request.cookies.get("access_token")
     if access_token_cookie:
         logger.debug("Токен найден в cookies")
         return access_token_cookie
-    
+
     # 3️⃣ Если ничего нет - выбрасывает TokenMissingError
     raise TokenMissingError()
 ```

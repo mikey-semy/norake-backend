@@ -4,7 +4,7 @@
 
 **🍪 См. актуальную версию**: [FRONTEND_COOKIES_RECOMMENDATIONS.md](./FRONTEND_COOKIES_RECOMMENDATIONS.md)
 
-Этот документ содержит **legacy рекомендации для localStorage/Authorization header**.  
+Этот документ содержит **legacy рекомендации для localStorage/Authorization header**.
 Если ваш frontend использует **httpOnly cookies** (текущая настройка backend), используйте **FRONTEND_COOKIES_RECOMMENDATIONS.md**.
 
 ---
@@ -48,7 +48,7 @@ Backend endpoints теперь поддерживают **опциональну
 
 ### Что Изменилось
 
-**До**: Все endpoints требовали JWT токен → 401 при истечении  
+**До**: Все endpoints требовали JWT токен → 401 при истечении
 **Сейчас**: GET endpoints работают **БЕЗ токена** → возвращают публичные данные
 
 ### Endpoints с Опциональной Авторизацией
@@ -291,9 +291,9 @@ async function loadDocuments() {
   const response = await fetch('http://localhost:8000/api/v1/document-services', {
     credentials: 'include'  // Для cookies
   });
-  
+
   const json = await response.json();
-  
+
   if (json.success) {
     // Покажет публичные ИЛИ (публичные + приватные) если cookies валидны
     displayDocuments(json.data);
@@ -310,18 +310,18 @@ async function createDocument(formData: FormData) {
     credentials: 'include',  // Автоматически отправит access_token cookie
     body: formData
   });
-  
+
   if (response.status === 401) {
     // Токен истёк - попробовать refresh
     await refreshToken();
     // Повторить запрос
     return createDocument(formData);
   }
-  
+
   if (response.status === 403) {
     alert('Доступ запрещён');
   }
-  
+
   return response.json();
 }
 ```
@@ -335,19 +335,19 @@ async function fetchDocuments() {
     const response = await fetch('/api/v1/document-services', {
       credentials: 'include'
     });
-    
+
     if (response.ok) {
       const json = await response.json();
       return json.data;  // Публичные + приватные (если авторизован)
     }
-    
+
     // Если 401 - cookies истекли, но endpoint работает без них
     if (response.status === 401) {
       // Просто показать данные (backend вернёт публичные)
       const json = await response.json();
       return json.data;  // Только публичные
     }
-    
+
   } catch (error) {
     console.error('Ошибка загрузки:', error);
     return [];
@@ -368,13 +368,13 @@ interface DocumentService {
   description: string | null;    // Описание
   is_public: boolean;            // Публичный/приватный
   category: string | null;       // Категория
-  
+
   author: {                      // Автор документа
     id: string;
     username: string;
     email: string;
   };
-  
+
   files: Array<{                 // Прикреплённые файлы
     id: string;
     filename: string;
@@ -382,10 +382,10 @@ interface DocumentService {
     mime_type: string;           // "application/pdf", "image/png", etc.
     s3_url: string;              // Прямая ссылка на файл
   }>;
-  
+
   tags: string[];                // Теги документа
   view_count: number;            // Количество просмотров
-  
+
   created_at: string;            // ISO 8601 timestamp
   updated_at: string;            // ISO 8601 timestamp
 }
@@ -727,16 +727,16 @@ useEffect(() => {
 
 ## Вопросы?
 
-**Q**: Что если refresh токен тоже истёк?  
+**Q**: Что если refresh токен тоже истёк?
 **A**: Frontend получит 401 на `/auth/refresh` → редирект на `/login`.
 
-**Q**: Нужно ли хранить токены в localStorage?  
+**Q**: Нужно ли хранить токены в localStorage?
 **A**: НЕТ. Backend использует httpOnly cookies - JavaScript не может читать/записывать токены. Это безопаснее.
 
-**Q**: Как понять, что пользователь авторизован?  
+**Q**: Как понять, что пользователь авторизован?
 **A**: Вызвать `GET /auth/me` с `withCredentials: true`. Если 200 OK → авторизован, если 401 → нет.
 
-**Q**: Workspaces тоже поддерживают публичный доступ?  
+**Q**: Workspaces тоже поддерживают публичный доступ?
 **A**: ⏳ TODO на backend. Пока все workspaces требуют JWT. Будет реализовано аналогично документам.
 
 ---
