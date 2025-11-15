@@ -803,12 +803,12 @@ class DocumentServiceProtectedRouter(ProtectedRouter):
             disposition_type = "attachment" if download else "inline"
 
             # Возвращаем файл с правильными заголовками
+            # CORS обрабатывается глобальным CORSMiddleware, не переопределяем вручную
             return StreamingResponse(
                 file_stream,
                 media_type=content_type,
                 headers={
                     "Content-Disposition": f'{disposition_type}; filename="{filename}"',
-                    "Access-Control-Allow-Origin": "*",  # CORS для фронтенда
                     "Cache-Control": "public, max-age=3600",  # Кэширование на 1 час
                 },
             )
