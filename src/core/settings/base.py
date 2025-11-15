@@ -723,10 +723,11 @@ class Settings(BaseSettings):
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
     OPENROUTER_TIMEOUT: int = 30
     OPENROUTER_MAX_RETRIES: int = 3
+    OPENROUTER_EMBEDDING_MODEL: str = "openai/text-embedding-3-small"  # Дефолтная embedding модель
 
     # Embeddings Configuration
-    # NOTE: OpenRouter не поддерживает embedding модели!
-    # Используется Ollama Docker с локальными моделями embeddings
+    # NOTE: OpenRouter ТЕПЕРЬ ПОДДЕРЖИВАЕТ embedding модели через /api/v1/embeddings/models!
+    # Также доступны локальные модели через Ollama Docker
 
     # Ollama Embeddings (локальный Docker, бесплатно)
     OLLAMA_EMBEDDINGS_BASE_URL: Optional[str] = None

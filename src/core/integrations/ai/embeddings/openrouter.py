@@ -75,8 +75,7 @@ class OpenRouterEmbeddings(BaseEmbeddings):
         api_key = api_key or settings.OPENROUTER_API_KEY
         if not api_key:
             raise OpenRouterConfigError(
-                message="OPENROUTER_API_KEY не установлен",
-                hint="Установите переменную окружения OPENROUTER_API_KEY или передайте api_key в конструктор",
+                detail="OPENROUTER_API_KEY не установлен. Установите переменную окружения OPENROUTER_API_KEY или передайте api_key в конструктор",
             )
 
         base_url = base_url or settings.OPENROUTER_BASE_URL
@@ -187,10 +186,9 @@ class OpenRouterEmbeddings(BaseEmbeddings):
                     error_detail,
                 )
                 raise OpenRouterError(
-                    message=f"OpenRouter API вернул ошибку {status_code}",
-                    status_code=status_code,
-                    response=error_detail,
-                )
+                    detail=f"OpenRouter API вернул ошибку {status_code}: {error_detail}",
+                    extra={"status_code": status_code, "response": error_detail},
+                ) from e
 
             except httpx.RequestError as e:
                 self.logger.error(
@@ -206,13 +204,13 @@ class OpenRouterEmbeddings(BaseEmbeddings):
                     continue
 
                 raise OpenRouterError(
-                    message=f"Ошибка соединения с OpenRouter API: {type(e).__name__}",
-                    error_type=type(e).__name__,
-                )
+                    detail=f"Ошибка соединения с OpenRouter API: {type(e).__name__}",
+                    extra={"error_type": type(e).__name__},
+                ) from e
 
         # Если все попытки исчерпаны
         raise OpenRouterError(
-            message=f"Не удалось выполнить запрос к OpenRouter после {self.max_retries} попыток",
+            detail=f"Не удалось выполнить запрос к OpenRouter после {self.max_retries} попыток",
         )
 
     async def embed(self, texts: List[str]) -> List[List[float]]:
@@ -264,6 +262,6 @@ class OpenRouterEmbeddings(BaseEmbeddings):
                 str(e),
             )
             raise OpenRouterError(
-                message="Некорректный формат ответа от OpenRouter API",
-                error_type=type(e).__name__,
-            )
+                detail=f"Некорректный формат ответа от OpenRouter API: {type(e).__name__}",
+                extra={"error": str(e)},
+            ) from e
