@@ -1,3 +1,4 @@
+import logging
 from typing import Optional, Sequence, List
 
 from fastapi import APIRouter, Depends
@@ -12,6 +13,7 @@ class BaseRouter:
     Attributes:
         router (APIRouter): Базовый FastAPI роутер
         _dependencies (List[Depends]): Список глобальных зависимостей для роутера
+        logger (logging.Logger): Логгер для роутера
     """
 
     def __init__(
@@ -34,6 +36,9 @@ class BaseRouter:
             tags=tags or [],
             dependencies=self._dependencies,
         )
+        # Создаём логгер для роутера
+        router_name = self.__class__.__name__
+        self.logger = logging.getLogger(f"src.routers.{router_name}")
         self.configure()
 
     def configure(self):

@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     from .users import UserModel
     from .workspaces import WorkspaceModel
     from .document_processing import DocumentProcessingModel
+    from .knowledge_bases import KnowledgeBaseModel
 
 
 class ServiceFunctionType(str, enum.Enum):
@@ -240,6 +241,13 @@ class DocumentServiceModel(BaseModel):
         doc="ID workspace (опционально)",
     )
 
+    knowledge_base_id: Mapped[Optional[UUID]] = mapped_column(
+        ForeignKey("knowledge_bases.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+        doc="ID базы знаний для RAG функции (опционально)",
+    )
+
     # Видимость и статистика
     is_public: Mapped[bool] = mapped_column(
         nullable=False,
@@ -270,6 +278,13 @@ class DocumentServiceModel(BaseModel):
         back_populates="document_services",
         foreign_keys=[workspace_id],
         doc="Workspace документного сервиса (опционально)",
+    )
+
+    knowledge_base: Mapped[Optional["KnowledgeBaseModel"]] = relationship(
+        "KnowledgeBaseModel",
+        back_populates="document_services",
+        foreign_keys=[knowledge_base_id],
+        doc="База знаний для RAG функции (опционально)",
     )
 
     processing: Mapped[Optional["DocumentProcessingModel"]] = relationship(

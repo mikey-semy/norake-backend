@@ -72,7 +72,7 @@ class DocumentServiceService:
         get_most_viewed: Получить самые просматриваемые сервисы.
     """
 
-    def __init__(self, session: AsyncSession, s3_client: Any, settings: Settings):
+    def __init__(self, session: AsyncSession, s3_client: Any, settings: Settings, workspace_service: Any = None):
         """
         Инициализирует сервис документов.
 
@@ -80,12 +80,14 @@ class DocumentServiceService:
             session: Асинхронная сессия SQLAlchemy.
             s3_client: S3 клиент для работы с хранилищем.
             settings: Настройки приложения.
+            workspace_service: Сервис для проверки доступа workspace (опционально).
         """
         self.repository = DocumentServiceRepository(session)
         self.processing_repository = DocumentProcessingRepository(session)
         self.storage = DocumentS3Storage(s3_client)
         self.pdf_processor = PDFProcessor()
         self.settings = settings
+        self.workspace_service = workspace_service
         self.logger = logging.getLogger(__name__)
 
     async def create_document_service(
@@ -253,7 +255,24 @@ class DocumentServiceService:
 
         # Проверка прав на просмотр приватных сервисов
         if not service.is_public:
-            if not user_id or service.author_id != user_id:
+            # Проверка 1: Автор имеет доступ
+            if user_id and service.author_id == user_id:
+                pass  # Автор имеет полный доступ
+            # Проверка 2: Член workspace имеет доступ
+            elif service.workspace_id and user_id and self.workspace_service:
+                is_member = await self.workspace_service.member_repo.is_member(
+                    workspace_id=service.workspace_id,
+                    user_id=user_id,
+                )
+                if not is_member:
+                    self.logger.warning(
+                        "Попытка доступа к приватному документу %s пользователем %s без членства в workspace",
+                        service_id,
+                        user_id,
+                    )
+                    raise DocumentAccessDeniedError(service_id=service_id)
+            else:
+                # Нет user_id или не автор и не член workspace
                 raise DocumentAccessDeniedError(service_id=service_id)
 
         # Инкремент счётчика просмотров
@@ -562,6 +581,52 @@ class DocumentServiceService:
             service_id,
             user_id,
         )
+
+        # 🔥 АВТОМАТИЧЕСКАЯ RAG ОБРАБОТКА при активации view_pdf
+        if function.name == "view_pdf" and function.enabled:
+            self.logger.info(
+                "Активирована функция view_pdf для %s, запуск RAG обработки...",
+                service_id,
+            )
+            try:
+                # Проверить существующую обработку
+                processing = await self.processing_repo.get_by_document_id(service_id)
+                
+                if not processing:
+                    # Создать запись о начале обработки
+                    processing = await self.processing_repo.create_processing_record(
+                        document_service_id=service_id,
+                        status=ProcessingStatus.PENDING,
+                    )
+                    self.logger.info(
+                        "Создана запись обработки для документа %s (status=PENDING)",
+                        service_id,
+                    )
+                
+                # Если обработка уже завершена - не запускать заново
+                if processing.status == ProcessingStatus.COMPLETED:
+                    self.logger.info(
+                        "Документ %s уже обработан (status=COMPLETED), пропускаем",
+                        service_id,
+                    )
+                else:
+                    # Запустить обработку асинхронно (не блокируем ответ)
+                    asyncio.create_task(
+                        self._process_document_for_rag(service_id, processing.id)
+                    )
+                    self.logger.info(
+                        "Запущена фоновая RAG обработка для документа %s",
+                        service_id,
+                    )
+            except Exception as e:
+                self.logger.error(
+                    "Ошибка при запуске RAG обработки для %s: %s",
+                    service_id,
+                    str(e),
+                    exc_info=True,
+                )
+                # Не прерываем добавление функции, только логируем ошибку
+
         return updated_service
 
     async def remove_function(
@@ -1060,8 +1125,12 @@ class DocumentServiceService:
             return file_content, content_type, filename
 
         except FileNotFoundError:
-            self.logger.error("❌ Файл не найден в S3: %s", file_key)
-            raise DocumentServiceNotFoundError(service_id=service_id)
+            self.logger.error("❌ Файл не найден в S3: %s", file_url)
+            raise DocumentFileNotFoundError(
+                service_id=service_id,
+                file_key=file_key,
+                extra={"file_url": file_url},
+            )
         except Exception as e:
             self.logger.error("❌ Ошибка получения файла из S3: %s", str(e))
             raise
@@ -1269,3 +1338,127 @@ class DocumentServiceService:
         )
 
         return ai_functions
+
+    async def _process_document_for_rag(
+        self,
+        service_id: UUID,
+        processing_id: UUID,
+    ) -> None:
+        """
+        Фоновая обработка документа для RAG (извлечение текста + эмбеддинги).
+
+        Выполняется асинхронно при активации функции view_pdf.
+        Не блокирует основной запрос - пользователь получает ответ сразу,
+        а обработка идёт в фоне.
+
+        Workflow:
+            1. Обновить статус → PROCESSING
+            2. Скачать файл из S3
+            3. Извлечь текст (PDFProcessor)
+            4. Создать эмбеддинги (chunks)
+            5. Сохранить в DocumentProcessingModel
+            6. Обновить статус → COMPLETED
+
+        Args:
+            service_id: UUID документа для обработки.
+            processing_id: UUID записи DocumentProcessingModel.
+
+        Raises:
+            Не бросает исключения - все ошибки логируются и сохраняются в БД.
+
+        Example:
+            >>> asyncio.create_task(
+            ...     service._process_document_for_rag(doc_id, proc_id)
+            ... )
+        """
+        start_time = time.time()
+        
+        try:
+            # 1. Обновить статус на PROCESSING
+            await self.processing_repo.update_status(
+                processing_id,
+                ProcessingStatus.PROCESSING,
+            )
+            self.logger.info(
+                "Начата RAG обработка документа %s (processing_id=%s)",
+                service_id,
+                processing_id,
+            )
+
+            # 2. Получить документ из БД
+            service = await self.repository.get_item_by_id(service_id)
+            if not service:
+                raise DocumentServiceNotFoundError(service_id=service_id)
+
+            # 3. Скачать файл из S3
+            file_key = service.file_url.split("/")[-1]
+            self.logger.debug("Скачиваем файл из S3: %s", file_key)
+            
+            file_content, content_type = await self.storage.get_file_stream(file_key)
+            
+            # 4. Извлечь текст через PDFProcessor
+            self.logger.debug("Извлекаем текст из PDF...")
+            pdf_processor = PDFProcessor()
+            
+            # Сохранить во временный файл для обработки
+            import tempfile
+            import os
+            
+            with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+                tmp.write(file_content)
+                tmp_path = tmp.name
+            
+            try:
+                extracted_text = await pdf_processor.extract_text(tmp_path)
+                page_count = await pdf_processor.get_page_count(tmp_path)
+            finally:
+                # Удалить временный файл
+                os.unlink(tmp_path)
+
+            # 5. Сохранить извлечённый текст в БД
+            await self.processing_repo.save_extracted_text(
+                processing_id=processing_id,
+                extracted_text=extracted_text,
+                page_count=page_count,
+                extraction_method=ExtractionMethod.PDFPLUMBER,
+                language="ru",  # TODO: Автоопределение языка
+            )
+
+            # 6. Обновить статус на COMPLETED
+            processing_time = time.time() - start_time
+            await self.processing_repo.update_item(
+                processing_id,
+                {
+                    "status": ProcessingStatus.COMPLETED,
+                    "processing_time_seconds": int(processing_time),
+                },
+            )
+
+            self.logger.info(
+                "RAG обработка документа %s завершена успешно за %.2f сек (извлечено %d страниц)",
+                service_id,
+                processing_time,
+                page_count,
+            )
+
+        except Exception as e:
+            # Логировать ошибку и обновить статус на FAILED
+            self.logger.error(
+                "Ошибка при RAG обработке документа %s: %s",
+                service_id,
+                str(e),
+                exc_info=True,
+            )
+            
+            try:
+                await self.processing_repo.update_status(
+                    processing_id,
+                    ProcessingStatus.FAILED,
+                    error_message=str(e)[:500],  # Ограничение по длине
+                )
+            except Exception as update_error:
+                self.logger.error(
+                    "Не удалось обновить статус на FAILED для %s: %s",
+                    service_id,
+                    str(update_error),
+                )

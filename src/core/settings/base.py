@@ -725,6 +725,57 @@ class Settings(BaseSettings):
     OPENROUTER_TIMEOUT: int = 30
     OPENROUTER_MAX_RETRIES: int = 3
 
+    # Настройки OpenRouter Chat Models (NORAK-41)
+    # Конфигурация бесплатных моделей для AI чата с разными специализациями
+    OPENROUTER_CHAT_MODELS: Dict[str, Dict[str, Any]] = {
+        "qwen_coder": {
+            "id": "qwen/qwen3-coder-480b",
+            "name": "Qwen3 Coder 480B",
+            "description": "Лучшая модель для работы с кодом, превосходит Claude Sonnet в кодогенерации",
+            "specialization": "code",
+            "context_window": 32768,
+            "temperature": 0.2,
+            "max_tokens": 4096,
+        },
+        "kimi_dev": {
+            "id": "moonshot/kimi-dev-72b",
+            "name": "Kimi Dev 72B",
+            "description": "Универсальная модель для общих задач и разработки",
+            "specialization": "general",
+            "context_window": 200000,
+            "temperature": 0.7,
+            "max_tokens": 4096,
+        },
+        "deepseek_r1": {
+            "id": "deepseek/deepseek-r1-70b",
+            "name": "DeepSeek R1 70B",
+            "description": "Сбалансированная модель для рассуждений и анализа",
+            "specialization": "balanced",
+            "context_window": 65536,
+            "temperature": 0.5,
+            "max_tokens": 8192,
+        },
+        "tongyi_research": {
+            "id": "alibaba/tongyi-deepresearch-30b",
+            "name": "Tongyi DeepResearch 30B",
+            "description": "Специализация на научных исследованиях и глубоком анализе",
+            "specialization": "research",
+            "context_window": 32768,
+            "temperature": 0.3,
+            "max_tokens": 4096,
+        },
+        "deepseek_v3": {
+            "id": "deepseek/deepseek-v3.1",
+            "name": "DeepSeek V3.1",
+            "description": "Быстрая модель для оперативных ответов и простых задач",
+            "specialization": "fast",
+            "context_window": 65536,
+            "temperature": 0.7,
+            "max_tokens": 4096,
+        },
+    }
+    OPENROUTER_DEFAULT_CHAT_MODEL: str = "qwen_coder"
+
     # Настройки n8n Integration
     N8N_BASE_URL: str = "http://localhost:5678"
     N8N_API_KEY: Optional[SecretStr] = None
@@ -759,6 +810,23 @@ class Settings(BaseSettings):
     RAG_MIN_SIMILARITY: float = 0.7
     # Количество результатов для reranking
     RAG_RERANK_TOP_K: int = 3
+    # Размер чанка текста для эмбеддингов (в токенах)
+    RAG_CHUNK_SIZE: int = 1500
+    # Перекрытие между чанками (в токенах)
+    RAG_CHUNK_OVERLAP: int = 200
+
+    # AI Chat Configuration
+    # Дефолтный system prompt для чатов (если не указан пользователем)
+    AI_CHAT_DEFAULT_SYSTEM_PROMPT: str = """Ты - полезный AI ассистент для работы с документами и решения проблем.
+
+Правила работы:
+1. Отвечай на русском языке, используй markdown для форматирования
+2. Если есть документы в контексте (RAG) - используй их для точных ответов
+3. При цитировании документов указывай источник
+4. Если не уверен в ответе - честно скажи об этом
+5. Для технических вопросов давай конкретные примеры кода
+
+Стиль общения: профессиональный, дружелюбный, конструктивный."""
 
     # Категории Issue и Template (синхронизированы с n8n workflow)
     # TODO: Переделать в CategoryModel в БД + admin API для управления

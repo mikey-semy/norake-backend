@@ -27,7 +27,7 @@ from fastapi.responses import StreamingResponse
 import io
 
 from src.core.dependencies.document_services import DocumentServiceServiceDep
-from src.core.security import CurrentUserDep
+from src.core.security import CurrentUserDep, OptionalUserDep
 from src.core.security.auth import OptionalUserDep
 from src.core.settings.base import settings
 from src.routers.base import BaseRouter
@@ -769,7 +769,9 @@ class DocumentServiceProtectedRouter(BaseRouter):
             Проксирует файл из S3 через backend с правильными CORS заголовками.
             Поддерживает просмотр PDF в браузере и скачивание файлов.
 
-            ### 🔒 Требуется JWT токен #TODO: Исправить - для публичных не нужно
+            ### 🔓 JWT токен опционален
+            - Публичные документы доступны без авторизации
+            - Приватные документы требуют JWT токен и проверку прав доступа
 
             ### Path параметры:
             * **service_id**: UUID сервиса
@@ -780,7 +782,6 @@ class DocumentServiceProtectedRouter(BaseRouter):
             ### Errors:
             * **404**: Сервис или файл не найден
             * **403**: Нет прав доступа (приватный документ)
-            * **401**: Не авторизован
 
             ### Примеры:
             * Просмотр PDF: GET /document-services/{id}/file
@@ -790,19 +791,19 @@ class DocumentServiceProtectedRouter(BaseRouter):
                 200: {"description": "Файл получен", "content": {"application/pdf": {}}},
                 404: {"description": "Сервис или файл не найден"},
                 403: {"description": "Нет прав доступа"},
-                401: {"description": "Не авторизован"},
             },
         )
         async def get_file(
             service_id: UUID,
-            current_user: CurrentUserDep = None,
+            current_user: OptionalUserDep = None,
             document_service: DocumentServiceServiceDep = None,
             download: bool = Query(False, description="Скачать файл вместо просмотра"),
         ) -> StreamingResponse:
             """Получить файл документа через backend proxy."""
             # Получаем файл из S3 через сервис
+            user_id = current_user.id if current_user else None
             file_content, content_type, filename = await document_service.get_document_file(
-                service_id=service_id, user_id=current_user.id
+                service_id=service_id, user_id=user_id
             )
 
             # Создаём stream из байтов

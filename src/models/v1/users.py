@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..base import BaseModel
 
 if TYPE_CHECKING:
+    from .ai_chats import AIChatModel
     from .issue_comments import IssueCommentModel
     from .issues import IssueModel
     from .roles import UserRoleModel
@@ -148,6 +149,14 @@ class UserModel(BaseModel):
         "DocumentServiceModel",
         foreign_keys="[DocumentServiceModel.author_id]",
         back_populates="author",
+        passive_deletes=True,
+        cascade="all, delete-orphan",
+    )
+
+    ai_chats: Mapped[List["AIChatModel"]] = relationship(
+        "AIChatModel",
+        foreign_keys="[AIChatModel.user_id]",
+        back_populates="user",
         passive_deletes=True,
         cascade="all, delete-orphan",
     )

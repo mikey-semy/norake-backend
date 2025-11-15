@@ -21,6 +21,7 @@ from .templates import (TemplateNotFoundError, TemplatePermissionDeniedError,
 from .openrouter import (OpenRouterError, OpenRouterConfigError)
 from .knowledge_bases import (KnowledgeBaseNotFoundError, DocumentNotFoundError)
 from .search import (SearchError, SearchTimeoutError)
+from .workspaces import (WorkspaceNotFoundError,)
 from .document_services import (
     DocumentServiceNotFoundError,
     DocumentServicePermissionDeniedError,
@@ -30,32 +31,33 @@ from .document_services import (
     QRCodeGenerationError,
     FunctionNotAvailableError,
     DocumentAccessDeniedError,
+    DocumentFileNotFoundError,
     FileTypeValidationError,
     FileSizeExceededError,
+)
+from .ai_chats import (
+    ChatNotFoundError,
+    InvalidModelKeyError,
+    OpenRouterAPIError,
+    DocumentProcessingError,
 )
 
 __all__ = [
     # Base
     "BaseAPIException",
-
-    # Rate Limits
-    "RateLimitExceededError",
-
     # Common
-    "NotFoundError",
     "BadRequestError",
     "ConflictError",
     "ForbiddenError",
-
+    "NotFoundError",
     # Dependencies
     "ServiceUnavailableException",
-
-    # Health
-    "ServiceUnavailableError",
-
     # Handlers
     "register_exception_handlers",
-
+    # Health
+    "ServiceUnavailableError",
+    # Rate Limits
+    "RateLimitExceededError",
     # Auth
     "AuthenticationError",
     "InvalidCredentialsError",
@@ -68,45 +70,38 @@ __all__ = [
     "TokenExpiredError",
     "TokenInvalidError",
     "InvalidUserDataError",
-
     # Users
     "UserNotFoundError",
     "UserExistsError",
     "UserCreationError",
     "UserInactiveError",
-
-    # Registration
+    # Register
     "UserAlreadyExistsError",
     "RoleAssignmentError",
-
     # Issues
     "IssueNotFoundError",
     "IssueAlreadyResolvedError",
     "IssuePermissionDeniedError",
     "IssueValidationError",
-
     # Issue Comments
     "CommentNotFoundError",
     "CommentAccessDeniedError",
-
     # Templates
     "TemplateNotFoundError",
     "TemplatePermissionDeniedError",
     "TemplateValidationError",
     "TemplateInactiveError",
-
     # OpenRouter
     "OpenRouterError",
     "OpenRouterConfigError",
-
     # Knowledge Bases
     "KnowledgeBaseNotFoundError",
     "DocumentNotFoundError",
-
     # Search
     "SearchError",
     "SearchTimeoutError",
-
+    # Workspaces
+    "WorkspaceNotFoundError",
     # Document Services
     "DocumentServiceNotFoundError",
     "DocumentServicePermissionDeniedError",
@@ -116,6 +111,12 @@ __all__ = [
     "QRCodeGenerationError",
     "FunctionNotAvailableError",
     "DocumentAccessDeniedError",
+    "DocumentFileNotFoundError",
     "FileTypeValidationError",
     "FileSizeExceededError",
+    # AI Chats
+    "ChatNotFoundError",
+    "InvalidModelKeyError",
+    "OpenRouterAPIError",
+    "DocumentProcessingError",
 ]

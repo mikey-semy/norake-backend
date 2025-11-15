@@ -17,6 +17,7 @@ from .workspaces import WorkspaceProtectedRouter
 from .n8n_workflows import N8nWorkflowProtectedRouter
 from .search import SearchPublicRouter, SearchProtectedRouter
 from .document_services import DocumentServiceProtectedRouter
+from .chat import chat_router
 
 
 class APIv1(BaseRouter):
@@ -43,3 +44,4 @@ class APIv1(BaseRouter):
         self.router.include_router(SearchPublicRouter().get_router())
         self.router.include_router(SearchProtectedRouter().get_router())
         self.router.include_router(DocumentServiceProtectedRouter().get_router())
+        self.router.include_router(chat_router.get_router())

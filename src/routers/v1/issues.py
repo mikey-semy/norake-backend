@@ -59,8 +59,14 @@ class IssuePublicRouter(BaseRouter):
             path="",
             response_model=IssueListResponseSchema,
             status_code=status.HTTP_200_OK,
+            deprecated=True,
             description="""
+            ## ⚠️ DEPRECATED: Используйте /document-services
+            
             ## 📋 Получить список проблем с фильтрацией
+
+            **⚠️ УСТАРЕЛО**: Этот эндпоинт будет удалён в будущих версиях.
+            Используйте `/api/v1/document-services` для новых интеграций.
 
             Возвращает список проблем с опциональными фильтрами.
             Все фильтры комбинируются через AND.
@@ -157,8 +163,14 @@ class IssuePublicRouter(BaseRouter):
             path="/{issue_id}",
             response_model=IssueResponseSchema,
             status_code=status.HTTP_200_OK,
+            deprecated=True,
             description="""
+            ## ⚠️ DEPRECATED: Используйте /document-services
+            
             ## 🔍 Получить детали проблемы
+
+            **⚠️ УСТАРЕЛО**: Этот эндпоинт будет удалён в будущих версиях.
+            Используйте `/api/v1/document-services/{id}` для новых интеграций.
 
             Возвращает полную информацию о проблеме, включая автора.
 
@@ -319,8 +331,14 @@ class IssueProtectedRouter(ProtectedRouter):
             path="",
             response_model=IssueResponseSchema,
             status_code=status.HTTP_201_CREATED,
+            deprecated=True,
             description="""
+            ## ⚠️ DEPRECATED: Используйте /document-services
+            
             ## 📝 Создать новую проблему
+
+            **⚠️ УСТАРЕЛО**: Этот эндпоинт будет удалён в будущих версиях.
+            Используйте `POST /api/v1/document-services` для новых интеграций.
 
             Создаёт запись о проблеме в коллективной памяти.
             Статус автоматически устанавливается в RED.
@@ -399,8 +417,13 @@ class IssueProtectedRouter(ProtectedRouter):
             path="/{issue_id}/resolve",
             response_model=IssueResponseSchema,
             status_code=status.HTTP_200_OK,
+            deprecated=True,
             description="""
+            ## ⚠️ DEPRECATED: Используйте /document-services
+            
             ## ✅ Решить проблему
+
+            **⚠️ УСТАРЕЛО**: Этот эндпоинт будет удалён в будущих версиях.
 
             Закрывает проблему с решением (меняет статус на GREEN).
 
@@ -481,8 +504,13 @@ class IssueProtectedRouter(ProtectedRouter):
             path="/{issue_id}",
             response_model=IssueResponseSchema,
             status_code=status.HTTP_200_OK,
+            deprecated=True,
             description="""
+            ## ⚠️ DEPRECATED: Используйте /document-services
+            
             ## ✏️ Обновить проблему
+
+            **⚠️ УСТАРЕЛО**: Этот эндпоинт будет удалён в будущих версиях.
 
             Обновляет данные проблемы (title, description, custom_fields и т.д.).
 

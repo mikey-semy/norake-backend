@@ -10,6 +10,7 @@ from fastapi import Depends
 
 from src.core.dependencies.database import AsyncSessionDep
 from src.core.dependencies.storage import S3ClientDep
+from src.core.dependencies.workspaces import WorkspaceServiceDep
 from src.core.settings.base import settings
 from src.services.v1.document_services import DocumentServiceService
 
@@ -17,6 +18,7 @@ from src.services.v1.document_services import DocumentServiceService
 async def get_document_service(
     session: AsyncSessionDep,
     s3_client: S3ClientDep,
+    workspace_service: WorkspaceServiceDep,
 ) -> DocumentServiceService:
     """
     Создать экземпляр DocumentServiceService с зависимостями.
@@ -24,6 +26,7 @@ async def get_document_service(
     Args:
         session: Асинхронная сессия базы данных.
         s3_client: S3 клиент для работы с хранилищем (опционально).
+        workspace_service: Сервис для проверки доступа workspace.
 
     Returns:
         Настроенный DocumentServiceService.
@@ -35,7 +38,12 @@ async def get_document_service(
         ... ):
         ...     return await document_service.list_document_services(query)
     """
-    return DocumentServiceService(session=session, s3_client=s3_client, settings=settings)
+    return DocumentServiceService(
+        session=session,
+        s3_client=s3_client,
+        settings=settings,
+        workspace_service=workspace_service,
+    )
 
 
 # Аннотация типа для dependency injection

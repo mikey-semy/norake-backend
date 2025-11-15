@@ -27,6 +27,8 @@ from .templates import TemplateServiceDep
 from .workspaces import WorkspaceServiceDep
 # Search Service dependencies
 from .search import RAGSearchServiceDep, SearchServiceDep
+# AI Chat Service dependency
+from .ai_chat import AIChatServiceDep
 
 __all__ = [
     # Database dependencies
@@ -52,4 +54,6 @@ __all__ = [
     # Search Service dependencies
     "RAGSearchServiceDep",
     "SearchServiceDep",
+    # AI Chat Service dependency
+    "AIChatServiceDep",
 ]

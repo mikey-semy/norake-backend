@@ -9,6 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from ..base import BaseModel
 
 if TYPE_CHECKING:
+    from .ai_chats import AIChatModel
     from .ai_modules import WorkspaceModuleModel
     from .document_services import DocumentServiceModel
     from .knowledge_bases import KnowledgeBaseModel
@@ -252,6 +253,14 @@ class WorkspaceModel(BaseModel):
     document_services: Mapped[List["DocumentServiceModel"]] = relationship(
         "DocumentServiceModel",
         foreign_keys="[DocumentServiceModel.workspace_id]",
+        back_populates="workspace",
+        passive_deletes=True,
+        cascade="all, delete-orphan",
+    )
+
+    ai_chats: Mapped[List["AIChatModel"]] = relationship(
+        "AIChatModel",
+        foreign_keys="[AIChatModel.workspace_id]",
         back_populates="workspace",
         passive_deletes=True,
         cascade="all, delete-orphan",

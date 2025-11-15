@@ -199,6 +199,34 @@ class DocumentAccessDeniedError(BaseAPIException):
         )
 
 
+class DocumentFileNotFoundError(BaseAPIException):
+    """Файл документа не найден в хранилище."""
+
+    def __init__(
+        self,
+        service_id: UUID,
+        file_key: str,
+        extra: Optional[Dict[str, Any]] = None,
+    ):
+        """
+        Args:
+            service_id: UUID сервиса документа.
+            file_key: Ключ файла в S3.
+            extra: Дополнительная информация.
+        """
+        detail = f"Файл документа {service_id} не найден в хранилище (ключ: {file_key})"
+        super().__init__(
+            status_code=404,
+            detail=detail,
+            error_type="DOCUMENT_FILE_NOT_FOUND",
+            extra={
+                "service_id": str(service_id),
+                "file_key": file_key,
+                **(extra or {}),
+            },
+        )
+
+
 class FileTypeValidationError(BaseAPIException):
     """Недопустимый тип файла."""
 

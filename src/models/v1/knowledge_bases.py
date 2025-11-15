@@ -28,6 +28,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.models.base import BaseModel
 
 if TYPE_CHECKING:
+    from src.models.v1.document_services import DocumentServiceModel
     from src.models.v1.workspaces import WorkspaceModel
 
 
@@ -161,6 +162,14 @@ class KnowledgeBaseModel(BaseModel):
         back_populates="knowledge_base",
         cascade="all, delete-orphan",
         lazy="selectin",
+    )
+
+    document_services: Mapped[list["DocumentServiceModel"]] = relationship(
+        "DocumentServiceModel",
+        back_populates="knowledge_base",
+        foreign_keys="DocumentServiceModel.knowledge_base_id",
+        lazy="selectin",
+        doc="Document Services с активированной RAG функцией",
     )
 
     __table_args__ = (
