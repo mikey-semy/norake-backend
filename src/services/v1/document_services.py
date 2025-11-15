@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.exceptions import (
     DocumentAccessDeniedError,
+    DocumentFileNotFoundError,
     DocumentServiceNotFoundError,
     DocumentServicePermissionDeniedError,
     DocumentServiceValidationError,
@@ -603,11 +604,11 @@ class DocumentServiceService:
             )
             try:
                 # Проверить существующую обработку
-                processing = await self.processing_repo.get_by_document_id(service_id)
+                processing = await self.processing_repository.get_by_document_id(service_id)
 
                 if not processing:
                     # Создать запись о начале обработки
-                    processing = await self.processing_repo.create_processing_record(
+                    processing = await self.processing_repository.create_processing_record(
                         document_service_id=service_id,
                         status=ProcessingStatus.PENDING,
                     )
@@ -1137,13 +1138,13 @@ class DocumentServiceService:
 
             return file_content, content_type, filename
 
-        except FileNotFoundError:
+        except FileNotFoundError as exc:
             self.logger.error("❌ Файл не найден в S3: %s", file_url)
             raise DocumentFileNotFoundError(
                 service_id=service_id,
                 file_key=file_key,
                 extra={"file_url": file_url},
-            )
+            ) from exc
         except Exception as e:
             self.logger.error("❌ Ошибка получения файла из S3: %s", str(e))
             raise
@@ -1276,7 +1277,8 @@ class DocumentServiceService:
             ...     print(f"{func['name']}: {func['status']}")
         """
         # Получить документ с проверкой прав (без инкремента просмотров)
-        document = await self.get_document_service(
+        # Используем для валидации доступа, возвращаемое значение не нужно
+        _ = await self.get_document_service(  # noqa: F841
             service_id=service_id,
             user_id=user_id,
             increment_views=False,
@@ -1448,10 +1450,10 @@ class DocumentServiceService:
 
         try:
             # 0% - Начало обработки
-            await self.processing_repo.update_item(
+            await self.processing_repository.update_item(
                 processing_id, {"progress_percent": 0}
             )
-            await self.processing_repo.update_status(
+            await self.processing_repository.update_status(
                 processing_id,
                 ProcessingStatus.PROCESSING,
             )
@@ -1470,7 +1472,7 @@ class DocumentServiceService:
             file_key = service.file_url.split("/")[-1]
             self.logger.debug("Скачиваем файл из S3: %s", file_key)
 
-            file_content, content_type = await self.storage.get_file_stream(file_key)
+            file_content, _ = await self.storage.get_file_stream(file_key)
 
             # 4. Извлечь текст через PDFProcessor
             self.logger.debug("Извлекаем текст из PDF...")
@@ -1482,14 +1484,14 @@ class DocumentServiceService:
                 tmp_path = tmp.name
 
             try:
-                extracted_text = await pdf_processor.extract_text(tmp_path)
-                page_count = await pdf_processor.get_page_count(tmp_path)
+                # 🔹 Извлекаем текст из PDF (получаем text, page_count, method из tuple)
+                extracted_text, page_count, extraction_method = await pdf_processor.extract_text(tmp_path)
             finally:
                 # Удалить временный файл
                 os.unlink(tmp_path)
 
             # 25% - Текст извлечён
-            await self.processing_repo.update_item(
+            await self.processing_repository.update_item(
                 processing_id, {"progress_percent": 25}
             )
 
@@ -1506,15 +1508,13 @@ class DocumentServiceService:
                 )
 
             # Сохранить извлечённый текст с определённым языком
-            await self.processing_repo.save_extracted_text(
-                processing_id=processing_id,
-                extracted_text=extracted_text,
-                page_count=page_count,
-                extraction_method=ExtractionMethod.PDFPLUMBER,
-                language=language,
-            )
-
-            # 6. Разбить текст на чанки
+                await self.processing_repository.save_extracted_text(
+                    document_service_id=processing_id,
+                    extracted_text=extracted_text,
+                    page_count=page_count,
+                    extraction_method=extraction_method,
+                    language=language,
+                )            # 6. Разбить текст на чанки
             chunks = self._chunk_text(
                 text=extracted_text,
                 chunk_size=self.settings.RAG_CHUNK_SIZE,
@@ -1529,7 +1529,7 @@ class DocumentServiceService:
             )
 
             # 50% - Чанки созданы
-            await self.processing_repo.update_item(
+            await self.processing_repository.update_item(
                 processing_id, {"progress_percent": 50}
             )
 
@@ -1543,7 +1543,7 @@ class DocumentServiceService:
             )
 
             # 75% - Embeddings сгенерированы
-            await self.processing_repo.update_item(
+            await self.processing_repository.update_item(
                 processing_id, {"progress_percent": 75}
             )
 
@@ -1576,7 +1576,7 @@ class DocumentServiceService:
 
             # 100% - Обработка завершена
             processing_time = time.time() - start_time
-            await self.processing_repo.update_item(
+            await self.processing_repository.update_item(
                 processing_id,
                 {
                     "status": ProcessingStatus.COMPLETED,
@@ -1604,7 +1604,7 @@ class DocumentServiceService:
             )
 
             try:
-                await self.processing_repo.update_status(
+                await self.processing_repository.update_status(
                     processing_id,
                     ProcessingStatus.FAILED,
                     error_message=str(e)[:500],  # Ограничение по длине
