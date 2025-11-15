@@ -34,7 +34,7 @@ def upgrade() -> None:
 
     # Обновляем существующие записи
     op.execute("""
-        UPDATE ai_chats 
+        UPDATE ai_chats
         SET chat_metadata = '{"tokens_used": 0, "messages_count": 0, "estimated_cost": 0.0, "rag_queries_count": 0}'::jsonb
         WHERE chat_metadata IS NULL
     """)

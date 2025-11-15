@@ -84,12 +84,12 @@ await self.processing_repo.save_extracted_text(
 def _chunk_text(self, text: str, chunk_size: int, chunk_overlap: int) -> list[str]:
     """
     Разбиение текста на чанки с перекрытием для RAG.
-    
+
     Args:
         text: Исходный текст для разбиения.
         chunk_size: Размер чанка в символах (default: 1500).
         chunk_overlap: Перекрытие между чанками в символах (default: 200).
-    
+
     Returns:
         Список чанков текста.
     """
@@ -187,7 +187,7 @@ const processing = response.data.processing;
 ```python
 class DocumentChunkModel(BaseModel):
     __tablename__ = "document_chunks"
-    
+
     document_id: Mapped[UUID] = mapped_column(ForeignKey("document_services.id"))
     chunk_index: Mapped[int]
     content: Mapped[str] = mapped_column(Text)
@@ -201,11 +201,11 @@ class DocumentChunkModel(BaseModel):
 class DocumentChunkRepository(BaseRepository[DocumentChunkModel]):
     async def bulk_create(self, chunk_data: list[dict]) -> list[DocumentChunkModel]:
         # Bulk insert для производительности
-    
+
     async def vector_search(
-        self, 
-        embedding: list[float], 
-        kb_id: UUID, 
+        self,
+        embedding: list[float],
+        kb_id: UUID,
         limit: int = 5,
         min_similarity: float = 0.7
     ) -> list[DocumentChunkModel]:
@@ -282,14 +282,14 @@ if function.name == "view_pdf" and function.enabled:
     try:
         # Проверить существующую обработку
         processing = await self.processing_repo.get_by_document_id(service_id)
-        
+
         if not processing:
             # Создать запись о начале обработки
             processing = await self.processing_repo.create_processing_record(
                 document_service_id=service_id,
                 status=ProcessingStatus.PENDING,
             )
-        
+
         # Если обработка уже завершена - не запускать заново
         if processing.status == ProcessingStatus.COMPLETED:
             self.logger.info("Документ %s уже обработан, пропускаем", service_id)
@@ -323,7 +323,7 @@ async def _process_document_for_rag(
 ) -> None:
     """
     Фоновая обработка документа для RAG (извлечение текста + эмбеддинги).
-    
+
     Workflow:
         1. Обновить статус → PROCESSING
         2. Скачать файл из S3
@@ -333,30 +333,30 @@ async def _process_document_for_rag(
         6. Обновить статус → COMPLETED
     """
     start_time = time.time()
-    
+
     try:
         # 1. Update status to PROCESSING
         await self.processing_repo.update_status(processing_id, ProcessingStatus.PROCESSING)
-        
+
         # 2. Get document from DB
         service = await self.repository.get_item_by_id(service_id)
-        
+
         # 3. Download file from S3
         file_key = service.file_url.split("/")[-1]
         file_content, content_type = await self.storage.get_file_stream(file_key)
-        
+
         # 4. Extract text via PDFProcessor
         pdf_processor = PDFProcessor()
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
             tmp.write(file_content)
             tmp_path = tmp.name
-        
+
         try:
             extracted_text = await pdf_processor.extract_text(tmp_path)
             page_count = await pdf_processor.get_page_count(tmp_path)
         finally:
             os.unlink(tmp_path)  # Обязательная очистка
-        
+
         # 5. Save extracted text to DB
         await self.processing_repo.save_extracted_text(
             processing_id=processing_id,
@@ -365,20 +365,20 @@ async def _process_document_for_rag(
             extraction_method=ExtractionMethod.PDFPLUMBER,
             language="ru",  # TODO: Auto-detect language
         )
-        
+
         # 6. Update status to COMPLETED
         processing_time = time.time() - start_time
         await self.processing_repo.update_item(
             processing_id,
             {"status": ProcessingStatus.COMPLETED, "processing_time_seconds": int(processing_time)}
         )
-        
+
         self.logger.info(
             "✅ RAG обработка завершена для %s за %d сек",
             service_id,
             int(processing_time),
         )
-        
+
     except Exception as e:
         self.logger.error("Ошибка при RAG обработке: %s", str(e), exc_info=True)
         await self.processing_repo.update_status(
@@ -423,7 +423,7 @@ class ExtractionMethod(str, Enum):
 class DocumentProcessingModel(BaseModel):
     """
     Модель для хранения информации об обработке документа для RAG.
-    
+
     Связь: 1-to-1 с DocumentServiceModel
     """
     document_service_id: Mapped[UUID] = mapped_column(
@@ -431,25 +431,25 @@ class DocumentProcessingModel(BaseModel):
         unique=True,
         nullable=False,
     )
-    
+
     status: Mapped[ProcessingStatus] = mapped_column(
         Enum(ProcessingStatus),
         default=ProcessingStatus.PENDING,
         nullable=False,
     )
-    
+
     extraction_method: Mapped[ExtractionMethod | None] = mapped_column(
         Enum(ExtractionMethod),
         nullable=True,
     )
-    
+
     extracted_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     page_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
     language: Mapped[str | None] = mapped_column(String(10), nullable=True)
     extracted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     error_message: Mapped[str | None] = mapped_column(String(500), nullable=True)
     processing_time_seconds: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    
+
     # Relationship
     document_service: Mapped["DocumentServiceModel"] = relationship(
         back_populates="processing",
@@ -562,16 +562,16 @@ const response = await fetch(`/api/v1/document-services/${docId}/functions`, {
 // 2. Функция добавлена, обработка началась в фоне
 if (response.ok) {
   console.log('✅ Функция активирована, обработка началась');
-  
+
   // 3. Опционально: поллинг статуса
   const checkStatus = async () => {
     const functionsResponse = await fetch(
       `/api/v1/document-services/${docId}/functions`
     );
     const data = await functionsResponse.json();
-    
+
     const viewPdf = data.data.find((f: any) => f.name === 'view_pdf');
-    
+
     if (viewPdf.status === 'ready') {
       console.log('✅ Документ готов для AI чата');
       enableChatWithDocument(docId);
@@ -583,7 +583,7 @@ if (response.ok) {
       showErrorNotification();
     }
   };
-  
+
   checkStatus();
 }
 ```
@@ -693,7 +693,7 @@ tail -f logs/app.log | grep "faa82a60-..."
 ### Проверка Статуса в БД
 
 ```sql
-SELECT 
+SELECT
     ds.id,
     ds.title,
     dp.status,

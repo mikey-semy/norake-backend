@@ -180,8 +180,8 @@ await chunk_repo.bulk_create(chunk_data)
 **Search Capability** (DocumentChunkRepository):
 ```python
 async def vector_search(
-    embedding: list[float], 
-    kb_id: UUID, 
+    embedding: list[float],
+    kb_id: UUID,
     limit: int = 5,
     min_similarity: float = 0.7
 ) -> list[DocumentChunkModel]:
@@ -419,7 +419,7 @@ async def vector_search(
    ```bash
    git add .
    git commit -m "feat: Implement RAG Phase 2 - embeddings, chunking, progress tracking
-   
+
    - Add language detection via langdetect (auto-detect 55+ languages)
    - Implement text chunking with sliding window algorithm
    - Integrate OpenRouterEmbeddings for vector generation
@@ -427,7 +427,7 @@ async def vector_search(
    - Store chunks with embeddings in DocumentChunkModel (pgvector)
    - Update _process_document_for_rag() with Phase 2 pipeline
    - Create comprehensive testing guide (RAG_PHASE2_TESTING.md)
-   
+
    Closes: NORAK-XX (replace with actual Plane issue)"
    ```
 

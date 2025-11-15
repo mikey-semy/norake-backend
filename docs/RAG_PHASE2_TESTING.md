@@ -205,7 +205,7 @@ INFO - RAG обработка документа <doc_id> завершена у�
 **Database query** (PostgreSQL):
 ```sql
 -- Check chunks table
-SELECT 
+SELECT
     dc.id,
     dc.document_id,
     dc.chunk_index,
@@ -240,7 +240,7 @@ async def test_search():
         embeddings = OpenRouterEmbeddings()
         query = "What is the main topic of this document?"
         query_embedding = await embeddings.embed_query(query)
-        
+
         # Search similar chunks
         chunk_repo = DocumentChunkRepository(session)
         results = await chunk_repo.vector_search(
@@ -249,12 +249,12 @@ async def test_search():
             limit=3,
             min_similarity=0.7
         )
-        
+
         for idx, chunk in enumerate(results):
             print(f"\n--- Chunk {idx+1} (index {chunk.chunk_index}) ---")
             print(f"Content: {chunk.content[:200]}...")
             print(f"Tokens: {chunk.token_count}")
-        
+
         await embeddings.close()
         break
 
@@ -329,8 +329,8 @@ CREATE EXTENSION IF NOT EXISTS vector;
 
 **Manual fix**:
 ```sql
-UPDATE document_processing 
-SET status = 'FAILED', 
+UPDATE document_processing
+SET status = 'FAILED',
     error_message = 'Manual intervention - timeout'
 WHERE id = '<proc_id>';
 ```
