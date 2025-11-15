@@ -10,11 +10,14 @@ Classes:
 
 import asyncio
 import logging
+import os
+import tempfile
 import time
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 from fastapi import UploadFile
+from langdetect import detect, LangDetectException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.exceptions import (
@@ -35,6 +38,7 @@ from src.models.v1.document_services import (
     DocumentFileType,
     DocumentServiceModel,
 )
+from src.repository.v1.document_chunks import DocumentChunkRepository
 from src.repository.v1.document_processing import (
     DocumentProcessingRepository,
 )
@@ -72,7 +76,14 @@ class DocumentServiceService:
         get_most_viewed: Получить самые просматриваемые сервисы.
     """
 
-    def __init__(self, session: AsyncSession, s3_client: Any, settings: Settings, workspace_service: Any = None):
+    def __init__(
+        self,
+        session: AsyncSession,
+        s3_client: Any,
+        settings: Settings,
+        embeddings: Any,
+        workspace_service: Any = None,
+    ):
         """
         Инициализирует сервис документов.
 
@@ -80,6 +91,7 @@ class DocumentServiceService:
             session: Асинхронная сессия SQLAlchemy.
             s3_client: S3 клиент для работы с хранилищем.
             settings: Настройки приложения.
+            embeddings: OpenRouterEmbeddings клиент для RAG.
             workspace_service: Сервис для проверки доступа workspace (опционально).
         """
         self.repository = DocumentServiceRepository(session)
@@ -87,6 +99,7 @@ class DocumentServiceService:
         self.storage = DocumentS3Storage(s3_client)
         self.pdf_processor = PDFProcessor()
         self.settings = settings
+        self.embeddings = embeddings
         self.workspace_service = workspace_service
         self.logger = logging.getLogger(__name__)
 
@@ -1339,6 +1352,66 @@ class DocumentServiceService:
 
         return ai_functions
 
+    def _chunk_text(
+        self,
+        text: str,
+        chunk_size: int,
+        chunk_overlap: int,
+    ) -> list[str]:
+        """
+        Разбивает текст на чанки с перекрытием для RAG.
+
+        Использует алгоритм скользящего окна с учетом границ предложений.
+        Чанки используются для генерации embeddings и семантического поиска.
+
+        Args:
+            text: Исходный текст для разбиения
+            chunk_size: Максимальный размер чанка в символах
+            chunk_overlap: Размер перекрытия между чанками в символах
+
+        Returns:
+            list[str]: Список текстовых чанков (без пустых)
+
+        Example:
+            >>> chunks = self._chunk_text(
+            ...     "Hello world. Foo bar.",
+            ...     chunk_size=10,
+            ...     chunk_overlap=5
+            ... )
+            >>> len(chunks) >= 1
+            True
+
+        Note:
+            Адаптировано из document_kb_integration.py для переиспользования логики.
+            Пытается разбивать по границам предложений (точки, переносы строк).
+        """
+        if not text or chunk_size <= 0:
+            return []
+
+        chunks = []
+        start = 0
+
+        while start < len(text):
+            end = start + chunk_size
+            chunk = text[start:end]
+
+            # Если не последний чанк, пытаемся найти конец предложения
+            if end < len(text):
+                last_period = chunk.rfind(".")
+                last_newline = chunk.rfind("\n")
+                boundary = max(last_period, last_newline)
+
+                if boundary > chunk_size // 2:  # Граница не слишком далеко
+                    chunk = chunk[: boundary + 1]
+                    end = start + boundary + 1
+
+            chunks.append(chunk.strip())
+
+            # Сдвигаем окно с учетом перекрытия
+            start = end - chunk_overlap if end < len(text) else end
+
+        return [c for c in chunks if c]  # Убираем пустые чанки
+
     async def _process_document_for_rag(
         self,
         service_id: UUID,
@@ -1374,7 +1447,10 @@ class DocumentServiceService:
         start_time = time.time()
 
         try:
-            # 1. Обновить статус на PROCESSING
+            # 0% - Начало обработки
+            await self.processing_repo.update_item(
+                processing_id, {"progress_percent": 0}
+            )
             await self.processing_repo.update_status(
                 processing_id,
                 ProcessingStatus.PROCESSING,
@@ -1401,9 +1477,6 @@ class DocumentServiceService:
             pdf_processor = PDFProcessor()
 
             # Сохранить во временный файл для обработки
-            import tempfile
-            import os
-
             with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
                 tmp.write(file_content)
                 tmp_path = tmp.name
@@ -1415,30 +1488,110 @@ class DocumentServiceService:
                 # Удалить временный файл
                 os.unlink(tmp_path)
 
-            # 5. Сохранить извлечённый текст в БД
+            # 25% - Текст извлечён
+            await self.processing_repo.update_item(
+                processing_id, {"progress_percent": 25}
+            )
+
+            # 5. Автоопределение языка
+            try:
+                language = (
+                    detect(extracted_text[:1000]) if extracted_text else "unknown"
+                )
+            except LangDetectException:
+                language = "unknown"
+                self.logger.warning(
+                    "Не удалось определить язык для документа %s, используем 'unknown'",
+                    service_id,
+                )
+
+            # Сохранить извлечённый текст с определённым языком
             await self.processing_repo.save_extracted_text(
                 processing_id=processing_id,
                 extracted_text=extracted_text,
                 page_count=page_count,
                 extraction_method=ExtractionMethod.PDFPLUMBER,
-                language="ru",  # TODO: Автоопределение языка
+                language=language,
             )
 
-            # 6. Обновить статус на COMPLETED
+            # 6. Разбить текст на чанки
+            chunks = self._chunk_text(
+                text=extracted_text,
+                chunk_size=self.settings.RAG_CHUNK_SIZE,
+                chunk_overlap=self.settings.RAG_CHUNK_OVERLAP,
+            )
+            self.logger.info(
+                "Документ %s разбит на %d чанков (размер=%d, overlap=%d)",
+                service_id,
+                len(chunks),
+                self.settings.RAG_CHUNK_SIZE,
+                self.settings.RAG_CHUNK_OVERLAP,
+            )
+
+            # 50% - Чанки созданы
+            await self.processing_repo.update_item(
+                processing_id, {"progress_percent": 50}
+            )
+
+            # 7. Генерация embeddings
+            self.logger.debug("Генерируем embeddings для %d чанков...", len(chunks))
+            embeddings_list = await self.embeddings.embed(chunks)
+            self.logger.info(
+                "Сгенерировано %d embeddings для документа %s",
+                len(embeddings_list),
+                service_id,
+            )
+
+            # 75% - Embeddings сгенерированы
+            await self.processing_repo.update_item(
+                processing_id, {"progress_percent": 75}
+            )
+
+            # 8. Сохранить чанки с embeddings в БД
+            chunk_repo = DocumentChunkRepository(self.repository.session)
+            chunk_data = [
+                {
+                    "document_id": service.id,
+                    "chunk_index": idx,
+                    "content": chunk,
+                    "embedding": embedding,
+                    "token_count": len(chunk.split()),  # Грубая оценка
+                    "chunk_metadata": {
+                        "chunk_size": len(chunk),
+                        "chunk_overlap": self.settings.RAG_CHUNK_OVERLAP,
+                        "language": language,
+                        "extraction_method": ExtractionMethod.PDFPLUMBER.value,
+                    },
+                }
+                for idx, (chunk, embedding) in enumerate(
+                    zip(chunks, embeddings_list)
+                )
+            ]
+            await chunk_repo.bulk_create(chunk_data)
+            self.logger.info(
+                "Сохранено %d чанков с embeddings для документа %s",
+                len(chunk_data),
+                service_id,
+            )
+
+            # 100% - Обработка завершена
             processing_time = time.time() - start_time
             await self.processing_repo.update_item(
                 processing_id,
                 {
                     "status": ProcessingStatus.COMPLETED,
                     "processing_time_seconds": int(processing_time),
+                    "progress_percent": 100,
                 },
             )
 
             self.logger.info(
-                "RAG обработка документа %s завершена успешно за %.2f сек (извлечено %d страниц)",
+                "RAG обработка документа %s завершена успешно за %.2f сек: %d страниц, %d чанков, %d embeddings",
                 service_id,
                 processing_time,
                 page_count,
+                len(chunks),
+                len(embeddings_list),
             )
 
         except Exception as e:

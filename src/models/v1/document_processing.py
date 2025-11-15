@@ -79,6 +79,7 @@ class DocumentProcessingModel(BaseModel):
         extracted_at: Дата и время завершения обработки.
         error_message: Текст ошибки (если status=FAILED).
         processing_time_seconds: Время обработки в секундах.
+        progress_percent: Процент выполнения обработки (0-100).
 
         document_service: Relationship с DocumentServiceModel (1-to-1).
 
@@ -155,6 +156,14 @@ class DocumentProcessingModel(BaseModel):
     processing_time_seconds: Mapped[Optional[float]] = mapped_column(
         nullable=True,
         doc="Время обработки в секундах",
+    )
+
+    progress_percent: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=0,
+        server_default="0",
+        doc="Процент выполнения обработки (0-100)",
     )
 
     # Relationships

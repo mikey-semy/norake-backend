@@ -92,10 +92,10 @@ class ChatProtectedRouter(ProtectedRouter):
 
             models = await chat_service.get_available_models()
 
-            # Конвертируем dict в ModelInfoSchema
+            # Конвертируем list[dict] в ModelInfoSchema
             models_list = [
                 ModelInfoSchema(
-                    key=key,
+                    key=model["key"],
                     id=model["id"],
                     name=model["name"],
                     description=model["description"],
@@ -104,7 +104,7 @@ class ChatProtectedRouter(ProtectedRouter):
                     temperature=model["temperature"],
                     max_tokens=model["max_tokens"],
                 )
-                for key, model in models.items()
+                for model in models
             ]
 
             self.logger.info("Возвращено %d AI моделей", len(models_list))

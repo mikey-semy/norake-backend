@@ -28,6 +28,7 @@ dependencies = [
   "pillow>=11.3.0", # Обработка изображений
   "pdfplumber>=0.11.0", # Извлечение текста из PDF
   "PyMuPDF>=1.24.0", # Альтернативное извлечение текста и метаданных из PDF
+  "langdetect>=1.0.9", # Автоопределение языка документов для RAG
 ]
 description = ""
 name = "equiply-backend"

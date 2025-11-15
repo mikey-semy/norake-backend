@@ -9,6 +9,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from src.core.dependencies.database import AsyncSessionDep
+from src.core.dependencies.embeddings import EmbeddingsDep
 from src.core.dependencies.storage import S3ClientDep
 from src.core.dependencies.workspaces import WorkspaceServiceDep
 from src.core.settings.base import settings
@@ -18,6 +19,7 @@ from src.services.v1.document_services import DocumentServiceService
 async def get_document_service(
     session: AsyncSessionDep,
     s3_client: S3ClientDep,
+    embeddings: EmbeddingsDep,
     workspace_service: WorkspaceServiceDep,
 ) -> DocumentServiceService:
     """
@@ -26,6 +28,7 @@ async def get_document_service(
     Args:
         session: Асинхронная сессия базы данных.
         s3_client: S3 клиент для работы с хранилищем (опционально).
+        embeddings: OpenRouterEmbeddings клиент для генерации векторов.
         workspace_service: Сервис для проверки доступа workspace.
 
     Returns:
@@ -42,6 +45,7 @@ async def get_document_service(
         session=session,
         s3_client=s3_client,
         settings=settings,
+        embeddings=embeddings,
         workspace_service=workspace_service,
     )
 

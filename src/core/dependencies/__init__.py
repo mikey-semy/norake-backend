@@ -29,6 +29,8 @@ from .workspaces import WorkspaceServiceDep
 from .search import RAGSearchServiceDep, SearchServiceDep
 # AI Chat Service dependency
 from .ai_chat import AIChatServiceDep
+# Embeddings dependency
+from .embeddings import EmbeddingsDep
 
 __all__ = [
     # Database dependencies
@@ -56,4 +58,6 @@ __all__ = [
     "SearchServiceDep",
     # AI Chat Service dependency
     "AIChatServiceDep",
+    # Embeddings dependency
+    "EmbeddingsDep",
 ]
