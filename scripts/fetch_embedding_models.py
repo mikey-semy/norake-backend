@@ -23,7 +23,7 @@ async def fetch_embedding_models() -> List[Dict[str, Any]]:
             "OPENROUTER_API_KEY не найден в переменных окружения. "
             "Установите через: $env:OPENROUTER_API_KEY='your-key'"
         )
-    
+
     url = "https://openrouter.ai/api/v1/models"
 
     async with httpx.AsyncClient(timeout=30.0) as client:
