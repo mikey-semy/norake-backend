@@ -24,7 +24,7 @@ async def fetch_embedding_models() -> List[Dict[str, Any]]:
             "Установите через: $env:OPENROUTER_API_KEY='your-key'"
         )
 
-    url = "https://openrouter.ai/api/v1/models"
+    url = "https://openrouter.ai/api/v1/embeddings/models"
 
     async with httpx.AsyncClient(timeout=30.0) as client:
         response = await client.get(
@@ -33,27 +33,8 @@ async def fetch_embedding_models() -> List[Dict[str, Any]]:
         response.raise_for_status()
         data = response.json()
 
-    all_models = data.get("data", [])
-    print(f"📊 Всего моделей в OpenRouter: {len(all_models)}")
-
-    # Ищем embedding модели по различным признакам
-    embedding_keywords = [
-        "embed",
-        "embedding",
-        "ada",
-        "text-embedding",
-    ]
-
-    embedding_models = []
-    for model in all_models:
-        model_id = model.get("id", "").lower()
-        model_name = model.get("name", "").lower()
-        model_desc = model.get("description", "").lower()
-
-        if any(kw in model_id or kw in model_name or kw in model_desc for kw in embedding_keywords):
-            embedding_models.append(model)
-
-    print(f"🔍 Найдено embedding моделей: {len(embedding_models)}")
+    embedding_models = data.get("data", [])
+    print(f"📊 Всего embedding моделей в OpenRouter: {len(embedding_models)}")
 
     # Фильтруем по нужным провайдерам
     target_providers = ["qwen", "mistral", "openai"]
