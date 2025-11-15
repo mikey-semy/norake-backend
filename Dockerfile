@@ -3,10 +3,11 @@ FROM python:3.12-alpine AS builder
 
 WORKDIR /build
 
-# Устанавливаем только необходимые пакеты для сборки (включая g++ для PyMuPDF)
+# Устанавливаем только необходимые пакеты для сборки (включая g++ и make для PyMuPDF)
 RUN apk add --no-cache \
     gcc \
     g++ \
+    make \
     musl-dev \
     postgresql-dev \
     libffi-dev \
