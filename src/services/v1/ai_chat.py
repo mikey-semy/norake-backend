@@ -148,7 +148,7 @@ class AIChatService(BaseService):
             "document_service_ids": doc_ids,
             "messages": [],
             "model_settings": model_settings,
-            "metadata": {
+            "chat_metadata": {
                 "tokens_used": 0,
                 "messages_count": 0,
                 "estimated_cost": 0.0,
@@ -627,10 +627,10 @@ class AIChatService(BaseService):
             tokens_used: Использованные токены
             rag_queries_count: Количество RAG запросов
         """
-        metadata = chat.metadata or {}
+        metadata = chat.chat_metadata or {}
         metadata["tokens_used"] = metadata.get("tokens_used", 0) + tokens_used
         metadata["rag_queries_count"] = (
             metadata.get("rag_queries_count", 0) + rag_queries_count
         )
 
-        await self.chat_repo.update_item(chat.id, {"metadata": metadata})
+        await self.chat_repo.update_item(chat.id, {"chat_metadata": metadata})

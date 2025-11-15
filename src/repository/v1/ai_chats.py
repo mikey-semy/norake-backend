@@ -227,11 +227,11 @@ class AIChatRepository(BaseRepository[AIChatModel]):
         if not chat:
             return None
 
-        # Обновляем messages и metadata
-        metadata = chat.metadata or {}
+        # Обновляем messages и chat_metadata
+        metadata = chat.chat_metadata or {}
         metadata["messages_count"] = len(messages)
 
         return await self.update_item(
             chat.id,
-            {"messages": messages, "metadata": metadata},
+            {"messages": messages, "chat_metadata": metadata},
         )

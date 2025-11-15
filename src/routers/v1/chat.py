@@ -241,7 +241,7 @@ class ChatProtectedRouter(ProtectedRouter):
                     chat_id=chat.chat_id,
                     title=chat.title,
                     model_key=chat.model_key,
-                    messages_count=chat.metadata.get("messages_count", 0),
+                    messages_count=chat.chat_metadata.get("messages_count", 0),
                     workspace_id=chat.workspace_id,
                     created_at=chat.created_at,
                     updated_at=chat.updated_at,
