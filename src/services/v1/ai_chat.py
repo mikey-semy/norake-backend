@@ -321,18 +321,19 @@ class AIChatService(BaseService):
         user_message = {
             "role": "user",
             "content": content,
-            "metadata": {"timestamp": timestamp},
+            "message_metadata": {},
+            "timestamp": timestamp,
         }
 
         assistant_message = {
             "role": "assistant",
             "content": ai_response["content"],
-            "metadata": {
+            "message_metadata": {
                 "model": chat.model_key,
                 "tokens_used": ai_response.get("tokens_used", 0),
                 "rag_chunks_used": rag_chunks_count,
-                "timestamp": timestamp,
             },
+            "timestamp": timestamp,
         }
 
         new_messages = chat.messages + [user_message, assistant_message]

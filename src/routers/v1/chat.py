@@ -10,8 +10,6 @@ Router для AI чатов с RAG и OpenRouter интеграцией.
 - Добавление документов в чат
 """
 
-from datetime import datetime, timezone
-
 from fastapi import File, Form, UploadFile, status
 
 from src.core.dependencies import AIChatServiceDep
@@ -472,19 +470,15 @@ class ChatProtectedRouter(ProtectedRouter):
             self.logger.info(
                 "AI ответ получен для чата %s (tokens: %d)",
                 chat_id,
-                ai_response.get("tokens_used", 0),
+                ai_response.get("message_metadata", {}).get("tokens_used", 0),
             )
 
             # Конвертируем в MessageResponseSchema
             message_response = MessageResponseSchema(
-                role="assistant",
+                role=ai_response["role"],
                 content=ai_response["content"],
-                chat_metadata={
-                    "tokens_used": ai_response.get("tokens_used", 0),
-                    "rag_chunks_used": ai_response.get("rag_chunks_used", 0),
-                    "model_key": chat.model_key,
-                },
-                timestamp=datetime.now(timezone.utc).isoformat(),
+                chat_metadata=ai_response.get("message_metadata", {}),
+                timestamp=ai_response["timestamp"],
             )
 
             return MessageSendResponseSchema(

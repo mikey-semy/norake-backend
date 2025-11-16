@@ -115,7 +115,7 @@ class AIChatModel(BaseModel):
         JSONB,
         nullable=False,
         default=list,
-        comment="История сообщений в формате [{'role': str, 'content': str, 'metadata': dict, 'timestamp': str}]",
+        comment="История сообщений в формате [{'role': str, 'content': str, 'message_metadata': dict, 'timestamp': str}]",
     )
 
     model_settings: Mapped[dict] = mapped_column(
