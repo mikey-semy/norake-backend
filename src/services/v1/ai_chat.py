@@ -704,7 +704,7 @@ class AIChatService(BaseService):
                             import random
                             jitter = random.uniform(-0.2, 0.2) * base_delay
                             backoff = min(base_delay + jitter, 45)  # cap at 45s
-                            
+
                             self.logger.warning(
                                 "Rate limit [429] от OpenRouter (free tier exhausted). Retry через %.1f сек (попытка %d/%d)",
                                 backoff,
