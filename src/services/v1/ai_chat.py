@@ -695,12 +695,18 @@ class AIChatService(BaseService):
                 async with httpx.AsyncClient(timeout=60.0) as client:
                     response = await client.post(url, json=payload, headers=headers)
 
-                    # Если rate limit - делаем retry с экспоненциальным backoff
+                    # Если rate limit - делаем retry с большими задержками для free tier
                     if response.status_code == 429:
                         if attempt < max_retries - 1:
-                            backoff = 2 ** attempt  # 1s, 2s, 4s...
+                            # Free tier требует более долгих задержек: 5s, 15s, 45s
+                            base_delay = 5 * (3 ** attempt)  # 5s, 15s, 45s
+                            # Добавляем random jitter (±20%) для избежания thundering herd
+                            import random
+                            jitter = random.uniform(-0.2, 0.2) * base_delay
+                            backoff = min(base_delay + jitter, 45)  # cap at 45s
+                            
                             self.logger.warning(
-                                "Rate limit [429] от OpenRouter. Retry через %d сек (попытка %d/%d)",
+                                "Rate limit [429] от OpenRouter (free tier exhausted). Retry через %.1f сек (попытка %d/%d)",
                                 backoff,
                                 attempt + 1,
                                 max_retries,

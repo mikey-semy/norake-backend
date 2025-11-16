@@ -809,7 +809,8 @@ class Settings(BaseSettings):
             "supports_vision": True,
         },
     }
-    OPENROUTER_DEFAULT_CHAT_MODEL: str = "qwen_coder"
+    # Дефолтная модель - Gemini Flash (более щедрый rate limit, огромный context window)
+    OPENROUTER_DEFAULT_CHAT_MODEL: str = "gemini_flash"
 
     # Default System Prompt для всех AI чатов (NORAK-41)
     OPENROUTER_DEFAULT_SYSTEM_PROMPT: str = (
