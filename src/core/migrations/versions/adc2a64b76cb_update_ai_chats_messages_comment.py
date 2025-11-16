@@ -21,7 +21,7 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema: обновляет комментарий поля messages в ai_chats."""
     op.execute("""
-        COMMENT ON COLUMN ai_chats.messages IS 
+        COMMENT ON COLUMN ai_chats.messages IS
         'История сообщений в формате [{''role'': str, ''content'': str, ''message_metadata'': dict, ''timestamp'': str}]'
     """)
 
@@ -29,6 +29,6 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Downgrade schema: восстанавливает старый комментарий."""
     op.execute("""
-        COMMENT ON COLUMN ai_chats.messages IS 
+        COMMENT ON COLUMN ai_chats.messages IS
         'История сообщений в формате [{''role'': str, ''content'': str, ''metadata'': dict, ''timestamp'': str}]'
     """)

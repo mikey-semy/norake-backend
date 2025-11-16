@@ -2,7 +2,7 @@
 
 ## Проблема
 
-Frontend получал `Invalid Date` при парсинге timestamp из сообщений чата. 
+Frontend получал `Invalid Date` при парсинге timestamp из сообщений чата.
 
 **Причина**: Несоответствие структуры данных между backend и frontend:
 - Backend сохранял timestamp внутри `metadata`
@@ -59,7 +59,7 @@ Frontend получал `Invalid Date` при парсинге timestamp из с
 **Файл**: `src/core/migrations/versions/adc2a64b76cb_update_ai_chats_messages_comment.py`
 
 ```sql
-COMMENT ON COLUMN ai_chats.messages IS 
+COMMENT ON COLUMN ai_chats.messages IS
 'История сообщений в формате [{"role": str, "content": str, "message_metadata": dict, "timestamp": str}]'
 ```
 
